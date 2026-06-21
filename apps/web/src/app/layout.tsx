@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Fraunces, Space_Mono } from 'next/font/google'
 import './globals.css'
+import AnalyticsInit from '@/components/analytics/AnalyticsInit'
 
 // Fraunces is a variable font — drop `weight` when specifying custom axes
 const fraunces = Fraunces({
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ` }} />
       </head>
       <body suppressHydrationWarning>
+        <AnalyticsInit />
         <div className="page-wrap">{children}</div>
       </body>
     </html>

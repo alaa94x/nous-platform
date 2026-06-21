@@ -119,6 +119,10 @@ export interface Database {
           event: string
           path: string | null
           metadata: Json | null
+          session_id: string | null
+          country: string | null
+          referrer: string | null
+          device: string | null
           created_at: string
         }
         Insert: {
@@ -126,6 +130,10 @@ export interface Database {
           event: string
           path?: string | null
           metadata?: Json | null
+          session_id?: string | null
+          country?: string | null
+          referrer?: string | null
+          device?: string | null
           created_at?: string
         }
         Update: {
@@ -133,6 +141,10 @@ export interface Database {
           event?: string
           path?: string | null
           metadata?: Json | null
+          session_id?: string | null
+          country?: string | null
+          referrer?: string | null
+          device?: string | null
           created_at?: string
         }
       }
@@ -146,4 +158,5 @@ export type Service = Database['public']['Tables']['services']['Row']
 export type Project = Database['public']['Tables']['projects']['Row']
 export type Contact = Database['public']['Tables']['contacts']['Row']
 export type AnalyticsEvent = Database['public']['Tables']['analytics_events']['Row']
+export type DeviceType = 'mobile' | 'tablet' | 'desktop'
 export type ContactStatus = Contact['status']
