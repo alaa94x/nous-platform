@@ -295,6 +295,7 @@ export default function Hero({
           {subtextEn}
         </p>
         <p
+          className="hero-grid-ar"
           style={{
             fontFamily: 'var(--font-arabic)',
             fontSize: 14,
@@ -456,33 +457,51 @@ export default function Hero({
 
       <style>{`
   @media (max-width:900px) {
-    #hero { padding: 120px 24px 60px !important; min-height: 100dvh !important; }
-    .hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; margin-top: 80px !important; }
-    .hero-ctas { 
-      flex-direction: column !important; 
-      align-items: flex-start !important; 
-      gap: 16px !important; 
-      width: 100% !important; 
-      margin-top: 56px !important; 
+    /* ── Layout ── */
+    #hero { padding: 100px 24px 120px !important; min-height: 100dvh !important; }
+    .bottom-divider { left: 24px !important; right: 24px !important; }
+
+    /* ── Bilingual grid: stack, tighten ── */
+    .hero-grid {
+      grid-template-columns: 1fr !important;
+      gap: 20px !important;
+      margin-top: 32px !important;
+    }
+    /* Hide Arabic copy block on mobile — headline already carries the AR brand */
+    .hero-grid-ar { display: none !important; }
+
+    /* ── CTAs: full-width column, tight gap ── */
+    .hero-ctas {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 12px !important;
+      width: 100% !important;
+      margin-top: 32px !important;
     }
     .hero-ctas a {
       width: 100% !important;
       text-align: center !important;
+      box-sizing: border-box !important;
     }
+
+    /* ── Scroll indicator: detach from content flow, pin to bottom-right ── */
     .scroll-indicator {
-      right: 50% !important;
-      bottom: 24px !important;
-      transform: translateX(50%) scale(0.85);
-      transform-origin: bottom center;
-    }
-    .bottom-divider {
-      left: 24px !important;
-      right: 24px !important;
+      position: fixed !important;
+      right: 20px !important;
+      bottom: 32px !important;
+      transform: none !important;
+      transform-origin: unset !important;
+      /* Sit above page content but below modals */
+      z-index: 20;
     }
   }
+
   @media (max-width:480px) {
-    #hero { padding: 100px 20px 50px !important; min-height: 100dvh !important; }
-    .h-line:first-child { font-size: clamp(75px, 20vw, 120px) !important; }
+    #hero { padding: 90px 16px 120px !important; }
+    .h-line:first-child { font-size: clamp(68px, 19vw, 110px) !important; }
+    /* Even tighter subtext margin on very small phones */
+    .hero-grid { margin-top: 24px !important; }
+    .hero-ctas { margin-top: 24px !important; }
   }
     html { scroll-behavior: smooth; }
   
