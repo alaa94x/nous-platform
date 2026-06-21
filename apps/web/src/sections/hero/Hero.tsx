@@ -239,7 +239,7 @@ export default function Hero({
         <span
           className="h-line"
           style={{
-            fontFamily: '"Noto Serif Arabic", serif',
+            fontFamily: 'var(--font-arabic)',
             fontSize: 'clamp(85px, 15vw, 150px)',
             fontWeight: 700,
             color: 'var(--text)',
@@ -296,10 +296,10 @@ export default function Hero({
         </p>
         <p
           style={{
-            fontFamily: 'var(--font-fraunces)',
-            fontSize: 13,
+            fontFamily: 'var(--font-arabic)',
+            fontSize: 14,
             color: '#3D5753',
-            lineHeight: 2,
+            lineHeight: 2.1,
             textAlign: 'right',
             direction: 'rtl',
           }}

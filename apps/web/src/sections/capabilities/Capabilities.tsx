@@ -329,15 +329,14 @@ export default function Capabilities({ services }: CapabilitiesProps) {
                   {svc.name_ar && (
                     <span
                       style={{
-                        fontFamily: 'var(--font-fraunces)',
+                        fontFamily: 'var(--font-arabic)',
                         fontSize: 'clamp(11px, 1.2vw, 16px)',
-                        fontWeight: 300,
+                        fontWeight: 400,
                         color: 'var(--muted)',
                         opacity: 0.6,
                         display: 'block',
                         whiteSpace: 'nowrap',
                         direction: 'rtl',
-                        fontStyle: 'italic',
                       }}
                     >
                       {svc.name_ar}

@@ -11,6 +11,7 @@
   --border2: rgba(18, 28, 26, 0.05);
   --font-display: var(--font-fraunces, 'Georgia', serif);
   --font-mono:    var(--font-space-mono, 'Courier New', monospace);
+  --font-arabic:  var(--font-noto-arabic, 'Noto Serif Arabic', 'Arabic Typesetting', 'Traditional Arabic', serif);
 }
 
 /* ── Tailwind v4 Theme ───────────────────────────────────── */
@@ -23,6 +24,7 @@
   --color-border:  var(--border);
   --font-display:  var(--font-display);
   --font-mono:     var(--font-mono);
+  --font-arabic:   var(--font-arabic);
   --ease-spring:   cubic-bezier(0.16, 1, 0.3, 1);
 }
 

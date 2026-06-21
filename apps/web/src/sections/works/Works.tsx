@@ -215,7 +215,7 @@ function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; r
         <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(17px, 2.1vw, 28px)', fontWeight: 300, color: 'var(--text)', letterSpacing: '-.01em', lineHeight: 1.18, marginBottom: 8, display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
           {proj.name}
           {proj.name_ar && (
-            <span style={{ fontSize: '0.65em', color: 'var(--muted)', opacity: 0.7, fontStyle: 'italic', direction: 'rtl' }}>{proj.name_ar}</span>
+            <span style={{ fontFamily: 'var(--font-arabic)', fontSize: '0.65em', color: 'var(--muted)', opacity: 0.7, direction: 'rtl' }}>{proj.name_ar}</span>
           )}
         </h3>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.03em', lineHeight: 1.85, marginBottom: 16 }}>
