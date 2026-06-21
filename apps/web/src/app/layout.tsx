@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Space_Mono, Noto_Serif_Arabic } from 'next/font/google'
+import { Fraunces, Space_Mono } from 'next/font/google'
 import './globals.css'
 import AnalyticsInit from '@/components/analytics/AnalyticsInit'
 
@@ -18,13 +18,6 @@ const spaceMono = Space_Mono({
   display: 'swap',
   weight: ['400', '700'],
   style: ['normal', 'italic'],
-})
-
-const notoSerifArabic = Noto_Serif_Arabic({
-  subsets: ['arabic'],
-  variable: '--font-noto-arabic',
-  display: 'swap',
-  weight: ['400', '700'],
 })
 
 export const metadata: Metadata = {
@@ -58,8 +51,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceMono.variable} ${notoSerifArabic.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${spaceMono.variable}`}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Arabic:wght@400;700&display=swap" rel="stylesheet" />
+        <style dangerouslySetInnerHTML={{ __html: `:root { --font-noto-arabic: 'Noto Serif Arabic', serif; }` }} />
         <script dangerouslySetInnerHTML={{ __html: `
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', () =>
