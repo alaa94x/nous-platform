@@ -237,7 +237,7 @@ export default async function AnalyticsPage() {
             <div className="an-panel">
               <span className="an-panel-title">Visitors by Country</span>
               {countryRank.length === 0 ? (
-                <span className="adm-empty-state">No geo data yet - requires Cloudflare or Vercel hosting</span>
+                <span className="adm-empty-state">No geo data yet - visit the site to populate</span>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                   {countryRank.slice(0, 10).map(([code, count]) => (
