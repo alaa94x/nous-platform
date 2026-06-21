@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Build script allow-list (avoids ERR_PNPM_IGNORED_BUILDS)
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

@@ -1,0 +1,263 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg:       #0E1210;
+  --color-surface:  #161C19;
+  --color-surface2: #1C2420;
+  --color-accent:   #2ECC71;
+  --color-accent2:  #0A5C47;
+  --color-text:     #E8EDE9;
+  --color-muted:    rgba(232,237,233,0.45);
+  --color-border:   rgba(232,237,233,0.08);
+  --color-danger:   #E74C3C;
+  --color-warn:     #F39C12;
+}
+
+:root {
+  --bg:       #0E1210;
+  --surface:  #161C19;
+  --surface2: #1C2420;
+  --accent:   #2ECC71;
+  --accent2:  #0A5C47;
+  --text:     #E8EDE9;
+  --muted:    rgba(232,237,233,0.45);
+  --border:   rgba(232,237,233,0.08);
+  --danger:   #E74C3C;
+  --warn:     #F39C12;
+
+  /* ── Spacing scale ─────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+
+  /* Panel padding — tightens automatically on mobile */
+  --panel-pad-x: 24px;
+  --panel-pad-y: 20px;
+
+  /* Mobile nav dimensions */
+  --mobile-nav-height:  66px;
+  --mobile-nav-offset:  16px;
+}
+
+
+
+@media (max-width: 767px) {
+  :root {
+    --panel-pad-x: 16px;
+    --panel-pad-y: 16px;
+    --mobile-nav-offset: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/*
+ * iOS auto-zoom prevention: inputs smaller than 16px cause Safari to zoom
+ * the viewport on focus. We floor at 16px on mobile and restore 13px on
+ * desktop via the media query below.
+ */
+input, textarea, select {
+  font-family: inherit;
+  font-size: max(16px, 1em);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  outline: none;
+  padding: 8px 12px;
+  width: 100%;
+  transition: border-color .2s;
+}
+
+@media (min-width: 768px) {
+  input, textarea, select { font-size: inherit; }
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ── Typography utilities ──────────────────────────────────────────────────── */
+
+/* Stat numbers — clamp prevents overflow in narrow cards */
+.adm-stat-num {
+  font-size: clamp(22px, 5vw, 38px);
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1;
+  font-family: ui-monospace, monospace;
+  color: var(--text);
+  display: block;
+}
+
+.adm-stat-num--accent {
+  color: var(--accent);
+}
+
+/* Reusable section/field label */
+.adm-section-label {
+  font-family: ui-monospace, monospace;
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Page-level heading */
+.adm-page-title {
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+}
+
+/* Centred empty / loading copy */
+.adm-empty-state {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-align: center;
+}
+
+/* Bar chart label — min-width:0 prevents overflow inside flex */
+.adm-bar-label {
+  font-size: 9px;
+  color: var(--text);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.adm-bar-label--muted {
+  font-family: ui-monospace, monospace;
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ── Layout grids ──────────────────────────────────────────────────────────── */
+
+/* 4-column stat grid used on dashboard + analytics */
+.adm-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 1024px) {
+  .adm-stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .adm-stat-grid { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* 2-column charts row */
+.adm-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .adm-charts-row { grid-template-columns: 1fr; }
+}
+
+/* Funnel layout is handled inside analytics/page.tsx via
+   .funnel-desktop / .funnel-mobile classes for cleaner mobile control */
+
+/* 3-column quick-links grid (dashboard) */
+.adm-links-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .adm-links-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .adm-links-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Touch interaction resets ──────────────────────────────────────────────── */
+
+/*
+ * touch-action: manipulation eliminates the 300 ms click delay on mobile.
+ * -webkit-tap-highlight-color: transparent removes the grey flash on tap.
+ * Applied globally to all interactive admin elements.
+ */
+.adm-tab,
+.adm-quick-link,
+.contacts-row,
+.adm-action-btn,
+.adm-filter-btn,
+.adm-icon-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .contacts-row:hover         { background: rgba(255,255,255,.018); }
+  .adm-quick-link:hover       { border-color: rgba(46,204,113,.25) !important; }
+  .adm-action-btn:hover       { opacity: .75; }
+  a:not([class]):hover        { opacity: .8; }
+}
+
+/* On touch devices, use :active for pressed feedback instead */
+@media (hover: none) {
+  .contacts-row:active        { background: rgba(255,255,255,.03); }
+  .adm-quick-link:active      { background: rgba(46,204,113,.05) !important; }
+  .adm-action-btn:active      { opacity: .6; }
+}
+
+/* Pressed scale feedback on touch — works alongside :active */
+.adm-action-btn:active,
+.adm-filter-btn:active,
+.adm-icon-btn:active {
+  transform: scale(.96);
+  transition: transform .08s;
+}

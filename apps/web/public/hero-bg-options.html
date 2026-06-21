@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nous — Hero Background Options</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #F9F8F6;
+    --text:   #121C1A;
+    --accent: #0A5C47;
+    --muted:  rgba(18,28,26,.38);
+    --border: rgba(18,28,26,.08);
+  }
+
+  body {
+    background: #0E0E0C;
+    font-family: 'Courier New', monospace;
+    color: #F9F8F6;
+    padding: 48px 40px 96px;
+  }
+
+  /* ── Page header ── */
+  .page-title {
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: rgba(249,248,246,.35);
+    margin-bottom: 8px;
+  }
+  .page-sub {
+    font-size: 28px;
+    font-family: Georgia, serif;
+    font-weight: 400;
+    color: #F9F8F6;
+    margin-bottom: 6px;
+    letter-spacing: -.02em;
+  }
+  .page-desc {
+    font-size: 11px;
+    color: rgba(249,248,246,.45);
+    letter-spacing: .04em;
+    line-height: 1.7;
+    max-width: 640px;
+    margin-bottom: 56px;
+  }
+
+  /* ── Section divider ── */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: #0A5C47;
+    margin-bottom: 28px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(10,92,71,.2);
+  }
+
+  /* ── Option cards ── */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 64px;
+  }
+  @media (max-width: 900px) { .options-grid { grid-template-columns: 1fr; } }
+
+  .option-card {
+    border: 1px solid rgba(249,248,246,.08);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: border-color .3s;
+  }
+  .option-card:hover { border-color: rgba(10,92,71,.5); }
+
+  .option-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    font-size: 7px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    background: rgba(10,92,71,.85);
+    color: #F9F8F6;
+    padding: 4px 10px;
+    z-index: 10;
+  }
+  .option-badge.alt { background: rgba(18,28,26,.8); color: rgba(249,248,246,.7); }
+
+  .option-preview {
+    height: 320px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-meta {
+    padding: 20px 22px 22px;
+    background: rgba(249,248,246,.03);
+    border-top: 1px solid rgba(249,248,246,.06);
+  }
+  .option-name {
+    font-size: 13px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #F9F8F6;
+    margin-bottom: 8px;
+  }
+  .option-desc {
+    font-size: 10px;
+    color: rgba(249,248,246,.45);
+    line-height: 1.75;
+    letter-spacing: .03em;
+    margin-bottom: 14px;
+  }
+  .option-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pill {
+    font-size: 8px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: rgba(10,92,71,.9);
+    border: 1px solid rgba(10,92,71,.25);
+    padding: 3px 9px;
+  }
+  .pill.warn { color: rgba(249,248,246,.35); border-color: rgba(249,248,246,.1); }
+
+  /* ════════════════════════════════════
+     OPTION A — Floating Logo Parallax
+  ═════════════════════════════════════ */
+  .preview-a {
+    background: #F9F8F6;
+  }
+  .preview-a .nav-mock {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 5;
+  }
+  .nav-logo-mock {
+    width: 44px; height: 18px;
+    opacity: .5;
+  }
+  .nav-links-mock {
+    display: flex; gap: 16px;
+  }
+  .nav-link-mock {
+    width: 28px; height: 4px;
+    background: rgba(18,28,26,.15);
+    border-radius: 1px;
+  }
+
+  .preview-a .hero-text {
+    position: absolute;
+    bottom: 40px;
+    left: 24px;
+  }
+  .hero-h1-mock {
+    font-family: Georgia, serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #121C1A;
+    letter-spacing: -.04em;
+    line-height: .9;
+  }
+  .hero-h2-mock {
+    font-family: Georgia, serif;
+    font-size: 36px;
+    font-weight: 300;
+    font-style: italic;
+    color: #0A5C47;
+    letter-spacing: -.04em;
+    line-height: .9;
+  }
+
+  /* The floating logo element */
+  .float-logo {
+    position: absolute;
+    top: 50%;
+    right: 60px;
+    transform: translateY(-50%);
+    width: 140px;
+    height: 140px;
+    opacity: .07;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .float-logo svg { width: 100%; height: 100%; }
+
+  /* Second instance — smaller, different position */
+  .float-logo-2 {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    opacity: .04;
+  }
+  .float-logo-2 svg { width: 100%; height: 100%; }
+
+  /* Mouse-track cursor hint */
+  .cursor-hint {
+    position: absolute;
+    top: 50%;
+    right: 80px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(10,92,71,.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: rgba(10,92,71,.6);
+    letter-spacing: .06em;
+    animation: cursor-pulse 2s ease-in-out infinite;
+  }
+  @keyframes cursor-pulse {
+    0%, 100% { transform: translateY(-50%) scale(1); opacity: .6; }
+    50% { transform: translateY(-50%) scale(1.25); opacity: 1; }
+  }
+
+  /* ════════════════════════════════════
+     OPTION B — Topographic / Grid Lines
+  ═════════════════════════════════════ */
+  .preview-b {
+    background: #F9F8F6;
+    overflow: hidden;
+  }
+  .topo-bg {
+    position: absolute;
+    inset: 0;
+  }
+  .topo-bg svg {
+    width: 100%;
+    height: 100%;
+    opacity: .12;
+  }
+
+  /* Scan line overlay */
+  .scan-overlay {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(10,92,71,.018) 3px,
+      rgba(10,92,71,.018) 4px
+    );
+    pointer-events: none;
+  }
+
+  .preview-b .hero-text {
+    position: absolute;
+    bottom: 40px;
+    left: 24px;
+    z-index: 2;
+  }
+
+  /* ════════════════════════════════════
+     OPTION C — Ambient Radial Glow
+  ═════════════════════════════════════ */
+  .preview-c {
+    background: #F9F8F6;
+    overflow: hidden;
+  }
+  .ambient-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    right: -80px;
+    top: -60px;
+    background: radial-gradient(ellipse at center,
+      rgba(10,92,71,.12) 0%,
+      rgba(10,92,71,.05) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: glow-breathe 5s ease-in-out infinite;
+  }
+  @keyframes glow-breathe {
+    0%, 100% { opacity: .7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+  .ambient-glow-2 {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    left: 40px;
+    bottom: -40px;
+    background: radial-gradient(ellipse at center,
+      rgba(10,92,71,.06) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: glow-breathe 7s ease-in-out 1s infinite;
+  }
+
+  .preview-c .hero-text {
+    position: absolute;
+    bottom: 40px;
+    left: 24px;
+    z-index: 2;
+  }
+
+  /* Terminal cursor blink on headline */
+  .terminal-cursor {
+    display: inline-block;
+    width: 3px;
+    height: 30px;
+    background: #0A5C47;
+    margin-left: 4px;
+    vertical-align: middle;
+    animation: blink-cur 1s step-end infinite;
+  }
+  @keyframes blink-cur { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* ════════════════════════════════════
+     OPTION D — Corner Kinetic Logo
+     (YOUR IDEA — executed properly)
+  ═════════════════════════════════════ */
+  .preview-d {
+    background: #F9F8F6;
+    overflow: hidden;
+  }
+  .kinetic-logo-wrap {
+    position: absolute;
+    bottom: 90px;
+    right: 30px;
+    width: 130px;
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Rotating ring */
+  .kinetic-ring {
+    position: absolute;
+    inset: 0;
+    border: 1px dashed rgba(10,92,71,.18);
+    border-radius: 50%;
+    animation: spin-slow 16s linear infinite;
+  }
+  @keyframes spin-slow { to { transform: rotate(360deg); } }
+  .kinetic-ring-2 {
+    position: absolute;
+    inset: 14px;
+    border: 1px solid rgba(10,92,71,.06);
+    border-radius: 50%;
+    animation: spin-slow 24s linear reverse infinite;
+  }
+  /* Dot on ring */
+  .ring-dot {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #0A5C47;
+    border-radius: 50%;
+    top: -3px;
+    left: 50%;
+    margin-left: -2.5px;
+    opacity: .7;
+  }
+  .kinetic-logo-inner {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: .15;
+  }
+  .kinetic-logo-inner svg { width: 100%; height: 100%; }
+
+  /* Magnetic hover label */
+  .mag-label {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 7px;
+    letter-spacing: .2em;
+    color: rgba(10,92,71,.5);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .preview-d .hero-text {
+    position: absolute;
+    bottom: 40px;
+    left: 24px;
+    z-index: 2;
+  }
+
+  /* ════════════════════════════════════
+     OPTION E — Noise + Grain Premium
+  ═════════════════════════════════════ */
+  .preview-e {
+    background: #F3F1ED;
+    overflow: hidden;
+  }
+  .grain-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: .55;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    pointer-events: none;
+  }
+
+  /* Vertical rhythm lines */
+  .v-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .v-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(18,28,26,.04);
+  }
+
+  /* Big centered faded letter */
+  .bg-letter {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    transform: translateY(-50%);
+    font-family: Georgia, serif;
+    font-size: 220px;
+    font-weight: 700;
+    color: rgba(10,92,71,.035);
+    letter-spacing: -.06em;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .preview-e .hero-text {
+    position: absolute;
+    bottom: 40px;
+    left: 24px;
+    z-index: 2;
+  }
+
+  /* ════════════════════════════════════
+     OPTION F — SVG Line Circuit
+     (most unique / technical aesthetic)
+  ═════════════════════════════════════ */
+  .preview-f {
+    background: #F9F8F6;
+    overflow: hidden;
+  }
+  .circuit-bg {
+    position: absolute;
+    inset: 0;
+    opacity: .1;
+  }
+  .circuit-bg svg { width: 100%; height: 100%; }
+
+  /* Animated data pulse */
+  .data-pulse {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #0A5C47;
+    border-radius: 50%;
+    top: 30%;
+    left: 55%;
+    animation: pulse-travel 4s ease-in-out infinite;
+  }
+  @keyframes pulse-travel {
+    0% { transform: translate(0,0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translate(80px, 60px); opacity: 0; }
+  }
+  .data-pulse-2 {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(10,92,71,.5);
+    border-radius: 50%;
+    top: 55%;
+    right: 30%;
+    animation: pulse-travel 6s ease-in-out 2s infinite;
+  }
+
+  .preview-f .hero-text {
+    position: absolute;
+    bottom: 40px;
+    left: 24px;
+    z-index: 2;
+  }
+
+  /* ═══ RECOMMENDED badge ═══ */
+  .rec-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 7px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    background: #0A5C47;
+    color: #F9F8F6;
+    padding: 4px 10px;
+    z-index: 10;
+  }
+
+  /* ═══ Implementation difficulty ═══ */
+  .diff {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .diff-label {
+    font-size: 7.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(249,248,246,.3);
+    margin-right: 4px;
+  }
+  .diff-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(249,248,246,.15);
+  }
+  .diff-dot.active { background: #0A5C47; }
+
+  /* ═══ Separator ═══ */
+  .sep { width: 100%; height: 1px; background: rgba(249,248,246,.06); margin: 48px 0; }
+
+  /* ═══ Combination section ═══ */
+  .combo-card {
+    border: 1px solid rgba(10,92,71,.25);
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .combo-number {
+    font-size: 9px;
+    letter-spacing: .2em;
+    color: rgba(10,92,71,.6);
+    margin-bottom: 12px;
+  }
+  .combo-title {
+    font-size: 16px;
+    font-family: Georgia, serif;
+    font-style: italic;
+    color: #F9F8F6;
+    margin-bottom: 8px;
+    letter-spacing: -.01em;
+  }
+  .combo-desc {
+    font-size: 10px;
+    color: rgba(249,248,246,.45);
+    line-height: 1.75;
+    letter-spacing: .03em;
+    max-width: 560px;
+  }
+  .combo-elements {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .combo-el {
+    font-size: 8px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: rgba(10,92,71,.8);
+    border: 1px solid rgba(10,92,71,.2);
+    padding: 3px 9px;
+  }
+  .combo-el.on { background: rgba(10,92,71,.12); }
+
+  /* ═══ Implementation notes ═══ */
+  .impl-section { margin-top: 64px; }
+  .impl-title {
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: rgba(249,248,246,.35);
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(249,248,246,.06);
+  }
+  .impl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 800px) { .impl-grid { grid-template-columns: 1fr; } }
+  .impl-card {
+    border: 1px solid rgba(249,248,246,.06);
+    padding: 18px 20px;
+  }
+  .impl-card-title {
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #F9F8F6;
+    margin-bottom: 10px;
+  }
+  .impl-card-desc {
+    font-size: 9px;
+    color: rgba(249,248,246,.4);
+    line-height: 1.8;
+    letter-spacing: .02em;
+  }
+  .impl-card-code {
+    margin-top: 12px;
+    background: rgba(10,92,71,.07);
+    border: 1px solid rgba(10,92,71,.15);
+    padding: 10px 12px;
+    font-size: 8.5px;
+    color: rgba(10,92,71,.85);
+    letter-spacing: .03em;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ─── PAGE HEADER ─── -->
+  <p class="page-title">Nous — UI Direction Memo</p>
+  <h1 class="page-sub">Hero Background Options</h1>
+  <p class="page-desc">
+    Six directions for the hero section background. Each preview shows how the option sits
+    against the existing headline and CTAs. Combinations are listed at the bottom with a
+    recommended implementation sequence.
+  </p>
+
+  <p class="section-label">01 — Individual Options</p>
+
+  <div class="options-grid">
+
+    <!-- ═══ OPTION A ═══ -->
+    <div class="option-card">
+      <div class="option-badge">A</div>
+
+      <div class="option-preview preview-a">
+        <div class="nav-mock">
+          <div class="nav-logo-mock"></div>
+          <div class="nav-links-mock">
+            <div class="nav-link-mock"></div>
+            <div class="nav-link-mock"></div>
+            <div class="nav-link-mock" style="width:44px; background:rgba(18,28,26,.1);"></div>
+          </div>
+        </div>
+
+        <!-- Floating ghost logos that track mouse -->
+        <div class="float-logo-2">
+          <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 50 Q20 10 35 30 Q50 50 65 10 Q80 -10 95 30" stroke="#121C1A" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="float-logo" style="right:30px; top:45%;">
+          <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 50 Q20 10 35 30 Q50 50 65 10 Q80 -10 95 30" stroke="#121C1A" stroke-width="5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="cursor-hint">↖</div>
+
+        <div class="hero-text">
+          <div class="hero-h1-mock">Engineered</div>
+          <div class="hero-h2-mock">Intelligence</div>
+        </div>
+      </div>
+
+      <div class="option-meta">
+        <div class="option-name">Floating Ghost Logos</div>
+        <div class="option-desc">
+          2-3 oversized, nearly-invisible logo marks float at different scales.
+          Each tracks the mouse cursor with individual lerp speeds — the closest
+          one moves faster, distant ones drift slowly. Feels alive without being
+          distracting. Your original idea, properly executed.
+        </div>
+        <div class="option-pills">
+          <span class="pill">Mouse parallax</span>
+          <span class="pill">Opacity 4-8%</span>
+          <span class="pill">useMotionValue</span>
+          <span class="pill warn">Mouse-only (no mobile equiv.)</span>
+        </div>
+        <div class="diff">
+          <span class="diff-label">Effort</span>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ OPTION B ═══ -->
+    <div class="option-card">
+      <div class="option-badge alt">B</div>
+
+      <div class="option-preview preview-b">
+        <!-- Topographic / circuit SVG background -->
+        <div class="topo-bg">
+          <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <g stroke="#0A5C47" fill="none" stroke-width="0.8">
+              <!-- Concentric organic curves -->
+              <ellipse cx="480" cy="80" rx="280" ry="100" />
+              <ellipse cx="480" cy="80" rx="240" ry="75" />
+              <ellipse cx="480" cy="80" rx="195" ry="52" />
+              <ellipse cx="480" cy="80" rx="150" ry="30" />
+              <ellipse cx="480" cy="80" rx="105" ry="14" />
+              <!-- Cross lines -->
+              <line x1="0" y1="160" x2="600" y2="160" stroke-dasharray="3,8" opacity=".5"/>
+              <line x1="300" y1="0" x2="300" y2="320" stroke-dasharray="3,8" opacity=".5"/>
+              <!-- Corner accent -->
+              <rect x="10" y="10" width="30" height="30" stroke-width=".6" />
+              <rect x="14" y="14" width="22" height="22" stroke-width=".4" />
+              <circle cx="560" cy="290" r="20" stroke-dasharray="2,5" />
+              <circle cx="560" cy="290" r="10" stroke-width=".4" />
+            </g>
+          </svg>
+        </div>
+        <div class="scan-overlay"></div>
+
+        <div class="hero-text" style="z-index:2; position:absolute; bottom:40px; left:24px;">
+          <div class="hero-h1-mock">Engineered</div>
+          <div class="hero-h2-mock">Intelligence</div>
+        </div>
+      </div>
+
+      <div class="option-meta">
+        <div class="option-name">Technical Grid / Topographic Lines</div>
+        <div class="option-desc">
+          Subtle SVG contour lines in the brand green, very low opacity. Reinforces
+          the "engineered" concept visually. Works on mobile. Add a horizontal scan-line
+          CSS texture over it for the terminal-system feel.
+        </div>
+        <div class="option-pills">
+          <span class="pill">Static SVG</span>
+          <span class="pill">Scan-line CSS</span>
+          <span class="pill">Mobile friendly</span>
+          <span class="pill">CSS only</span>
+        </div>
+        <div class="diff">
+          <span class="diff-label">Effort</span>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot"></div>
+          <div class="diff-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ OPTION C ═══ -->
+    <div class="option-card">
+      <div class="option-badge alt">C</div>
+      <div class="rec-badge">Recommended</div>
+
+      <div class="option-preview preview-c">
+        <div class="ambient-glow"></div>
+        <div class="ambient-glow-2"></div>
+
+        <!-- Fine dot grid -->
+        <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(10,92,71,.12) 1px, transparent 1px);background-size:28px 28px;opacity:.5;pointer-events:none;"></div>
+
+        <div class="hero-text" style="z-index:2; position:absolute; bottom:40px; left:24px;">
+          <div class="hero-h1-mock">Engineered</div>
+          <div class="hero-h2-mock" style="display:flex; align-items:center;">
+            Intelligence
+            <span class="terminal-cursor"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="option-meta">
+        <div class="option-name">Ambient Radial Glow + Dot Grid</div>
+        <div class="option-desc">
+          Breathing green radial gradient in the top-right quadrant. Underneath,
+          a very faint dot grid. The headline gets a blinking terminal cursor on
+          the italic line. Minimal, premium, already fits your color system perfectly.
+          Best balance of effort vs. visual impact.
+        </div>
+        <div class="option-pills">
+          <span class="pill">CSS radial gradient</span>
+          <span class="pill">Dot grid</span>
+          <span class="pill">Terminal cursor</span>
+          <span class="pill">Mobile friendly</span>
+          <span class="pill">No JS needed</span>
+        </div>
+        <div class="diff">
+          <span class="diff-label">Effort</span>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot"></div>
+          <div class="diff-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ OPTION D ═══ -->
+    <div class="option-card">
+      <div class="option-badge">D</div>
+
+      <div class="option-preview preview-d">
+        <!-- Fine dot grid -->
+        <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(10,92,71,.1) 1px, transparent 1px);background-size:24px 24px;opacity:.4;pointer-events:none;"></div>
+
+        <!-- Kinetic corner logo widget -->
+        <div class="kinetic-logo-wrap">
+          <div class="kinetic-ring">
+            <div class="ring-dot"></div>
+          </div>
+          <div class="kinetic-ring-2"></div>
+          <div class="kinetic-logo-inner">
+            <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 50 Q20 10 35 30 Q50 50 65 10 Q80 -10 95 30" stroke="#121C1A" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="mag-label">Nous — 2025</div>
+        </div>
+
+        <div class="hero-text" style="z-index:2; position:absolute; bottom:40px; left:24px;">
+          <div class="hero-h1-mock">Engineered</div>
+          <div class="hero-h2-mock">Intelligence</div>
+        </div>
+      </div>
+
+      <div class="option-meta">
+        <div class="option-name">Corner Orbital Logo Widget</div>
+        <div class="option-desc">
+          Your idea - properly elevated. Logo mark inside two concentric rotating rings
+          (one spins CW, one CCW). On hover, the entire widget follows the cursor via
+          magnetic pull (useMotionValue). A small label "Nous 2025" appears below on
+          hover. Lives in the right half of the hero, bottom-right quadrant.
+        </div>
+        <div class="option-pills">
+          <span class="pill">Spinning CSS rings</span>
+          <span class="pill">Magnetic pull on hover</span>
+          <span class="pill">motion/react</span>
+          <span class="pill warn">Collapses to static on mobile</span>
+        </div>
+        <div class="diff">
+          <span class="diff-label">Effort</span>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot active"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ OPTION E ═══ -->
+    <div class="option-card">
+      <div class="option-badge alt">E</div>
+
+      <div class="option-preview preview-e">
+        <div class="grain-overlay"></div>
+
+        <!-- Vertical rhythm lines -->
+        <div class="v-lines">
+          <div class="v-line" style="left:25%;"></div>
+          <div class="v-line" style="left:50%;"></div>
+          <div class="v-line" style="left:75%;"></div>
+        </div>
+
+        <!-- Giant background letter -->
+        <div class="bg-letter">N</div>
+
+        <div class="hero-text" style="z-index:2; position:absolute; bottom:40px; left:24px;">
+          <div class="hero-h1-mock">Engineered</div>
+          <div class="hero-h2-mock">Intelligence</div>
+        </div>
+      </div>
+
+      <div class="option-meta">
+        <div class="option-name">Giant Ghost Letter + Vertical Grid</div>
+        <div class="option-desc">
+          Massive "N" from Fraunces at ~220px, nearly invisible (opacity 3-4%).
+          Sits in the right half of the hero, overlapping the edge. Vertical grid
+          lines at 25%/50%/75% add editorial structure. The existing noise/grain layer
+          (already in your codebase) reinforces the paper texture.
+        </div>
+        <div class="option-pills">
+          <span class="pill">CSS only</span>
+          <span class="pill">Fraunces N</span>
+          <span class="pill">Vertical grid</span>
+          <span class="pill">Uses existing grain</span>
+          <span class="pill">Mobile friendly</span>
+        </div>
+        <div class="diff">
+          <span class="diff-label">Effort</span>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot"></div>
+          <div class="diff-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ OPTION F ═══ -->
+    <div class="option-card">
+      <div class="option-badge alt">F</div>
+
+      <div class="option-preview preview-f">
+        <div class="circuit-bg">
+          <svg viewBox="0 0 600 320" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <g stroke="#0A5C47" fill="none" stroke-width="0.7">
+              <!-- Horizontal rails -->
+              <line x1="300" y1="40" x2="590" y2="40" />
+              <line x1="320" y1="80" x2="590" y2="80" />
+              <line x1="300" y1="120" x2="590" y2="120" />
+              <line x1="340" y1="160" x2="590" y2="160" />
+              <line x1="300" y1="200" x2="590" y2="200" />
+              <line x1="320" y1="240" x2="590" y2="240" />
+              <line x1="300" y1="280" x2="590" y2="280" />
+              <!-- Vertical connectors -->
+              <line x1="350" y1="40" x2="350" y2="80" />
+              <line x1="400" y1="80" x2="400" y2="120" />
+              <line x1="450" y1="120" x2="450" y2="160" />
+              <line x1="480" y1="160" x2="480" y2="200" />
+              <line x1="520" y1="200" x2="520" y2="240" />
+              <line x1="560" y1="240" x2="560" y2="280" />
+              <!-- Pads -->
+              <circle cx="350" cy="40" r="3" fill="#0A5C47" opacity=".6"/>
+              <circle cx="400" cy="80" r="3" fill="#0A5C47" opacity=".6"/>
+              <circle cx="450" cy="120" r="3" fill="#0A5C47" opacity=".6"/>
+              <circle cx="480" cy="160" r="3" fill="#0A5C47" opacity=".6"/>
+              <circle cx="520" cy="200" r="3" fill="#0A5C47" opacity=".6"/>
+              <circle cx="560" cy="240" r="3" fill="#0A5C47" opacity=".6"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="data-pulse"></div>
+        <div class="data-pulse-2"></div>
+
+        <div class="hero-text" style="z-index:2; position:absolute; bottom:40px; left:24px;">
+          <div class="hero-h1-mock">Engineered</div>
+          <div class="hero-h2-mock">Intelligence</div>
+        </div>
+      </div>
+
+      <div class="option-meta">
+        <div class="option-name">PCB Circuit + Animated Data Pulse</div>
+        <div class="option-desc">
+          PCB/circuit-board line pattern in the right half. Small green dots
+          animate along the circuit paths, like data packets traveling. Very
+          on-brand for an AI/engineering company. Most conceptually coherent
+          with the "Engineered Intelligence" headline.
+        </div>
+        <div class="option-pills">
+          <span class="pill">SVG paths</span>
+          <span class="pill">CSS animation dots</span>
+          <span class="pill">Most on-brand</span>
+          <span class="pill">Mobile friendly</span>
+        </div>
+        <div class="diff">
+          <span class="diff-label">Effort</span>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot active"></div>
+          <div class="diff-dot"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end options-grid -->
+
+  <div class="sep"></div>
+
+  <!-- ─── COMBINATION RECOMMENDATIONS ─── -->
+  <p class="section-label">02 — Recommended Combinations</p>
+
+  <div class="combo-card">
+    <div class="combo-number">Combination 01 — Best Overall</div>
+    <div class="combo-title">Ambient Glow + Dot Grid + Corner Orbital</div>
+    <div class="combo-desc">
+      Start with Option C (radial glow + dot grid - pure CSS, works everywhere).
+      Then add Option D's corner orbital widget as a layer on top. The widget lives
+      in the right half of the hero and doesn't compete with the headline. On mobile,
+      the orbital collapses to static (just the logo mark, no rings). The glow and
+      dot grid stay across all viewports. This is the safest high-impact path.
+    </div>
+    <div class="combo-elements">
+      <span class="combo-el on">C - Radial glow</span>
+      <span class="combo-el on">C - Dot grid</span>
+      <span class="combo-el on">C - Terminal cursor on headline</span>
+      <span class="combo-el on">D - Corner orbital widget</span>
+      <span class="combo-el on">D - Magnetic pull on hover</span>
+    </div>
+  </div>
+
+  <div class="combo-card">
+    <div class="combo-number">Combination 02 — Most Unique</div>
+    <div class="combo-title">Circuit Lines + Data Pulse + Ghost Logo</div>
+    <div class="combo-desc">
+      Option F's PCB lines in the right half. Option A's ghost logo marks at
+      ultra-low opacity, floating behind the circuit. Animated data-pulse dots.
+      Result: a genuinely distinctive hero that explains what the company does
+      without words. Higher implementation effort but visually sets Nous apart
+      from every other agency in Qatar.
+    </div>
+    <div class="combo-elements">
+      <span class="combo-el on">F - PCB SVG lines</span>
+      <span class="combo-el on">F - Animated pulse dots</span>
+      <span class="combo-el on">A - Ghost logos (opacity 5%)</span>
+      <span class="combo-el on">A - Mouse parallax</span>
+    </div>
+  </div>
+
+  <div class="combo-card" style="border-color:rgba(249,248,246,.06);">
+    <div class="combo-number">Combination 03 — Lowest Effort, High Return</div>
+    <div class="combo-title">Ghost Letter + Vertical Grid + Terminal Cursor</div>
+    <div class="combo-desc">
+      Pure CSS. Option E's giant "N" + vertical grid lines + the terminal cursor
+      from Option C on the italic headline. Zero JS, zero performance cost,
+      mobile perfect. Best ratio of work to visual improvement.
+      Implement this first while deciding on the larger interactive elements.
+    </div>
+    <div class="combo-elements">
+      <span class="combo-el on">E - Giant N</span>
+      <span class="combo-el on">E - Vertical grid</span>
+      <span class="combo-el on">C - Terminal cursor</span>
+      <span class="combo-el on">Existing grain layer</span>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ─── IMPLEMENTATION NOTES ─── -->
+  <div class="impl-section">
+    <p class="impl-title">03 — Implementation Notes</p>
+    <div class="impl-grid">
+
+      <div class="impl-card">
+        <div class="impl-card-title">Dot Grid (C)</div>
+        <div class="impl-card-desc">
+          Add directly to Hero.tsx as a position:absolute div inside the section.
+          No component needed.
+        </div>
+        <div class="impl-card-code">
+          &lt;div style=&#123;&#123;<br/>
+          &nbsp;&nbsp;position:'absolute', inset:0,<br/>
+          &nbsp;&nbsp;backgroundImage: 'radial-gradient(<br/>
+          &nbsp;&nbsp;&nbsp;&nbsp;rgba(10,92,71,.1) 1px, transparent 1px)',<br/>
+          &nbsp;&nbsp;backgroundSize: '28px 28px',<br/>
+          &nbsp;&nbsp;pointerEvents: 'none', zIndex: 0<br/>
+          &#125;&#125; /&gt;
+        </div>
+      </div>
+
+      <div class="impl-card">
+        <div class="impl-card-title">Corner Orbital (D)</div>
+        <div class="impl-card-desc">
+          New client component: OrbitalWidget.tsx. Uses useMotionValue for the
+          magnetic hover. position:absolute, right:56px, bottom:80px in the hero.
+          Media query collapses rings on mobile.
+        </div>
+        <div class="impl-card-code">
+          import &#123; motion, useMotionValue,<br/>
+          &nbsp;&nbsp;useTransform &#125; from 'motion/react'<br/><br/>
+          const x = useMotionValue(0)<br/>
+          const y = useMotionValue(0)<br/><br/>
+          onMouseMove: dx*0.25, dy*0.25<br/>
+          onMouseLeave: spring back to 0
+        </div>
+      </div>
+
+      <div class="impl-card">
+        <div class="impl-card-title">Terminal Cursor (C)</div>
+        <div class="impl-card-desc">
+          Add a &lt;span&gt; after the italic headline word. Pure CSS blink.
+          Uses existing blink keyframe already in globals.css.
+        </div>
+        <div class="impl-card-code">
+          &lt;span style=&#123;&#123;<br/>
+          &nbsp;&nbsp;display:'inline-block',<br/>
+          &nbsp;&nbsp;width: 3, height: 32,<br/>
+          &nbsp;&nbsp;background:'var(--accent)',<br/>
+          &nbsp;&nbsp;marginLeft: 6,<br/>
+          &nbsp;&nbsp;animation: 'blink 1s step-end infinite'<br/>
+          &#125;&#125; /&gt;
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

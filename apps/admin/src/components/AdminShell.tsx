@@ -1,0 +1,443 @@
+'use client'
+
+import React, { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+
+/* Nous SVG logo — all paths use currentColor for theme-adaptive monochrome rendering */
+function NousLogo({ size = 40, className, style }: { size?: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg
+      width={size}
+      height={size * 0.4}
+      viewBox="0 0 250 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={style}
+      aria-label="nous."
+    >
+      {/* All filled shapes at full accent color */}
+      <path fill="currentColor" d="M104.81,52.15c.9,1.25,2.14,2.87,3.73,4.68,1.27,1.45,2.73,2.97,4.95,5.02,4.19,3.87,6.28,5.8,9.43,7.8.43.27,5.73,3.59,11.87,5.15,2.16.55,3.68.7,4.75.75.48.02,2.44.09,4.95-.34,2.28-.39,3.94-1.01,4.48-1.22.92-.36,1.67-.72,2.24-1.02.36.2.87.48,1.49.81,1.2.65,2.24,1.2,3.53,1.83.62.3,1.47.7,2.51,1.15-.21.13-.51.32-.88.54-.7.42-1.99,1.13-4.27,2.03-1.22.48-2.74,1.09-4.82,1.63-3.3.86-6,1.04-7.19,1.09-1.61.07-4.7.17-8.55-.75-2.41-.58-4.06-1.3-6.04-2.17-1.39-.61-4.83-2.2-8.89-5.02-2.66-1.85-4.4-3.41-7.12-5.83-2.75-2.45-4.63-4.39-6.17-5.97-1.42-1.45-2.38-2.5-3.39-3.73-.89-1.08-1.6-2.02-2.1-2.71,1.83-1.24,3.66-2.49,5.49-3.73Z"/>
+      <path fill="currentColor" d="M179.32,50.26c-1.58,1.72-2.91,3.15-3.9,4.21-2.77,2.97-3.45,3.63-3.93,4.1-1.37,1.33-2.46,2.27-3.9,3.53-1.38,1.2-2.19,1.78-4,3.36-.78.68-1.42,1.25-1.83,1.63.25.09.64.23,1.11.41,1.68.64,1.92.84,3.06,1.22.26.09.98.32,1.93.54.45.11.85.18,1.15.24.48-.36,1.24-.94,2.14-1.7.96-.8,2.12-1.83,6.1-5.87,3.09-3.13,2.94-3.07,3.83-3.87.47-.42,1.23-1.08,2.17-2.1.75-.81,1.3-1.52,1.66-2-1.87-1.23-3.73-2.46-5.6-3.7Z"/>
+      <circle fill="currentColor" cx="133.36" cy="48.08" r="8.29"/>
+      {/* Structural body paths at slightly dimmed accent */}
+      <path fill="currentColor" opacity="0.7" d="M72.32,32.21c-.29-.22-1.29-1.06-3.39-1.76,0,0-1.03-.35-3.66-.54-.04,0-.1,0-.17.02-.09.04-.15.1-.16.11-2.42,2-4.89,3.97-7.07,6.24-3.82,3.99-3.28,2.95-9.02,8.82-3.48,3.56-3.81,4.07-6.24,6.38-1.57,1.49-3.55,3.35-6.38,5.56-2.07,1.62-4.35,3.38-7.66,5.22-3.02,1.68-5.36,2.56-5.97,2.78-1,.37-2.79.81-6.38,1.7-.34.08-.96.23-1.76.2-1.08-.04-1.15-.34-1.63-.27-2.13.31-3.8,6.74-4,6.92,0,0-.05.04-.04.08,0,.05.12.08.15.08,1.53.34,4.28-.03,4.28-.03,1.08-.14.97-.02,2.4-.14,2.85-.24,5.12-.9,6.38-1.27,1.23-.36,5.53-1.7,10.99-4.88,4.07-2.38,6.85-4.65,9.04-6.47,2.84-2.35,4.7-4.21,8.37-7.87,3.55-3.54,5.32-5.31,7.62-7.87,1.92-2.13,3.64-4.17,6.04-6.1.48-.39,1.34-1.06,3.05-2.44,2.32-1.87,2.24-1.85,2.71-2.17.87-.59,1.7-1.26,2.54-1.87.02-.01.12-.04.16-.14,0,0,.03-.08,0-.16-.04-.1-.17-.12-.19-.14Z"/>
+      <path fill="currentColor" opacity="0.7" d="M76.39,22.58c3.25-1.76,4.57-2.17,4.57-2.17,3.34-1.04,5.29-1.65,8.32-2.08,1.84-.26,3.84-.54,6.51-.41,3.12.15,5.45.77,6.96,1.18,1.16.31,3.68,1.06,6.69,2.53,2.79,1.36,4.68,2.71,6.51,4.02,3.57,2.56,6.02,4.93,7.42,6.29,1.67,1.63,3.41,3.5,3.89,4.02.4.44,1.44,1.63,1.58,1.76.07.06.12.15.19.21.03.02.07.05.06.09,0,.04-.05.06-.07.07-.02.01.35-.18-.3.23-.6.38-.9.57-.97.6-.79.42-1.54,1.17-1.72,1.35,0,0-.69.69-1.27,1.55-.07.11-.15.21-.21.32-.06.09-.15.16-.18.26,0,.01-.02.05-.05.06-.03,0-.07-.04-.08-.05-.09-.11-.21-.19-.29-.31-.6-.94-1.5-1.65-2.22-2.5-1.12-1.32-2.58-2.68-3.89-3.89-1.09-1.01-2.38-2.2-4.23-3.62-1.11-.85-2.87-2.18-5.39-3.58-1.24-.69-2.7-1.49-4.78-2.24-1.06-.38-3.03-1.02-5.6-1.39-1.4-.2-3.88-.46-6.92-.17-.55.05-2.72.27-4.61.85,0,0-.86.26-2.54.92-.42.16-.63.24-.68.29-.05.04-.15.14-.25.12-.06-.02-.08-.07-.14-.14-.05-.07-.13-.12-.27-.22-1.18-.84-2.17-1.41-2.17-1.41-.88-.5-1.58-.91-2.34-1.29-.43-.22-1.27-.62-1.53-.75-.15-.07-.15-.08-.21-.1-.11-.04-.17-.04-.18-.08,0-.02,0-.06.13-.16.07-.06.15-.12.22-.17Z"/>
+      <path fill="currentColor" opacity="0.7" d="M142.39,63.31c-.13-.06-2.73-2.79-2.73-2.79-.13-.15-.69-.8-1.18-1.26-.18-.17-.36-.41-.58-.67-.06-.07-.14-.19-.28-.33-.14-.14-.19-.23-.2-.24-.05-.07-.08-.1-.09-.14,0-.04.07-.07.1-.08.15-.06.29-.14.43-.22.18-.1.41-.2.87-.47.4-.24.67-.45,1.09-.77.25-.19.57-.44.96-.8.15-.14.61-.56.88-.92.1-.13.15-.22.29-.4.05-.07.1-.13.16-.22.05-.1.08-.15.1-.19.03-.08.04-.12.07-.13.03,0,.06.03.1.07.06.07.13.12.19.19.07.08.15.15.22.23.16.18,1.14,1.26,1.77,1.93,1.34,1.42,2.12,2.05,2.16,2.08,0,0,.04.04.08.09.03.03.05.05.05.05,0,0,.21.25.24.28.05.07.13.13.16.2.1.22-.68.13-.68.13-.68.4-3.79,4.07-3.89,4.2,0,0-.05.07-.11.11-.01,0-.02.01-.05.03-.03.02-.04.03-.06.03-.02,0-.04,0-.04,0,0,0-.01,0-.02,0,0,0,0,0,0,0Z"/>
+      {/* Fluid strokes at full accent */}
+      <path stroke="currentColor" strokeOpacity="0.85" strokeWidth="6.64" strokeLinecap="round" strokeMiterlimit="10" fill="none" d="M8.79,70.64c3.77-8.75,8.14-16.48,11.3-20.93,4.95-6.94,9.86-13.02,17.91-18.72,4.06-2.88,10.23-6.55,18.99-7.05,9.75-.56,17.07,3.37,19.81,4.88,5.27,2.92,8.77,6.5,12.48,10.31,3.02,3.09,6.02,6.72,9.22,10.58,1.94,2.34,3.52,4.31,4.61,5.7"/>
+      <path stroke="currentColor" strokeOpacity="0.85" strokeWidth="6.64" strokeLinecap="round" strokeMiterlimit="10" fill="none" d="M144.49,60.7c1.57,1.65,3.87,3.89,6.92,6.24,2.68,2.07,5.15,3.97,8.82,5.56,1.09.47,5.18,2.17,10.85,2.58,7.19.52,12.64-1.35,15.33-2.31,5.17-1.83,8.73-4.27,10.99-5.83,3.12-2.16,5.26-4.15,7.05-5.83,2.08-1.95,5-4.71,8-8.82,1.7-2.32,1.24-2.08,4.88-7.73,2.26-3.5,3.7-5.73,5.83-8.55,2.09-2.76,3.6-4.77,6.1-7.19,2.03-1.97,4.05-3.89,7.19-5.56,2.75-1.46,4.81-1.91,4.75-2.17-.13-.5-7.92,1.09-9.22,1.36-6.89,1.4-10.34,2.11-13.7,3.26-6.95,2.38-11.8,5.43-15.19,7.6-1.26.81-6.47,4.18-12.48,9.77-4.18,3.88-7.4,7.58-9.77,10.58"/>
+    </svg>
+  )
+}
+
+const NAV = [
+  { href: '/dashboard',           label: 'Overview',  short: 'Home',    icon: '◈' },
+  { href: '/dashboard/analytics', label: 'Analytics', short: 'Stats',   icon: '◉' },
+  { href: '/dashboard/contacts',  label: 'Contacts',  short: 'Leads',   icon: '✉' },
+  { href: '/dashboard/services',  label: 'Services',  short: 'Services',icon: '◎' },
+  { href: '/dashboard/projects',  label: 'Projects',  short: 'Works',   icon: '⬡' },
+  { href: '/dashboard/settings',  label: 'Settings',  short: 'Config',  icon: '⚙' },
+]
+
+export default function AdminShell({ children }: { children: React.ReactNode }) {
+  const pathname  = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [signing,  setSigning]  = useState(false)
+
+  const isActive = (href: string) =>
+    href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href)
+
+  const currentPage = NAV.find(n => isActive(n.href))?.label ?? 'Dashboard'
+
+  const handleSignOut = async () => {
+    setSigning(true)
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div style={{ padding: '0 24px 28px', borderBottom: '1px solid var(--border)', marginBottom: 20 }}>
+        <NousLogo size={140} style={{ color: 'var(--accent)', display: 'block', maxWidth: '100%' }} />
+        <div style={{ fontSize: 9, color: 'var(--muted)', letterSpacing: '.2em', textTransform: 'uppercase', marginTop: 6 }}>Admin Portal</div>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 12px' }}>
+        {NAV.map(item => {
+          const active = isActive(item.href)
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 12px',
+                borderRadius: 6,
+                fontSize: 12,
+                color: active ? 'var(--accent)' : 'var(--muted)',
+                background: active ? 'rgba(46,204,113,.08)' : 'transparent',
+                transition: 'background .15s, color .15s',
+                letterSpacing: '.03em',
+                textDecoration: 'none',
+                // 44px touch target via padding
+                minHeight: 44,
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
+              {item.label}
+              {active && (
+                <span style={{ marginLeft: 'auto', width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+              )}
+            </a>
+          )
+        })}
+      </nav>
+
+      {/* Sign out — touch-safe target */}
+      <div style={{ padding: '16px 24px 0', borderTop: '1px solid var(--border)', marginTop: 12 }}>
+        <button
+          onClick={handleSignOut}
+          disabled={signing}
+          style={{
+            fontSize: 10,
+            color: 'var(--muted)',
+            letterSpacing: '.14em',
+            textTransform: 'uppercase',
+            background: 'none',
+            border: 'none',
+            padding: '10px 0',
+            opacity: signing ? .4 : 1,
+            transition: 'color .15s',
+            cursor: 'pointer',
+            // 44px minimum touch target
+            minHeight: 44,
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          {signing ? 'Signing out…' : '⎋ Sign out'}
+        </button>
+      </div>
+    </>
+  )
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100dvh' }}>
+
+      {/* ── Desktop sidebar ─────────────────────────────────────────── */}
+      <aside className="adm-sidebar-desk">
+        <SidebarContent />
+      </aside>
+
+      {/* ── Tablet/Mobile overlay backdrop ─────────────────────────── */}
+      {menuOpen && (
+        <div
+          className="adm-overlay"
+          onClick={() => setMenuOpen(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,.65)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 60,
+          }}
+        />
+      )}
+
+      {/* ── Tablet/Mobile slide-in sidebar ─────────────────────────── */}
+      <aside
+        className="adm-sidebar-overlay"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'fixed',
+          top: 0, left: 0, bottom: 0,
+          width: 240,
+          background: 'var(--surface)',
+          borderRight: '1px solid var(--border)',
+          zIndex: 70,
+          padding: '28px 0 20px',
+          transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform .28s cubic-bezier(.16,1,.3,1)',
+        }}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* ── Main content ────────────────────────────────────────────── */}
+      <div className="adm-main">
+
+        {/* Topbar */}
+        <header className="adm-topbar">
+          {/* Hamburger — hidden on desktop */}
+          <button
+            className="adm-hamburger"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            style={{
+              display: 'none',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 44,
+              height: 44,
+              background: 'none',
+              border: '1px solid var(--border)',
+              borderRadius: 6,
+              color: 'var(--muted)',
+              flexShrink: 0,
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+              <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          <span style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '.2em', textTransform: 'uppercase' }}>
+            {currentPage}
+          </span>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', opacity: .8 }} />
+            <span style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '.1em' }}>nous.qa</span>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="adm-content">{children}</main>
+      </div>
+
+      {/* ── Mobile floating bottom nav ───────────────────────────────── */}
+      <nav className="adm-bottom-nav" aria-label="Mobile navigation">
+        {/* Orbital logo widget — acts as the Home / Overview tab */}
+        <a
+          href="/dashboard"
+          className={`adm-nav-logo${isActive('/dashboard') && !NAV.slice(1).some(n => isActive(n.href)) ? ' adm-nav-logo--active' : ''}`}
+          aria-label="Overview"
+        >
+          <span className="adm-nav-logo-ring" />
+          <NousLogo size={52} className="adm-nav-logo-svg" />
+        </a>
+
+        {/* Remaining 5 nav items (skip Overview — covered by logo widget) */}
+        {NAV.slice(1).map(item => {
+          const active = isActive(item.href)
+          return (
+            <a key={item.href} href={item.href} className={`adm-tab${active ? ' adm-tab--active' : ''}`}>
+              <span className="adm-tab-icon">{item.icon}</span>
+              <span className="adm-tab-label">{item.short}</span>
+            </a>
+          )
+        })}
+      </nav>
+
+      <style>{`
+        /* ── Desktop (>1024px) ─────────────────────────────────────── */
+        .adm-sidebar-desk {
+          width: 220px;
+          flex-shrink: 0;
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          padding: 28px 0 20px;
+          position: fixed;
+          top: 0; left: 0; bottom: 0;
+          z-index: 50;
+        }
+        .adm-main {
+          flex: 1;
+          margin-left: 220px;
+          display: flex;
+          flex-direction: column;
+          min-height: 100dvh;
+        }
+        .adm-topbar {
+          height: 56px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          padding: 0 32px;
+          background: var(--bg);
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          gap: 16px;
+        }
+        .adm-content { flex: 1; padding: 32px; overflow: auto; }
+        .adm-bottom-nav { display: none !important; }
+        .adm-sidebar-overlay { display: none !important; }
+
+        /* ── Tablet (768–1024px) ───────────────────────────────────── */
+        @media (max-width: 1024px) {
+          .adm-sidebar-desk    { display: none !important; }
+          .adm-main            { margin-left: 0; }
+          .adm-hamburger       { display: flex !important; }
+          .adm-sidebar-overlay { display: flex !important; flex-direction: column; }
+          .adm-content         { padding: 24px; }
+          .adm-topbar          { padding: 0 20px; }
+        }
+
+        /* ── Mobile (<768px) ───────────────────────────────────────── */
+        @media (max-width: 767px) {
+          .adm-hamburger { display: none !important; }
+          .adm-topbar    { padding: 0 16px; height: 52px; }
+
+          /*
+           * Bottom padding uses CSS vars defined in globals.css.
+           * Adjust --mobile-nav-height there if the nav size changes.
+           */
+          .adm-content {
+            padding: var(--space-5) var(--space-4) calc(var(--mobile-nav-height) + var(--mobile-nav-offset) + env(safe-area-inset-bottom, 0px) + 24px);
+          }
+
+          .adm-bottom-nav {
+            display: flex !important;
+            position: fixed;
+            bottom: var(--mobile-nav-offset);
+            left: 12px;
+            right: 12px;
+            height: var(--mobile-nav-height);
+            background: rgba(22,28,25,.93);
+            backdrop-filter: blur(28px) saturate(160%);
+            -webkit-backdrop-filter: blur(28px) saturate(160%);
+            border: 1px solid rgba(46,204,113,.15);
+            border-radius: 22px;
+            box-shadow:
+              0 10px 48px rgba(0,0,0,.6),
+              0 2px 12px rgba(46,204,113,.07),
+              inset 0 1px 0 rgba(255,255,255,.05);
+            z-index: 100;
+            padding: 0 6px;
+            align-items: center;
+            gap: 2px;
+          }
+
+          /* Corner orbital logo widget */
+          .adm-nav-logo {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 44px;
+            flex-shrink: 0;
+            margin-left: 2px;
+            text-decoration: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .adm-nav-logo-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            border: 1px solid rgba(46,204,113,.22);
+            box-shadow:
+              0 0 0 3px rgba(46,204,113,.05),
+              inset 0 1px 0 rgba(255,255,255,.05);
+            animation: orbit-pulse 3.5s ease-in-out infinite;
+          }
+          @keyframes orbit-pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 3px rgba(46,204,113,.05), inset 0 1px 0 rgba(255,255,255,.05); }
+            50%       { opacity: .6; box-shadow: 0 0 0 5px rgba(46,204,113,.10), inset 0 1px 0 rgba(255,255,255,.05); }
+          }
+          .adm-nav-logo-svg {
+            color: var(--accent);
+            display: block;
+            width: 44px !important;
+            height: auto !important;
+            position: relative;
+            z-index: 1;
+            opacity: 0.55;
+            transition: opacity .2s;
+          }
+          .adm-nav-logo--active .adm-nav-logo-svg,
+          .adm-nav-logo:active .adm-nav-logo-svg {
+            opacity: 1;
+          }
+          .adm-nav-logo--active .adm-nav-logo-ring {
+            border-color: rgba(46,204,113,.55);
+          }
+
+          .adm-tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 10px 4px;
+            text-decoration: none;
+            border-radius: 16px;
+            position: relative;
+            min-width: 0;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform .12s;
+          }
+          .adm-tab:active { transform: scale(.88); }
+
+          .adm-tab-icon {
+            font-size: 17px;
+            line-height: 1;
+            color: rgba(232,237,233,.3);
+            transition: color .2s;
+            position: relative;
+            z-index: 1;
+          }
+          .adm-tab-label {
+            font-family: ui-monospace, monospace;
+            font-size: 7px;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: rgba(232,237,233,.25);
+            transition: color .2s;
+            position: relative;
+            z-index: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+          }
+
+          .adm-tab--active::before {
+            content: '';
+            position: absolute;
+            top: 7px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 42px;
+            height: 40px;
+            background: rgba(46,204,113,.12);
+            border: 1px solid rgba(46,204,113,.1);
+            border-radius: 13px;
+          }
+          .adm-tab--active .adm-tab-icon { color: #2ECC71; }
+          .adm-tab--active .adm-tab-label { color: rgba(46,204,113,.7); }
+        }
+
+        /* Sidebar hover states — only on pointer devices */
+        @media (hover: hover) {
+          .adm-sidebar-desk a:hover,
+          .adm-sidebar-overlay a:hover {
+            background: rgba(255,255,255,.04);
+            color: var(--text);
+          }
+        }
+      `}</style>
+    </div>
+  )
+}

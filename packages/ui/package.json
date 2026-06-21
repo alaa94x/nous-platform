@@ -1,0 +1,16 @@
+{
+  "name": "@nous/ui",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./src/tokens.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@nous/config": "workspace:*",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,115 @@
+import Nav          from '@/components/nav/Nav'
+import Cursor       from '@/components/cursor/Cursor'
+import Noise        from '@/components/noise/Noise'
+import Hero         from '@/sections/hero/Hero'
+import Capabilities from '@/sections/capabilities/Capabilities'
+import Works        from '@/sections/works/Works'
+import Contact      from '@/sections/contact/Contact'
+import Footer       from '@/sections/footer/Footer'
+
+// Always render fresh — admin changes reflect immediately on next request
+export const dynamic = 'force-dynamic'
+
+// ── Seed defaults ─────────────────────────────────────────────────────────────
+
+const SEED_SETTINGS: Record<string, string> = {
+  site_name:          'nous.',
+  hero_headline_en:   'Engineered Intelligence',
+  hero_headline_ar:   'نُهندِس الذكاء',
+  hero_subtext_en:    'Transforming complex visions into intelligent systems and quiet luxury interfaces. We design and develop websites and apps that deliver true value, dedicating ourselves to excellence and embodying mastery in every detail.',
+  hero_subtext_ar:    'نحوّل الرؤى المعقدة إلى أنظمة ذكية وواجهات فاخرة. نصمم ونطور مواقع وتطبيقات تقدم قيمة حقيقية، ونكرس جهودنا لنمنحك التميز، مجسدين معاني الإتقان والإحسان في كل تفصيل.',
+  hero_location:      'Doha, Qatar · 2025',
+  hero_cta_primary:   'Initialize Project',
+  hero_cta_secondary: 'View Selected Works',
+  contact_email:      'hello@nous.qa',
+  footer_location:    'Qatar · 2025',
+  footer_copyright:   '© 2025 Nous. All Rights Reserved.',
+  footer_badge:       'AN NOUS MASTERPIECE ✦ AN NOUS MASTERPIECE ✦ ',
+}
+
+const SEED_SERVICES = [
+  { id: '1', idx: '01', name: 'Artificial Intelligence', category: 'ML · AI',        tech_pills: ['LLMs', 'RAG', 'TensorFlow', 'PyTorch', 'NLP', 'Agents'] },
+  { id: '2', idx: '02', name: 'Full-Stack Engineering',  category: 'Web · API',      tech_pills: ['React', 'Next.js', 'Node.js', 'Go', 'Python', 'PostgreSQL'] },
+  { id: '3', idx: '03', name: 'Mobile Development',      category: 'iOS · Android',  tech_pills: ['React Native', 'Swift', 'Flutter', 'Kotlin', 'PWA'] },
+  { id: '4', idx: '04', name: 'E-Commerce Solutions',    category: 'Retail · SaaS',  tech_pills: ['Shopify', 'Headless', 'Stripe', 'WooCommerce', 'CRM'] },
+  { id: '5', idx: '05', name: 'Cloud Infrastructure',    category: 'DevOps · Scale', tech_pills: ['AWS', 'GCP', 'Docker', 'K8s', 'Terraform', 'CI/CD'] },
+  { id: '6', idx: '06', name: 'Design & Motion',         category: 'UX · Visual',    tech_pills: ['Figma', 'Framer', 'GSAP', 'Three.js', 'Motion Design'] },
+]
+
+const SEED_PROJECTS = [
+  { id: '1', name: 'Azaya Studio',    description: 'Premium Abaya E-Commerce Platform',     year: '2024', tags: ['Fashion', 'Shopify', 'UX Design'],   image_url: null },
+  { id: '2', name: 'Sandara',         description: 'Arabic Leather Goods + Enterprise CRM', year: '2024', tags: ['E-Commerce', 'CRM', 'Admin Portal'], image_url: null },
+  { id: '3', name: 'Hayati Wellness', description: 'Wellness & Body Products by Shopify',   year: '2025', tags: ['Health', 'Shopify', 'Branding'],     image_url: null },
+]
+
+// ── Data fetching ─────────────────────────────────────────────────────────────
+
+async function getPageData() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!url || !key || url.includes('your-project')) {
+    return { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS }
+  }
+
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(url, key, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    const [{ data: rawSettings }, { data: services }, { data: projects }] = await Promise.all([
+      supabase.from('site_settings').select('key, value'),
+      supabase.from('services').select('id, idx, name, name_ar, category, tech_pills').eq('active', true).order('sort_order'),
+      supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url').eq('active', true).order('sort_order'),
+    ])
+
+    // Merge DB settings over seeds so missing keys still have defaults
+    const settings = { ...SEED_SETTINGS }
+    for (const row of (rawSettings as { key: string; value: string }[] | null) ?? []) {
+      if (row.value) settings[row.key] = row.value
+    }
+
+    return {
+      settings,
+      services: (services && services.length > 0) ? services : SEED_SERVICES,
+      projects: (projects && projects.length > 0) ? projects : SEED_PROJECTS,
+    }
+  } catch {
+    return { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS }
+  }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default async function HomePage() {
+  const { settings: s, services, projects } = await getPageData()
+
+  return (
+    <>
+      <Cursor />
+      <Noise />
+      <Nav siteName={s['site_name']} />
+      <main>
+        <Hero
+          headlineEn     = {s['hero_headline_en']}
+          headlineAr     = {s['hero_headline_ar']}
+          subtextEn      = {s['hero_subtext_en']}
+          subtextAr      = {s['hero_subtext_ar']}
+          location       = {s['hero_location']}
+          ctaPrimary     = {s['hero_cta_primary']}
+          ctaSecondary   = {s['hero_cta_secondary']}
+        />
+        <Capabilities services={services} />
+        <Works projects={projects} />
+        <Contact services={services} contactEmail={s['contact_email']} />
+      </main>
+      <Footer
+        siteName  = {s['site_name']}
+        location  = {s['footer_location']}
+        copyright = {s['footer_copyright']}
+        badgeText = {s['footer_badge']}
+      />
+    </>
+  )
+}
