@@ -18,11 +18,11 @@ const SEED_SETTINGS: Record<string, string> = {
   hero_headline_ar:   'نُهندِس الذكاء',
   hero_subtext_en:    'Transforming complex visions into intelligent systems and quiet luxury interfaces. We design and develop websites and apps that deliver true value, dedicating ourselves to excellence and embodying mastery in every detail.',
   hero_subtext_ar:    'نحوّل الرؤى المعقدة إلى أنظمة ذكية وواجهات فاخرة. نصمم ونطور مواقع وتطبيقات تقدم قيمة حقيقية، ونكرس جهودنا لنمنحك التميز، مجسدين معاني الإتقان والإحسان في كل تفصيل.',
-  hero_location:      'Doha, Qatar · 2025',
+  hero_location:      'Doha, Qatar · 2026',
   hero_cta_primary:   'Initialize Project',
   hero_cta_secondary: 'View Selected Works',
   contact_email:      'hello@nous.qa',
-  footer_location:    'Qatar · 2025',
+  footer_location:    'Qatar · 2026',
   footer_copyright:   '© 2025 Nous. All Rights Reserved.',
   footer_badge:       'AN NOUS MASTERPIECE ✦ AN NOUS MASTERPIECE ✦ ',
 }

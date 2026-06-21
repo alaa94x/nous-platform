@@ -40,7 +40,7 @@ export default function Hero({
   ),
   location = 'Doha, Qatar · 2026',
   ctaPrimary = 'Initialize Project',
-  ctaSecondary = 'View Selected Works',
+  ctaSecondary = 'WhatsApp Us',
 }: HeroProps) {
   const reduced = useReducedMotion()
   const nameRef = useRef<HTMLSpanElement>(null)
@@ -173,49 +173,52 @@ export default function Hero({
       className="relative z-10 flex flex-col"
       style={{ minHeight: '100dvh', padding: '140px 56px 80px' }}
     >
-      {/* System initialized tag */}
+      {/* System initialized tag — single flex row, no wrap */}
       <div
+        className="hero-status-bar"
         style={{
           marginBottom: 24,
           display: 'flex',
           alignItems: 'center',
-          gap: 18,
-          flexWrap: 'wrap',
+          gap: 12,
+          flexWrap: 'nowrap',
+          minWidth: 0,
           opacity: 0,
           animation: reduced ? 'none' : 'fade-up .7s ease .05s forwards',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* NEW: Pulsing Status Dot */}
-          <span
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              backgroundColor: 'var(--accent)',
-              animation: reduced ? 'none' : 'pulse-opacity 2s infinite ease-in-out'
-            }}
-          />
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--accent)',
-              letterSpacing: '.01em',
-              textTransform: 'uppercase',
-              animation: reduced ? 'none' : 'blink 1.1s step-end 5',
-            }}
-          >
-            [ SYSTEM // INITIALIZED ]
-          </span>
-        </div>
-        <span style={{ width: 15, height: 1, background: 'rgba(10,92,71,.35)', flexShrink: 0 }} />
+        {/* Pulsing dot */}
+        <span
+          style={{
+            flexShrink: 0,
+            width: 6,
+            height: 6,
+            borderRadius: '50%',
+            backgroundColor: 'var(--accent)',
+            animation: reduced ? 'none' : 'pulse-opacity 2s infinite ease-in-out',
+          }}
+        />
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 11,
+            color: 'var(--accent)',
+            letterSpacing: '.01em',
+            textTransform: 'uppercase',
+            whiteSpace: 'nowrap',
+            animation: reduced ? 'none' : 'blink 1.1s step-end 5',
+          }}
+        >
+          [ SYSTEM // INITIALIZED ]
+        </span>
+        <span style={{ flexShrink: 0, width: 15, height: 1, background: 'rgba(10,92,71,.35)' }} />
         <span
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 11,
             color: 'var(--muted)',
-            letterSpacing: '.1em',
+            letterSpacing: '.08em',
+            whiteSpace: 'nowrap',
           }}
         >
           {location}
@@ -224,49 +227,61 @@ export default function Hero({
 
       {/* Headline */}
       <h1
-        className="h-overflow"
         style={{
-          lineHeight: 1.1, // Increased from 0.9 to prevent top/bottom clipping
           marginBottom: 0,
-          paddingTop: '1em', // Added to provide space for diacritics at the top
-          paddingBottom: '0.15em',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'baseline',
-          gap: 16,
+          display: 'block',
+          overflow: 'visible',
         }}
       >
+        {/* Wrap only the Arabic span in its own overflow clip so the
+            diacritic marks above the letters are never cut.
+            Extra paddingTop creates headroom inside the clip boundary;
+            the negative marginTop pulls layout back so spacing stays even. */}
+        {/* Arabic clip: paddingTop pushes the clip boundary up so diacritics
+            aren't shaved. marginTop compensates so layout position is unchanged. */}
         <span
-          className="h-line"
           style={{
-            fontFamily: 'var(--font-arabic)',
-            fontSize: 'clamp(85px, 15vw, 150px)',
-            fontWeight: 700,
-            color: 'var(--text)',
             display: 'block',
-            direction: 'rtl',
-            // Ensure the line-height inside the span matches the container
-            lineHeight: 1.1,
-            animationDelay: reduced ? '0s' : '.25s',
-            animationPlayState: reduced ? 'paused' : 'running',
+            overflow: 'hidden',
+            paddingTop: '0.45em',
+            marginTop: '-0.45em',
           }}
         >
-          {headlineAr}
+          <span
+            className="h-line h-line-ar"
+            style={{
+              fontFamily: 'var(--font-arabic)',
+              fontSize: 'clamp(85px, 15vw, 150px)',
+              fontWeight: 700,
+              color: 'var(--text)',
+              display: 'block',
+              direction: 'rtl',
+              textAlign: 'right',
+              lineHeight: 1.2,
+              paddingTop: '0.2em',
+              animationDelay: reduced ? '0s' : '.25s',
+              animationPlayState: reduced ? 'paused' : 'running',
+            }}
+          >
+            {headlineAr}
+          </span>
         </span>
-        <span
-          className="h-line"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 'clamp(16px, 4vw, 24px)',
-            color: 'var(--accent)',
-            letterSpacing: '.2em',
-            transform: 'translateY(-10px)',
-            display: 'block',
-            animationDelay: reduced ? '0s' : '.3s',
-            animationPlayState: reduced ? 'paused' : 'running',
-          }}
-        >
-          [{scrambledEn}]
+        {/* EN subtitle: capped at 18px on mobile via clamp */}
+        <span style={{ display: 'block', overflow: 'hidden', marginTop: 8 }}>
+          <span
+            className="h-line h-line-en"
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'clamp(13px, 2vw, 24px)',
+              color: 'var(--accent)',
+              letterSpacing: '.2em',
+              display: 'block',
+              animationDelay: reduced ? '0s' : '.3s',
+              animationPlayState: reduced ? 'paused' : 'running',
+            }}
+          >
+            [{scrambledEn}]
+          </span>
         </span>
       </h1>
 
@@ -342,7 +357,9 @@ export default function Hero({
           <span className="btn-txt">{ctaPrimary}</span>
         </a>
         <a
-          href="#works"
+          href="https://wa.me/97477484004"
+          target="_blank"
+          rel="noopener noreferrer"
           data-mag="true"
           data-magnetic-btn="true"
           style={{
@@ -364,7 +381,7 @@ export default function Hero({
       {/* Corner orbital logo widget — desktop only, right half of hero */}
       <OrbitalWidget />
 
-      {/* Scroll indicator (bottom-right) — scanning line */}
+      {/* Scroll indicator — absolute bottom-right on desktop, horizontal inline on mobile */}
       <div
         className="scroll-indicator"
         style={{
@@ -381,6 +398,7 @@ export default function Hero({
       >
         {/* Track + dual scanner beams */}
         <div
+          className="scroll-track"
           style={{
             width: 2,
             height: 88,
@@ -391,7 +409,6 @@ export default function Hero({
         >
           {!reduced && (
             <>
-              {/* Primary beam — fast downward */}
               <div
                 style={{
                   position: 'absolute',
@@ -404,7 +421,6 @@ export default function Hero({
                   animation: 'scroll-scan 1.8s cubic-bezier(.4,0,.6,1) 2.2s infinite',
                 }}
               />
-              {/* Secondary beam — slow, delayed, dimmer */}
               <div
                 style={{
                   position: 'absolute',
@@ -420,8 +436,8 @@ export default function Hero({
           )}
         </div>
 
-        {/* Label — vertical, slightly larger, with a flicker on entry */}
         <span
+          className="scroll-label"
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 9,
@@ -431,9 +447,7 @@ export default function Hero({
             textTransform: 'uppercase',
             writingMode: 'vertical-lr',
             opacity: .6,
-            animation: reduced
-              ? 'none'
-              : 'tap-luxury 3s ease-in-out 2.5s infinite',
+            animation: reduced ? 'none' : 'tap-luxury 3s ease-in-out 2.5s infinite',
           }}
         >
           Scroll
@@ -458,8 +472,12 @@ export default function Hero({
       <style>{`
   @media (max-width:900px) {
     /* ── Layout ── */
-    #hero { padding: 100px 24px 120px !important; min-height: 100dvh !important; }
+    #hero { padding: 100px 24px 80px !important; min-height: 100dvh !important; }
     .bottom-divider { left: 24px !important; right: 24px !important; }
+
+    /* ── Status bar: scale down text so it fits without clipping ── */
+    .hero-status-bar { font-size: 9.5px !important; gap: 8px !important; }
+    .hero-status-bar span { font-size: 9.5px !important; letter-spacing: .04em !important; }
 
     /* ── Bilingual grid: stack, tighten ── */
     .hero-grid {
@@ -467,10 +485,9 @@ export default function Hero({
       gap: 20px !important;
       margin-top: 32px !important;
     }
-    /* Hide Arabic copy block on mobile — headline already carries the AR brand */
     .hero-grid-ar { display: none !important; }
 
-    /* ── CTAs: full-width column, tight gap ── */
+    /* ── CTAs: full-width column ── */
     .hero-ctas {
       flex-direction: column !important;
       align-items: stretch !important;
@@ -484,22 +501,34 @@ export default function Hero({
       box-sizing: border-box !important;
     }
 
-    /* ── Scroll indicator: detach from content flow, pin to bottom-right ── */
+    /* ── Scroll indicator: pull out of absolute, sit below CTAs in normal flow ──
+       Keep it vertical (column) so it matches the page's scroll direction.        */
     .scroll-indicator {
-      position: fixed !important;
-      right: 20px !important;
-      bottom: 32px !important;
-      transform: none !important;
-      transform-origin: unset !important;
-      /* Sit above page content but below modals */
-      z-index: 20;
+      position: relative !important;
+      bottom: auto !important;
+      right: auto !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin-top: 36px !important;
+      align-self: center !important;
+    }
+    /* Shrink the track a bit on mobile */
+    .scroll-track {
+      width: 2px !important;
+      height: 52px !important;
+    }
+    /* Label stays vertical */
+    .scroll-label {
+      writing-mode: vertical-lr !important;
+      letter-spacing: .28em !important;
     }
   }
 
   @media (max-width:480px) {
-    #hero { padding: 90px 16px 120px !important; }
-    .h-line:first-child { font-size: clamp(68px, 19vw, 110px) !important; }
-    /* Even tighter subtext margin on very small phones */
+    #hero { padding: 90px 16px 80px !important; }
+    .h-line-ar { font-size: clamp(68px, 19vw, 110px) !important; }
+    .h-line-en { font-size: 14px !important; }
     .hero-grid { margin-top: 24px !important; }
     .hero-ctas { margin-top: 24px !important; }
   }

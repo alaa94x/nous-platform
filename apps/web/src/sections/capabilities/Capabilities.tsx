@@ -210,8 +210,29 @@ export default function Capabilities({ services }: CapabilitiesProps) {
       }
     })
 
+    // Auto-close accordion after 120px of scroll
+    const closeAll = () => {
+      vp.querySelectorAll<HTMLElement>('.svc-item.acc-open').forEach(o => {
+        o.classList.remove('acc-open')
+        const p = o.querySelector<HTMLElement>('.mob-pills')
+        if (p) p.classList.remove('open')
+        const n = o.querySelector<HTMLElement>('.svc-name')
+        if (n) n.style.color = ''
+      })
+    }
+
+    let scrollStart = 0
+    const onScrollStart = () => { scrollStart = window.scrollY }
+    const onScroll = () => {
+      if (Math.abs(window.scrollY - scrollStart) > 120) closeAll()
+    }
+    window.addEventListener('touchstart', onScrollStart, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
+
     return () => {
       clearSats()
+      window.removeEventListener('touchstart', onScrollStart)
+      window.removeEventListener('scroll', onScroll)
     }
   }, [services, reduced])
 
@@ -321,22 +342,21 @@ export default function Capabilities({ services }: CapabilitiesProps) {
                       letterSpacing: '-.01em',
                       transition: 'color .3s, font-style .3s',
                       display: 'block',
-                      whiteSpace: 'nowrap',
                     }}
                   >
                     {svc.name}
                   </span>
                   {svc.name_ar && (
                     <span
+                      className="svc-name-ar"
                       style={{
                         fontFamily: 'var(--font-arabic)',
-                        fontSize: 'clamp(11px, 1.2vw, 16px)',
+                        fontSize: 'clamp(11px, 1.2vw, 15px)',
                         fontWeight: 400,
                         color: 'var(--muted)',
                         opacity: 0.6,
-                        display: 'block',
-                        whiteSpace: 'nowrap',
                         direction: 'rtl',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {svc.name_ar}
@@ -477,7 +497,11 @@ export default function Capabilities({ services }: CapabilitiesProps) {
             letter-spacing: .1em !important;
             transform: translateX(0) !important;
           }
-          .svc-name { white-space: normal !important; word-break: break-word; }
+          /* Fix name wrapping — no inline nowrap, allow natural break */
+          .svc-name { white-space: normal !important; word-break: normal !important; }
+          /* Arabic subtitle: visible by default, hidden when accordion opens */
+          .svc-name-ar { display: block !important; transition: opacity .25s; }
+          .acc-open .svc-name-ar { display: none !important; }
         }
         @media (max-width:480px) {
           #capabilities { padding: 56px 20px !important; }

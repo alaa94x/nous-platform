@@ -2,11 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // In development, allow access without authentication
-  if (process.env.NODE_ENV === 'development') {
-    return NextResponse.next({ request })
-  }
-
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
