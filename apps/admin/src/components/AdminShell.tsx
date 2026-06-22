@@ -222,18 +222,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* ── Mobile floating bottom nav ───────────────────────────────── */}
       <nav className="adm-bottom-nav" aria-label="Mobile navigation">
-        {/* Orbital logo widget — acts as the Home / Overview tab */}
-        <a
-          href="/dashboard"
-          className={`adm-nav-logo${isActive('/dashboard') && !NAV.slice(1).some(n => isActive(n.href)) ? ' adm-nav-logo--active' : ''}`}
-          aria-label="Overview"
-        >
-          <span className="adm-nav-logo-ring" />
-          <NousLogo size={52} className="adm-nav-logo-svg" />
-        </a>
-
-        {/* Remaining 5 nav items (skip Overview — covered by logo widget) */}
-        {NAV.slice(1).map(item => {
+        {NAV.map(item => {
           const active = isActive(item.href)
           return (
             <a key={item.href} href={item.href} className={`adm-tab${active ? ' adm-tab--active' : ''}`}>
@@ -301,7 +290,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
            * Adjust --mobile-nav-height there if the nav size changes.
            */
           .adm-content {
-            padding: var(--space-5) var(--space-4) calc(var(--mobile-nav-height) + var(--mobile-nav-offset) + env(safe-area-inset-bottom, 0px) + 24px);
+            padding: var(--space-5) var(--space-4) calc(var(--mobile-nav-height) + var(--mobile-nav-offset) + 24px);
           }
 
           .adm-bottom-nav {
@@ -324,52 +313,6 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             padding: 0 6px;
             align-items: center;
             gap: 2px;
-          }
-
-          /* Corner orbital logo widget */
-          .adm-nav-logo {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 56px;
-            height: 44px;
-            flex-shrink: 0;
-            margin-left: 2px;
-            text-decoration: none;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-          }
-          .adm-nav-logo-ring {
-            position: absolute;
-            inset: 0;
-            border-radius: 12px;
-            border: 1px solid rgba(46,204,113,.22);
-            box-shadow:
-              0 0 0 3px rgba(46,204,113,.05),
-              inset 0 1px 0 rgba(255,255,255,.05);
-            animation: orbit-pulse 3.5s ease-in-out infinite;
-          }
-          @keyframes orbit-pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 3px rgba(46,204,113,.05), inset 0 1px 0 rgba(255,255,255,.05); }
-            50%       { opacity: .6; box-shadow: 0 0 0 5px rgba(46,204,113,.10), inset 0 1px 0 rgba(255,255,255,.05); }
-          }
-          .adm-nav-logo-svg {
-            color: var(--accent);
-            display: block;
-            width: 44px !important;
-            height: auto !important;
-            position: relative;
-            z-index: 1;
-            opacity: 0.55;
-            transition: opacity .2s;
-          }
-          .adm-nav-logo--active .adm-nav-logo-svg,
-          .adm-nav-logo:active .adm-nav-logo-svg {
-            opacity: 1;
-          }
-          .adm-nav-logo--active .adm-nav-logo-ring {
-            border-color: rgba(46,204,113,.55);
           }
 
           .adm-tab {

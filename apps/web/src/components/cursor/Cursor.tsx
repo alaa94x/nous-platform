@@ -20,15 +20,19 @@ export default function Cursor() {
     cx: 0, cy: 0, tx: 0, ty: 0,
     ox: 0, oy: 0, otx: 0, oty: 0,
     curState: 'default' as CursorState,
+    prevState: 'default' as CursorState,
     magTarget: null as Element | null,
     rafId: 0,
     isMouse: false,
+    dirty: false,  // only schedule RAF when cursor actually moved or settling
   })
 
   const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
   const tick = useCallback(() => {
     const s = state.current
+    s.rafId = 0
+
     const dot  = dotRef.current
     const wrap = wrapRef.current
     const ring = ringRef.current
@@ -49,7 +53,9 @@ export default function Cursor() {
     if (dot)  dot.style.transform  = `translate(${s.cx - 2}px,${s.cy - 2}px)`
     if (wrap) wrap.style.transform = `translate(${s.cx}px,${s.cy}px)`
 
-    if (ring && inn && dot && ctxt) {
+    // Only update ring styles when state actually changed
+    if (ring && inn && dot && ctxt && s.curState !== s.prevState) {
+      s.prevState = s.curState
       switch (s.curState) {
         case 'default':
           ring.style.width = ring.style.height = '40px'
@@ -89,7 +95,13 @@ export default function Cursor() {
       orb.style.transform = `translate(${s.ox - hw}px,${s.oy - hh}px)`
     }
 
-    s.rafId = requestAnimationFrame(tick)
+    // Keep ticking only while still settling — stop when at rest
+    const cursorSettled = Math.abs(s.cx - tx) < 0.1 && Math.abs(s.cy - ty) < 0.1
+    const orbSettled    = Math.abs(s.ox - s.otx) < 0.1 && Math.abs(s.oy - s.oty) < 0.1
+    if (!cursorSettled || !orbSettled || s.dirty) {
+      s.dirty = false
+      s.rafId = requestAnimationFrame(tick)
+    }
   }, [])
 
   useEffect(() => {
@@ -108,15 +120,21 @@ export default function Cursor() {
     s.cx = s.tx = s.ox = s.otx = window.innerWidth  / 2
     s.cy = s.ty = s.oy = s.oty = window.innerHeight / 2
 
+    const scheduleRaf = () => {
+      if (!s.rafId) s.rafId = requestAnimationFrame(tick)
+    }
+
     const onMove = (e: MouseEvent) => {
       s.tx = e.clientX; s.ty = e.clientY
       s.otx = e.clientX; s.oty = e.clientY
+      s.dirty = true
       const hit  = document.elementFromPoint(e.clientX, e.clientY)
       const card = hit?.closest('[data-card]')
       const mag  = hit?.closest('[data-mag]')
       if (card)     { s.curState = 'project';  s.magTarget = null }
       else if (mag) { s.curState = 'magnetic'; s.magTarget = mag  }
       else          { s.curState = 'default';  s.magTarget = null }
+      scheduleRaf()
     }
     document.addEventListener('mousemove', onMove)
 
@@ -131,11 +149,12 @@ export default function Cursor() {
       el.addEventListener('mouseleave', () => constrict(false))
     })
 
-    s.rafId = requestAnimationFrame(tick)
+    // Kick off initial frame to position elements
+    scheduleRaf()
 
     return () => {
       document.removeEventListener('mousemove', onMove)
-      cancelAnimationFrame(s.rafId)
+      if (s.rafId) cancelAnimationFrame(s.rafId)
       document.body.style.cursor = 'auto'
     }
   }, [reduced, tick])
@@ -148,7 +167,7 @@ export default function Cursor() {
       <div
         ref={dotRef}
         aria-hidden="true"
-        className="fixed top-0 left-0 pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 pointer-events-none z-9999"
         style={{
           width: 4, height: 4,
           borderRadius: '50%',
@@ -162,7 +181,7 @@ export default function Cursor() {
       {/* Cursor ring */}
       <div
         ref={wrapRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 pointer-events-none z-9999"
         style={{ willChange: 'transform', transform: 'translate(-40px,-40px)' }}
       >
         <div
@@ -210,7 +229,7 @@ export default function Cursor() {
       <div
         ref={orbRef}
         id="amb-orb"
-        className="fixed top-0 left-0 pointer-events-none z-[1]"
+        className="fixed top-0 left-0 pointer-events-none z-1"
         style={{
           width: '30vw', height: '30vw',
           borderRadius: '50%',
