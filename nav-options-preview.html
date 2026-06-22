@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nous — Mobile Nav Options</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg:     #F9F8F6;
+    --bg2:    #FFFFFF;
+    --text:   #121C1A;
+    --accent: #0A5C47;
+    --muted:  #556B66;
+    --border: rgba(18,28,26,0.08);
+    --mono:   'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #EDECEA;
+    font-family: var(--mono);
+    color: var(--text);
+    padding: 48px 24px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .page-sub {
+    font-size: 9px;
+    letter-spacing: .12em;
+    color: var(--muted);
+    opacity: .6;
+    margin-bottom: 56px;
+  }
+
+  /* ── Grid of phone mockups ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 32px 28px 28px;
+    position: relative;
+  }
+
+  .option-label {
+    font-size: 8px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .option-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -.01em;
+  }
+  .option-desc {
+    font-size: 8.5px;
+    letter-spacing: .06em;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 24px;
+    max-width: 30ch;
+  }
+
+  /* Phone shell */
+  .phone {
+    width: 220px;
+    height: 420px;
+    background: var(--bg);
+    border: 2px solid rgba(18,28,26,.18);
+    border-radius: 32px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+    box-shadow: 0 8px 40px rgba(18,28,26,.1), inset 0 1px 0 rgba(255,255,255,.6);
+  }
+
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 6px;
+    background: rgba(18,28,26,.18);
+    border-radius: 3px;
+    z-index: 20;
+  }
+
+  /* Screen content */
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 30px;
+  }
+
+  /* Fake page content */
+  .page-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+  }
+
+  /* Hero mock */
+  .hero-mock {
+    position: absolute;
+    top: 52px;
+    left: 18px;
+    right: 18px;
+  }
+  .hero-ar {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+    text-align: right;
+    direction: rtl;
+    margin-bottom: 6px;
+  }
+  .hero-en {
+    font-size: 6px;
+    letter-spacing: .18em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .hero-body {
+    width: 70%;
+    height: 3px;
+    background: var(--border);
+    margin-bottom: 4px;
+    border-radius: 2px;
+  }
+  .hero-body-short {
+    width: 50%;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+  .hero-cta {
+    display: inline-block;
+    background: var(--text);
+    color: var(--bg);
+    font-size: 5.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+  }
+
+  /* ───────────────────────────────── */
+  /* OPTION 1 — BOTTOM RAIL           */
+  /* ───────────────────────────────── */
+  .opt1-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(249,248,246,.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(18,28,26,.1);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 10;
+    border-radius: 0 0 30px 30px;
+  }
+  .opt1-link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 5.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    position: relative;
+  }
+  .opt1-link.active {
+    color: var(--accent);
+  }
+  .opt1-link.active::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 1.5px;
+    background: var(--accent);
+    border-radius: 0 0 2px 2px;
+  }
+  .opt1-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: .4;
+  }
+  .opt1-link.active .opt1-dot {
+    opacity: 1;
+    background: var(--accent);
+  }
+  .opt1-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  /* Top nav for opt1 — logo only */
+  .opt1-topnav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 10;
+  }
+  .nous-wordmark {
+    font-size: 8px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--text);
+    opacity: .7;
+  }
+
+  /* Variant badge */
+  .rec-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 6px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+  }
+
+  /* ───────────────────────────────── */
+  /* OPTION 2 — SIDE RAIL             */
+  /* ───────────────────────────────── */
+  .opt2-rail {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 28px;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    z-index: 10;
+    background: rgba(249,248,246,.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 0 30px 30px 0;
+  }
+  .opt2-link {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 5px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 0;
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .opt2-link.active {
+    color: var(--accent);
+  }
+  .opt2-link + .opt2-link {
+    border-top: 1px solid var(--border);
+  }
+  .opt2-link.active::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: 20%;
+    bottom: 20%;
+    width: 1.5px;
+    background: var(--accent);
+  }
+  .opt2-topnav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 28px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 10;
+  }
+
+  /* ───────────────────────────────── */
+  /* OPTION 3 — DOT NAV               */
+  /* ───────────────────────────────── */
+  .opt3-dots {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+  }
+  .opt3-dot-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .opt3-label {
+    font-size: 5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity .2s;
+    white-space: nowrap;
+  }
+  .opt3-dot-wrap.active .opt3-label {
+    opacity: 1;
+    color: var(--accent);
+  }
+  .opt3-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    border: 1px solid rgba(18,28,26,.3);
+    background: transparent;
+    transition: background .2s, border-color .2s;
+    flex-shrink: 0;
+  }
+  .opt3-dot-wrap.active .opt3-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .opt3-topnav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px 0 16px;
+    z-index: 10;
+  }
+
+  /* ───────────────────────────────── */
+  /* OPTION 4 — ICON NAV              */
+  /* ───────────────────────────────── */
+  .opt4-topnav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 10;
+  }
+  .opt4-icons {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .opt4-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    position: relative;
+  }
+  .opt4-icon svg {
+    width: 13px;
+    height: 13px;
+    stroke: var(--muted);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .opt4-icon.active svg { stroke: var(--accent); }
+  .opt4-icon-label {
+    font-size: 4.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .opt4-icon.active .opt4-icon-label { color: var(--accent); }
+
+  /* ───────────────────────────────── */
+  /* OPTION 5 — FULL WIDTH STRIP      */
+  /* ───────────────────────────────── */
+  .opt5-topnav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    display: flex;
+    align-items: stretch;
+    z-index: 10;
+    background: rgba(249,248,246,.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    border-radius: 30px 30px 0 0;
+  }
+  .opt5-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    position: relative;
+  }
+  .opt5-link.active {
+    color: var(--accent);
+  }
+  .opt5-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 1.5px;
+    background: var(--accent);
+  }
+  .opt5-link + .opt5-link {
+    border-left: 1px solid var(--border);
+  }
+  /* No separate logo — logo was in top left, now removed on mobile */
+  .opt5-hero-mock {
+    position: absolute;
+    top: 64px;
+    left: 18px;
+    right: 18px;
+  }
+
+  /* ───────────────────────────────── */
+  /* OPTION 6 — PILL CLUSTER (BONUS)  */
+  /* ───────────────────────────────── */
+  .opt6-topnav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    z-index: 10;
+  }
+  .opt6-pills {
+    display: flex;
+    align-items: center;
+    background: rgba(18,28,26,.05);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 3px;
+    gap: 0;
+  }
+  .opt6-pill {
+    font-size: 5.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 5px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+    transition: background .2s, color .2s;
+  }
+  .opt6-pill.active {
+    background: var(--text);
+    color: var(--bg);
+  }
+
+  /* ───────────────────────────────── */
+  /* OPTION 7 — FLOATING ACTION       */
+  /* ───────────────────────────────── */
+  .opt7-topnav {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: rgba(249,248,246,.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(18,28,26,.12);
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    gap: 0;
+    box-shadow: 0 4px 20px rgba(18,28,26,.08);
+    white-space: nowrap;
+  }
+  .opt7-logo-pill {
+    font-size: 7px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--text);
+    padding: 8px 12px;
+    border-right: 1px solid var(--border);
+    font-weight: 700;
+  }
+  .opt7-link {
+    font-size: 5.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 10px;
+    position: relative;
+  }
+  .opt7-link.active { color: var(--accent); }
+  .opt7-cta {
+    font-size: 5.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    background: var(--text);
+    color: var(--bg);
+    padding: 7px 12px;
+    border-radius: 100px;
+    margin: 2px;
+    margin-left: 2px;
+    white-space: nowrap;
+  }
+
+  /* Pros/cons */
+  .meta {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+  }
+  .pro, .con {
+    font-size: 7.5px;
+    letter-spacing: .06em;
+    line-height: 1.9;
+    flex: 1;
+  }
+  .pro-label {
+    font-size: 6px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .con-label {
+    font-size: 6px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    opacity: .6;
+  }
+  .pro li, .con li {
+    color: var(--muted);
+    list-style: none;
+    padding-left: 0;
+  }
+  .pro li::before { content: '+ '; color: var(--accent); }
+  .con li::before { content: '- '; color: rgba(18,28,26,.3); }
+
+  /* Page title */
+  .page-title-block {
+    max-width: 1400px;
+    margin: 0 auto 48px;
+  }
+
+  /* Dim for desktop-style existing nav preview */
+  .existing-label {
+    font-size: 7px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: .5;
+    margin-bottom: 8px;
+  }
+
+  /* CURRENT — desktop nav preview */
+  .current-nav-preview {
+    width: 100%;
+    height: 56px;
+    background: rgba(249,248,246,.95);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    margin-bottom: 6px;
+  }
+  .current-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .current-link {
+    font-size: 7px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .current-cta {
+    font-size: 7px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    color: var(--text);
+  }
+
+  .current-mobile-preview {
+    width: 100%;
+    height: 48px;
+    background: rgba(249,248,246,.95);
+    border: 1px solid rgba(220,50,50,.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: relative;
+  }
+  .current-mobile-preview::after {
+    content: 'CAPABILITIES + WORK HIDDEN';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 5.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(200,60,60,.7);
+  }
+  .broken-badge {
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    background: rgba(200,60,60,.1);
+    border: 1px solid rgba(200,60,60,.25);
+    font-size: 5.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(200,60,60,.8);
+    padding: 2px 8px;
+  }
+
+  .divider {
+    max-width: 1400px;
+    margin: 0 auto 48px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Safe area on iphone */
+  .safe-area-note {
+    font-size: 6px;
+    letter-spacing: .1em;
+    color: var(--muted);
+    opacity: .5;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* Active indicator on opt1 bottom contact */
+  .opt1-contact {
+    background: var(--accent);
+    color: var(--bg) !important;
+    padding: 7px 14px;
+    border-radius: 2px;
+    font-size: 5.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="page-title-block">
+  <h1>Nous / Mobile Nav Options</h1>
+  <p class="page-sub">7 concepts for mobile navigation — 3 links: Capabilities · Work · Contact</p>
+</div>
+
+<!-- ── CURRENT STATE ── -->
+<div class="page-title-block">
+  <p class="existing-label">Current state — desktop (works fine)</p>
+  <div class="current-nav-preview">
+    <span style="font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--text);opacity:.7">NOUS</span>
+    <div class="current-links">
+      <span class="current-link">Capabilities</span>
+      <span class="current-link">Work</span>
+      <span class="current-cta">Contact →</span>
+    </div>
+  </div>
+
+  <p class="existing-label" style="margin-top:16px">Current state — mobile (broken: 2 of 3 links invisible)</p>
+  <div class="current-mobile-preview" style="position:relative">
+    <span style="font-size:10px;letter-spacing:.05em;font-weight:800;color:var(--text)">Nous</span>
+    <span class="current-cta" style="font-size:6px;padding:4px 10px">Contact →</span>
+    <div class="broken-badge">broken</div>
+  </div>
+  <p style="font-size:7px;letter-spacing:.06px;color:rgba(200,60,60,.7);margin-top:6px">Capabilities and Work are display:none on mobile. Users have no way to reach these sections from the nav.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- ── GRID ── -->
+<div class="grid">
+
+  <!-- ══ OPTION 1 — BOTTOM RAIL ══ -->
+  <div class="card">
+    <div class="rec-badge">Recommended</div>
+    <p class="option-label">Option 1</p>
+    <p class="option-title">Bottom Rail</p>
+    <p class="option-desc">Nav moves to the bottom of the screen. 3 links always visible as a full-width bar. Logo-only top strip.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- top nav: logo only -->
+        <div class="opt1-topnav">
+          <span class="nous-wordmark">NOUS</span>
+        </div>
+
+        <!-- hero mock -->
+        <div class="hero-mock" style="top:56px">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+
+        <!-- bottom rail -->
+        <div class="opt1-nav">
+          <div class="opt1-link active">
+            <div class="opt1-dot"></div>
+            Capabilities
+          </div>
+          <div class="opt1-divider"></div>
+          <div class="opt1-link">
+            <div class="opt1-dot"></div>
+            Work
+          </div>
+          <div class="opt1-divider"></div>
+          <div class="opt1-link">
+            <div class="opt1-dot"></div>
+            Contact
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="safe-area-note">+ iOS safe-area-inset-bottom padding added automatically</p>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Always visible, 0 taps to navigate</li>
+          <li>Native iOS/Android feel</li>
+          <li>Touch targets easy to hit</li>
+          <li>No interaction needed to reveal</li>
+          <li>Active section indicator easy</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>Covers bottom of content</li>
+          <li>Logo disappears on mobile</li>
+          <li>Slightly less "agency" than alternatives</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTION 2 — SIDE RAIL ══ -->
+  <div class="card">
+    <p class="option-label">Option 2</p>
+    <p class="option-title">Side Rail</p>
+    <p class="option-desc">Vertical strip of rotated labels pinned to the right edge. Logo stays top-left. Extremely editorial.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- top nav: logo only -->
+        <div class="opt2-topnav">
+          <span class="nous-wordmark">NOUS</span>
+        </div>
+
+        <!-- hero mock -->
+        <div class="hero-mock">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+
+        <!-- side rail -->
+        <div class="opt2-rail">
+          <div class="opt2-link active">Capabilities</div>
+          <div class="opt2-link">Work</div>
+          <div class="opt2-link">Contact</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Never covers content</li>
+          <li>Very editorial / agency feel</li>
+          <li>Unique — almost nobody does this</li>
+          <li>Logo + nav coexist without fighting</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>Touch targets are narrow (28px)</li>
+          <li>Right-to-left readers: rail is on wrong side</li>
+          <li>Content must avoid rightmost 28px</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTION 3 — DOT NAV ══ -->
+  <div class="card">
+    <p class="option-label">Option 3</p>
+    <p class="option-title">Dot Nav</p>
+    <p class="option-desc">3 dots on the right edge track scroll position. Active dot fills in accent green. Label appears on active.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- top nav: logo + contact CTA -->
+        <div class="opt3-topnav">
+          <span class="nous-wordmark">NOUS</span>
+          <span style="font-size:5.5px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--border);padding:5px 10px;color:var(--text)">Contact →</span>
+        </div>
+
+        <!-- hero mock -->
+        <div class="hero-mock">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+
+        <!-- dot nav -->
+        <div class="opt3-dots">
+          <div class="opt3-dot-wrap active">
+            <span class="opt3-label">Capabilities</span>
+            <div class="opt3-dot"></div>
+          </div>
+          <div class="opt3-dot-wrap">
+            <span class="opt3-label">Work</span>
+            <div class="opt3-dot"></div>
+          </div>
+          <div class="opt3-dot-wrap">
+            <span class="opt3-label">Contact</span>
+            <div class="opt3-dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Extremely minimal — fits the brand</li>
+          <li>Doubles as scroll progress indicator</li>
+          <li>Never obstructs content</li>
+          <li>Accent dots already in design language</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>Low discoverability on first visit</li>
+          <li>Needs first-load animation to hint it's tappable</li>
+          <li>Touch target requires careful padding</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTION 4 — ICON NAV ══ -->
+  <div class="card">
+    <p class="option-label">Option 4</p>
+    <p class="option-title">Icon Nav</p>
+    <p class="option-desc">Top nav keeps logo + contact. Middle two links become small Phosphor icons with micro-labels below.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- icon topnav -->
+        <div class="opt4-topnav">
+          <span class="nous-wordmark">NOUS</span>
+          <div class="opt4-icons">
+            <!-- Capabilities: grid icon -->
+            <div class="opt4-icon active">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+              <span class="opt4-icon-label">Capabilities</span>
+            </div>
+            <!-- Work: folder icon -->
+            <div class="opt4-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>
+              <span class="opt4-icon-label">Work</span>
+            </div>
+            <!-- Contact: arrow icon -->
+            <div class="opt4-icon">
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              <span class="opt4-icon-label">Contact</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- hero mock -->
+        <div class="hero-mock">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Logo stays visible</li>
+          <li>No layout change — same bar</li>
+          <li>Familiar icon + label pattern</li>
+          <li>Easy to implement (just swap text)</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>Icons for "Capabilities" are arbitrary</li>
+          <li>Less distinctive than other options</li>
+          <li>Feels generic — not premium agency</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTION 5 — FULL WIDTH STRIP ══ -->
+  <div class="card">
+    <p class="option-label">Option 5</p>
+    <p class="option-title">Full-Width Strip</p>
+    <p class="option-desc">Logo removed on mobile. Top bar becomes 3 equal-width link cells divided by hairlines. Brutally simple.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- full width strip -->
+        <div class="opt5-topnav">
+          <div class="opt5-link active">Capabilities</div>
+          <div class="opt5-link">Work</div>
+          <div class="opt5-link">Contact</div>
+        </div>
+
+        <!-- hero mock -->
+        <div class="opt5-hero-mock">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Zero interaction — instant access</li>
+          <li>Feels like a publication / editorial site</li>
+          <li>Clean, no clutter</li>
+          <li>CSS-only, no JS needed</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>Logo disappears completely</li>
+          <li>At 320px "Capabilities" may truncate</li>
+          <li>No Contact CTA distinction</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTION 6 — PILL CLUSTER ══ -->
+  <div class="card">
+    <p class="option-label">Option 6</p>
+    <p class="option-title">Pill Cluster</p>
+    <p class="option-desc">A single grouped pill in the top right. All 3 links inside one rounded container. Active link has dark fill.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- pill topnav -->
+        <div class="opt6-topnav">
+          <span class="nous-wordmark">NOUS</span>
+          <div class="opt6-pills">
+            <div class="opt6-pill active">Cap.</div>
+            <div class="opt6-pill">Work</div>
+            <div class="opt6-pill">Contact</div>
+          </div>
+        </div>
+
+        <!-- hero mock -->
+        <div class="hero-mock">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Logo + nav coexist on one line</li>
+          <li>Active state is clear and tactile</li>
+          <li>Compact — doesn't dominate the top</li>
+          <li>Works at all widths (abbreviate "Cap.")</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>Pill shape may not fit sharp brand aesthetic</li>
+          <li>"Cap." abbreviation loses meaning</li>
+          <li>Touch targets small at 3-pill arrangement</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ OPTION 7 — FLOATING PILL NAV ══ -->
+  <div class="card">
+    <p class="option-label">Option 7</p>
+    <p class="option-title">Floating Pill Nav</p>
+    <p class="option-desc">A centered pill floats below the status bar. Contains logo mark + 2 links + Contact CTA. Dynamic Island aesthetic.</p>
+
+    <div class="phone">
+      <div class="screen">
+        <div class="page-bg"></div>
+
+        <!-- floating pill -->
+        <div class="opt7-topnav">
+          <span class="opt7-logo-pill">N.</span>
+          <span class="opt7-link active">Cap</span>
+          <span class="opt7-link">Work</span>
+          <span class="opt7-cta">Contact →</span>
+        </div>
+
+        <!-- hero mock -->
+        <div class="hero-mock" style="top:72px">
+          <div class="hero-ar">أنظمة<br>تُفكّر</div>
+          <div class="hero-en">[ COGNITIVE SYSTEMS ]</div>
+          <div class="hero-body"></div>
+          <div class="hero-body-short"></div>
+          <div class="hero-cta">Initialize Project</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div class="pro">
+        <p class="pro-label">Pros</p>
+        <ul>
+          <li>Visually striking — very memorable</li>
+          <li>Logo + all links in one element</li>
+          <li>Feels premium and considered</li>
+          <li>Works on desktop too (can replace current nav)</li>
+        </ul>
+      </div>
+      <div class="con">
+        <p class="con-label">Cons</p>
+        <ul>
+          <li>"Cap" abbreviation (320px constraint)</li>
+          <li>Pill border-radius vs sharp brand shapes</li>
+          <li>Floats over hero content — z-index caution</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── COMPARISON TABLE ── -->
+<div style="max-width:1400px;margin:64px auto 0;padding-bottom:64px">
+  <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:20px">Quick comparison</p>
+  <table style="width:100%;border-collapse:collapse;font-size:8px;letter-spacing:.04em;color:var(--muted)">
+    <thead>
+      <tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:10px 16px 10px 0;letter-spacing:.12em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">Option</th>
+        <th style="text-align:center;padding:10px 8px;letter-spacing:.1em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">Logo visible</th>
+        <th style="text-align:center;padding:10px 8px;letter-spacing:.1em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">0 taps needed</th>
+        <th style="text-align:center;padding:10px 8px;letter-spacing:.1em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">Touch targets</th>
+        <th style="text-align:center;padding:10px 8px;letter-spacing:.1em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">Agency feel</th>
+        <th style="text-align:center;padding:10px 8px;letter-spacing:.1em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">Covers content</th>
+        <th style="text-align:left;padding:10px 0 10px 8px;letter-spacing:.1em;text-transform:uppercase;font-size:7px;color:var(--text);font-weight:700">Best for</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid var(--border);background:rgba(10,92,71,.03)">
+        <td style="padding:10px 16px 10px 0;color:var(--accent);font-weight:700">1. Bottom Rail ★</td>
+        <td style="text-align:center;padding:10px 8px">Partial</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Large</td>
+        <td style="text-align:center;padding:10px 8px">Medium</td>
+        <td style="text-align:center;padding:10px 8px">Bottom strip</td>
+        <td style="padding:10px 0 10px 8px">Mobile-first, UX priority</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px 10px 0">2. Side Rail</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:rgba(200,60,60,.7)">Small</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">High</td>
+        <td style="text-align:center;padding:10px 8px">Right edge only</td>
+        <td style="padding:10px 0 10px 8px">Editorial, portfolio-style</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px 10px 0">3. Dot Nav</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:rgba(200,60,60,.7)">Small</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">High</td>
+        <td style="text-align:center;padding:10px 8px">3 dots only</td>
+        <td style="padding:10px 0 10px 8px">Minimalist, design-savvy audience</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px 10px 0">4. Icon Nav</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px">Medium</td>
+        <td style="text-align:center;padding:10px 8px">Low</td>
+        <td style="text-align:center;padding:10px 8px">No</td>
+        <td style="padding:10px 0 10px 8px">Fastest implementation</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px 10px 0">5. Full-Width Strip</td>
+        <td style="text-align:center;padding:10px 8px;color:rgba(200,60,60,.7)">No</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Large</td>
+        <td style="text-align:center;padding:10px 8px">Medium</td>
+        <td style="text-align:center;padding:10px 8px">Top strip only</td>
+        <td style="padding:10px 0 10px 8px">Editorial / minimal sites</td>
+      </tr>
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 16px 10px 0">6. Pill Cluster</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px;color:rgba(200,60,60,.7)">Small</td>
+        <td style="text-align:center;padding:10px 8px">Medium</td>
+        <td style="text-align:center;padding:10px 8px">No</td>
+        <td style="padding:10px 0 10px 8px">Compact, no layout change</td>
+      </tr>
+      <tr>
+        <td style="padding:10px 16px 10px 0">7. Floating Pill</td>
+        <td style="text-align:center;padding:10px 8px">Partial (N.)</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">Yes</td>
+        <td style="text-align:center;padding:10px 8px">Medium</td>
+        <td style="text-align:center;padding:10px 8px;color:var(--accent)">High</td>
+        <td style="text-align:center;padding:10px 8px">Floats over hero</td>
+        <td style="padding:10px 0 10px 8px">Premium, distinctive, memorable</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

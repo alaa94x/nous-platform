@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nous Platform — Full Technical Upgrade Plan</title>
+<style>
+  :root {
+    --bg:      #0d0f0e;
+    --surface: #141716;
+    --surface2:#1c1f1d;
+    --border:  rgba(10,92,71,.22);
+    --border2: rgba(10,92,71,.10);
+    --accent:  #0A5C47;
+    --accent2: #12a87c;
+    --text:    #e8e5e0;
+    --muted:   #7a9189;
+    --warn:    #c0853a;
+    --danger:  #c0392b;
+    --done:    #0A5C47;
+    --mono:    'Space Mono', 'Fira Code', monospace;
+    --serif:   Georgia, serif;
+    --sans:    system-ui, -apple-system, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── LAYOUT ── */
+  .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+  aside {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+  }
+  main { padding: 64px 56px 120px; max-width: 1000px; }
+
+  /* ── SIDEBAR ── */
+  .sidebar-logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border2);
+    margin-bottom: 20px;
+  }
+  .sidebar-logo h1 {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .sidebar-logo p { font-size: 11px; color: var(--muted); }
+  .nav-group { margin-bottom: 4px; padding: 0 12px; }
+  .nav-group-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    padding: 10px 12px 6px;
+    display: block;
+  }
+  .nav-group a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: background .15s, color .15s;
+  }
+  .nav-group a:hover { background: var(--surface2); color: var(--text); }
+  .nav-group a .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .nav-group a:hover .dot { background: var(--accent2); }
+  .nav-group a.crit .dot { background: var(--danger); }
+  .nav-group a.high .dot { background: var(--warn); }
+  .nav-group a.med  .dot { background: var(--accent2); }
+
+  /* ── CONTENT ── */
+  .page-header { margin-bottom: 64px; padding-bottom: 40px; border-bottom: 1px solid var(--border2); }
+  .page-header .eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 18px;
+  }
+  .page-header h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -.03em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .page-header p { color: var(--muted); max-width: 640px; font-size: 14px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 80px; scroll-margin-top: 32px; }
+  .section-header {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: .1em;
+    flex-shrink: 0;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -.02em;
+  }
+  .section h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -.01em;
+    margin: 28px 0 10px;
+  }
+  .section p { color: var(--muted); font-size: 13.5px; margin-bottom: 10px; }
+
+  /* ── CARDS ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--border); }
+  .card .card-label {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .card h4 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .card p  { font-size: 12px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+  /* ── TASK TABLE ── */
+  .task-table { width: 100%; border-collapse: collapse; margin: 16px 0 28px; font-size: 13px; }
+  .task-table thead tr { border-bottom: 1px solid var(--border); }
+  .task-table th {
+    font-family: var(--mono);
+    font-size: 8.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 16px 12px 0;
+    text-align: left;
+    font-weight: 400;
+  }
+  .task-table td {
+    padding: 12px 16px 12px 0;
+    border-bottom: 1px solid var(--border2);
+    vertical-align: top;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .task-table td:first-child { color: var(--text); }
+  .task-table tr:last-child td { border-bottom: none; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-crit  { background: rgba(192,57,43,.15);  color: #e74c3c; border: 1px solid rgba(192,57,43,.3); }
+  .badge-high  { background: rgba(192,133,58,.15); color: #e6a832; border: 1px solid rgba(192,133,58,.3); }
+  .badge-med   { background: rgba(10,92,71,.15);   color: var(--accent2); border: 1px solid var(--border); }
+  .badge-low   { background: rgba(122,145,137,.1); color: var(--muted);   border: 1px solid var(--border2); }
+  .badge-done  { background: rgba(10,92,71,.12);   color: var(--accent2); border: 1px solid var(--border); }
+
+  /* ── CODE ── */
+  pre, code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--surface2);
+    border-radius: 4px;
+  }
+  code { padding: 2px 6px; color: var(--accent2); }
+  pre {
+    padding: 20px 24px;
+    overflow-x: auto;
+    border: 1px solid var(--border2);
+    margin: 14px 0;
+    line-height: 1.65;
+    color: #b8d4ca;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 2px solid var(--accent);
+    padding: 14px 18px;
+    margin: 16px 0;
+    background: rgba(10,92,71,.06);
+    border-radius: 0 4px 4px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .callout.warn  { border-color: var(--warn);   background: rgba(192,133,58,.06); }
+  .callout.danger{ border-color: var(--danger);  background: rgba(192,57,43,.06); }
+  .callout strong { color: var(--text); }
+
+  /* ── LIST ── */
+  ul.checklist { list-style: none; padding: 0; margin: 12px 0; }
+  ul.checklist li {
+    padding: 6px 0 6px 22px;
+    position: relative;
+    font-size: 13px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border2);
+  }
+  ul.checklist li:last-child { border-bottom: none; }
+  ul.checklist li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  ul.checklist li strong { color: var(--text); }
+
+  /* ── PHASE TIMELINE ── */
+  .timeline { position: relative; padding-left: 28px; margin: 24px 0; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 7px; top: 8px; bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+  .timeline-item { position: relative; margin-bottom: 28px; }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -24px; top: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1.5px solid var(--bg);
+  }
+  .timeline-item .phase-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--accent2);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .timeline-item h4 { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 6px; }
+  .timeline-item p  { font-size: 12.5px; color: var(--muted); }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border2); margin: 48px 0; }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 28px;
+    margin: 20px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #8dbfb0;
+    line-height: 1.9;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    aside  { display: none; }
+    main   { padding: 32px 20px 80px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<aside>
+  <div class="sidebar-logo">
+    <h1>Nous Platform</h1>
+    <p>Full Technical Plan — v1.0</p>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Overview</span>
+    <a href="#overview"><span class="dot med"></span>Architecture Map</a>
+    <a href="#stack"><span class="dot med"></span>Tech Stack</a>
+    <a href="#phases"><span class="dot med"></span>Delivery Phases</a>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Critical Fixes</span>
+    <a href="#security" class="crit"><span class="dot crit"></span>Security</a>
+    <a href="#error-handling" class="crit"><span class="dot crit"></span>Error Handling</a>
+    <a href="#rate-limiting" class="crit"><span class="dot crit"></span>Rate Limiting</a>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Backend</span>
+    <a href="#database" class="high"><span class="dot high"></span>Database Schema</a>
+    <a href="#api" class="high"><span class="dot high"></span>API Routes</a>
+    <a href="#middleware" class="high"><span class="dot high"></span>Middleware</a>
+    <a href="#email" class="high"><span class="dot high"></span>Email System</a>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Frontend</span>
+    <a href="#performance" class="high"><span class="dot high"></span>Performance</a>
+    <a href="#seo" class="high"><span class="dot high"></span>SEO</a>
+    <a href="#accessibility"><span class="dot med"></span>Accessibility</a>
+    <a href="#animations"><span class="dot med"></span>Animations</a>
+    <a href="#mobile"><span class="dot med"></span>Mobile</a>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Admin</span>
+    <a href="#admin-crud" class="high"><span class="dot high"></span>CRUD Pages</a>
+    <a href="#analytics-dash"><span class="dot med"></span>Analytics</a>
+    <a href="#admin-ux"><span class="dot med"></span>Admin UX</a>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-group-label">Infrastructure</span>
+    <a href="#deployment"><span class="dot med"></span>Deployment</a>
+    <a href="#monitoring"><span class="dot med"></span>Monitoring</a>
+    <a href="#caching"><span class="dot med"></span>Caching</a>
+    <a href="#i18n"><span class="dot low"></span>i18n</a>
+  </div>
+</aside>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <span class="eyebrow">[ Nous Platform — Technical Plan ]</span>
+    <h1>Full-Stack Upgrade Plan</h1>
+    <p>A complete engineering roadmap covering every layer of the platform — backend, frontend, middleware, infrastructure, admin, and performance — based on a full audit of the current codebase. Prioritized by impact and risk.</p>
+  </div>
+
+
+  <!-- ════════════════ 01 ARCHITECTURE ════════════════ -->
+  <div class="section" id="overview">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Current Architecture</h2>
+    </div>
+
+    <div class="arch">
+┌─────────────────────────────────────────────────────────────────┐
+│                        NOUS PLATFORM                            │
+│                     (pnpm + Turbo Monorepo)                     │
+├──────────────────────────┬──────────────────────────────────────┤
+│    apps/web (port 3002)  │       apps/admin (port 3001)         │
+│    Next.js 16 / RSC      │       Next.js 16 / RSC               │
+│    Public Website        │       Internal Dashboard             │
+│    ─────────────         │       ─────────────                  │
+│    / (Homepage)          │       /login                         │
+│    /offline (PWA)        │       /dashboard                     │
+│    /api/contact          │       /dashboard/contacts            │
+│    /api/track            │       /dashboard/analytics (stub)    │
+│                          │       /dashboard/services  (stub)    │
+│                          │       /dashboard/projects  (stub)    │
+│                          │       /dashboard/settings  (stub)    │
+├──────────────────────────┴──────────────────────────────────────┤
+│                      packages/                                  │
+│   @nous/db          @nous/ui         @nous/config               │
+│   Supabase types    Design tokens    Tailwind + TS configs       │
+├─────────────────────────────────────────────────────────────────┤
+│                    Supabase (PostgreSQL)                         │
+│   site_settings │ services │ projects │ contacts │ analytics    │
+├─────────────────────────────────────────────────────────────────┤
+│               External Services                                 │
+│   Google Fonts │ ipapi.co (geo) │ WhatsApp API                  │
+└─────────────────────────────────────────────────────────────────┘
+    </div>
+
+    <h3>What's working well</h3>
+    <ul class="checklist">
+      <li><strong>Monorepo structure</strong> is clean — Turbo pipelines, shared packages, correct separation of apps</li>
+      <li><strong>Database seed fallback</strong> — site works without Supabase configured</li>
+      <li><strong>PWA</strong> — service worker + manifest + offline fallback all implemented</li>
+      <li><strong>Reduced motion</strong> — full support via <code>useReducedMotion</code></li>
+      <li><strong>Analytics pipeline</strong> — session tracking, geo detection, 5 events tracked</li>
+      <li><strong>Admin auth</strong> — Supabase SSR auth + middleware protection</li>
+      <li><strong>Contact dashboard</strong> — status management, CSV export, search, delete</li>
+    </ul>
+
+    <h3>Critical gaps summary</h3>
+    <ul class="checklist">
+      <li><strong>No rate limiting</strong> on any API route — open to abuse</li>
+      <li><strong>No input sanitization</strong> — XSS risk in Capabilities section (innerHTML)</li>
+      <li><strong>No error boundaries</strong> — a runtime error crashes the entire page</li>
+      <li><strong>No sitemap.xml / robots.txt</strong> — invisible to search engines</li>
+      <li><strong>4 admin stubs</strong> — services, projects, settings, analytics pages do nothing</li>
+      <li><strong>No email notification</strong> when a contact form is submitted</li>
+      <li><strong>No image CDN strategy</strong> — project images are external URLs with no optimization</li>
+      <li><strong>Hardcoded IP</strong> in next.config.ts (<code>allowedDevOrigins</code>) — will break in production</li>
+    </ul>
+  </div>
+
+
+  <!-- ════════════════ 02 STACK ════════════════ -->
+  <div class="section" id="stack">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Tech Stack (Current)</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Framework</span>
+        <h4>Next.js 16 (App Router)</h4>
+        <p>React 19, Server Components, force-dynamic on homepage, API Route Handlers</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Database</span>
+        <h4>Supabase (PostgreSQL)</h4>
+        <p>5 tables: site_settings, services, projects, contacts, analytics_events</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Styling</span>
+        <h4>Tailwind v4 + Inline Styles</h4>
+        <p>95% inline styles, design tokens via CSS vars, 27 custom keyframes</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Animation</span>
+        <h4>Motion + GSAP</h4>
+        <p>Motion (Framer Motion fork) for UI, GSAP 3 available but underused</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Auth</span>
+        <h4>Supabase Auth (SSR)</h4>
+        <p>Cookie-based sessions, middleware protection, email/password</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Build</span>
+        <h4>Turbo + pnpm</h4>
+        <p>Monorepo orchestration, parallel builds, shared config packages</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">Fonts</span>
+        <h4>Fraunces + Space Mono + Amiri</h4>
+        <p>Google Fonts (next/font), self-hosted Amiri WOFF2 for Arabic</p>
+      </div>
+      <div class="card">
+        <span class="card-label" style="color:var(--accent2)">PWA</span>
+        <h4>Service Worker + Manifest</h4>
+        <p>Network-first API, stale-while-revalidate nav, offline fallback page</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ 03 PHASES ════════════════ -->
+  <div class="section" id="phases">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Delivery Phases</h2>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <span class="phase-label">Phase 1 — Week 1</span>
+        <h4>Security Hardening &amp; Error Resilience</h4>
+        <p>Rate limiting, input sanitization, XSS fix in Capabilities, error boundaries, remove hardcoded IP, CORS headers. Nothing ships that exposes user data to risk.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="phase-label">Phase 2 — Week 1-2</span>
+        <h4>Backend Completeness</h4>
+        <p>Email notification on contact submit (Resend), all admin CRUD pages (services, projects, settings), image upload to Supabase Storage, database migrations.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="phase-label">Phase 3 — Week 2</span>
+        <h4>SEO &amp; Performance</h4>
+        <p>sitemap.xml, robots.txt, JSON-LD structured data, og:image, font subsetting, Amiri preload, Web Vitals monitoring, caching headers.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="phase-label">Phase 4 — Week 2-3</span>
+        <h4>Admin Dashboard Upgrade</h4>
+        <p>Analytics visualization, services/projects inline editors, settings form with live preview, audit log, multi-admin support.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="phase-label">Phase 5 — Week 3</span>
+        <h4>Frontend Polish &amp; Accessibility</h4>
+        <p>Accessibility audit and fixes, mobile refinements, animation performance audit, loading skeletons, not-found and error pages.</p>
+      </div>
+      <div class="timeline-item">
+        <span class="phase-label">Phase 6 — Week 3-4</span>
+        <h4>Infrastructure &amp; Monitoring</h4>
+        <p>Deployment pipeline, environment validation, Sentry error tracking, uptime monitoring, backup strategy, CDN setup.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════ 04 SECURITY ════════════════ -->
+  <div class="section" id="security">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Security</h2>
+    </div>
+
+    <div class="callout danger">
+      <strong>Critical.</strong> These must be fixed before any production traffic. Current state: open API with no rate limiting, innerHTML usage creating XSS surface, no CORS headers.
+    </div>
+
+    <h3>4.1 XSS — Fix innerHTML in Capabilities</h3>
+    <p>The Capabilities orbital system uses raw <code>innerHTML</code> to inject HTML strings built from Supabase data. If any <code>service.name</code> contains user-controlled content, this is a stored XSS vector.</p>
+    <pre><code>// CURRENT — dangerous
+lbl.innerHTML = `&lt;span style="..."&gt;${svcName}&lt;/span&gt;`
+
+// FIX — use textContent for all data-derived strings
+const span = document.createElement('span')
+span.textContent = svcName   // ← no XSS possible
+span.style.cssText = '...'
+lbl.appendChild(span)</code></pre>
+    <p>Audit every <code>innerHTML</code> and <code>dangerouslySetInnerHTML</code> usage in the codebase. Replace with DOM API or sanitized React rendering.</p>
+
+    <h3>4.2 Rate Limiting — /api/contact and /api/track</h3>
+    <p>Both API routes have no rate limiting. A bot can flood the contacts table or the analytics table.</p>
+    <table class="task-table">
+      <thead><tr><th>Route</th><th>Limit</th><th>Window</th><th>Strategy</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/contact</code></td><td>5 requests</td><td>per 10 min per IP</td><td>Upstash Redis or in-memory Map</td></tr>
+        <tr><td><code>/api/track</code></td><td>30 requests</td><td>per min per session</td><td>Same — higher limit, analytics traffic</td></tr>
+      </tbody>
+    </table>
+    <pre><code>// middleware.ts (web app) — add rate limit check
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+const limiter = new Map&lt;string, { count: number; reset: number }&gt;()
+
+export function middleware(req: NextRequest) {
+  if (req.nextUrl.pathname.startsWith('/api/contact')) {
+    const ip = req.headers.get('x-forwarded-for') ?? 'anon'
+    const now = Date.now()
+    const entry = limiter.get(ip)
+    if (entry && now &lt; entry.reset) {
+      if (entry.count &gt;= 5) {
+        return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+      }
+      entry.count++
+    } else {
+      limiter.set(ip, { count: 1, reset: now + 10 * 60 * 1000 })
+    }
+  }
+  return NextResponse.next()
+}</code></pre>
+    <p>For production, replace the in-memory Map with <strong>Upstash Redis</strong> (free tier, edge-compatible).</p>
+
+    <h3>4.3 Input Sanitization</h3>
+    <p>The contact API currently passes user input directly to Supabase without validation beyond presence checks.</p>
+    <pre><code>// /api/contact/route.ts — add validation
+import { z } from 'zod'
+
+const schema = z.object({
+  name:     z.string().min(1).max(120).trim(),
+  email:    z.string().email().max(255).toLowerCase(),
+  phone:    z.string().max(30).optional(),
+  services: z.array(z.string().max(80)).min(1).max(10),
+  message:  z.string().max(2000).optional(),
+})
+
+export async function POST(req: Request) {
+  const body = await req.json()
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid input' }, { status: 400 })
+  }
+  // use parsed.data — guaranteed clean
+}</code></pre>
+    <p>Install <code>zod</code> (already a common dep in Next.js projects; add if missing): <code>pnpm add zod</code></p>
+
+    <h3>4.4 CORS Headers</h3>
+    <p>API routes return no CORS headers. Add explicit headers in <code>next.config.ts</code>:</p>
+    <pre><code>// next.config.ts
+const config: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin',  value: 'https://nous.qa' },
+          { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+          { key: 'X-Content-Type-Options',       value: 'nosniff' },
+          { key: 'X-Frame-Options',              value: 'DENY' },
+          { key: 'Referrer-Policy',              value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ]
+  },
+  // REMOVE hardcoded allowedDevOrigins — use env var instead
+}</code></pre>
+
+    <h3>4.5 Environment Variables Validation</h3>
+    <p>Currently the app silently falls back to seeds if <code>SUPABASE_URL</code> is missing. In production, missing env vars should crash loudly at startup.</p>
+    <pre><code>// apps/web/src/lib/env.ts
+const required = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+]
+if (process.env.NODE_ENV === 'production') {
+  for (const key of required) {
+    if (!process.env[key]) throw new Error(`Missing env: ${key}`)
+  }
+}</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 05 ERROR HANDLING ════════════════ -->
+  <div class="section" id="error-handling">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Error Handling</h2>
+    </div>
+
+    <div class="callout danger">
+      <strong>Critical.</strong> No <code>error.tsx</code>, no <code>not-found.tsx</code>, no <code>loading.tsx</code> anywhere in the app. A single component crash brings down the entire page.
+    </div>
+
+    <h3>5.1 Global Error Boundary</h3>
+    <pre><code>// apps/web/src/app/error.tsx
+'use client'
+import { useEffect } from 'react'
+
+export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+  useEffect(() => {
+    // Report to Sentry (Phase 6)
+    console.error(error)
+  }, [error])
+
+  return (
+    &lt;div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', flexDirection: 'column', gap: 24 }}&gt;
+      &lt;h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 32 }}&gt;
+        Something went wrong.
+      &lt;/h2&gt;
+      &lt;button onClick={reset}&gt;Try again&lt;/button&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+
+    <h3>5.2 Not Found Page</h3>
+    <pre><code>// apps/web/src/app/not-found.tsx
+export default function NotFound() {
+  return (
+    &lt;main style={{ minHeight: '100vh', display: 'flex', alignItems: 'center',
+                   justifyContent: 'center', flexDirection: 'column', gap: 16 }}&gt;
+      &lt;span style={{ fontFamily: 'var(--font-mono)', fontSize: 10,
+                     color: 'var(--accent)', letterSpacing: '.2em' }}&gt;404&lt;/span&gt;
+      &lt;h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 48,
+                   fontWeight: 700, letterSpacing: '-.03em' }}&gt;Page not found.&lt;/h1&gt;
+      &lt;a href="/"&gt;Return home&lt;/a&gt;
+    &lt;/main&gt;
+  )
+}</code></pre>
+
+    <h3>5.3 Loading Skeleton</h3>
+    <pre><code>// apps/web/src/app/loading.tsx
+export default function Loading() {
+  return (
+    &lt;div style={{ minHeight: '100vh', background: 'var(--bg)' }} /&gt;
+  )
+}</code></pre>
+
+    <h3>5.4 Section-level Error Boundaries</h3>
+    <p>Wrap each section in an individual React error boundary. If the Capabilities orbital crashes, the rest of the page should still render.</p>
+    <pre><code>// packages/ui/src/SectionBoundary.tsx
+'use client'
+import { Component, type ReactNode } from 'react'
+
+export class SectionBoundary extends Component&lt;
+  { children: ReactNode; fallback?: ReactNode },
+  { hasError: boolean }
+&gt; {
+  state = { hasError: false }
+  static getDerivedStateFromError() { return { hasError: true } }
+  render() {
+    if (this.state.hasError) return this.props.fallback ?? null
+    return this.props.children
+  }
+}</code></pre>
+    <p>Use in page.tsx: <code>&lt;SectionBoundary&gt;&lt;Capabilities .../&gt;&lt;/SectionBoundary&gt;</code></p>
+  </div>
+
+
+  <!-- ════════════════ 06 DATABASE ════════════════ -->
+  <div class="section" id="database">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Database Schema Upgrades</h2>
+    </div>
+
+    <h3>6.1 Missing Column — services.name_ar</h3>
+    <p>The Capabilities component references <code>svc.name_ar</code> but the current TypeScript types in <code>@nous/db</code> do not include this field. Add it to the type and ensure the Supabase migration includes it.</p>
+    <pre><code>-- Migration: add name_ar to services
+ALTER TABLE services ADD COLUMN IF NOT EXISTS name_ar text;
+
+-- Types update in packages/db/src/types.ts
+export interface Service {
+  id:         string
+  idx:        string | null
+  name:       string
+  name_ar:    string | null   // ← add this
+  category:   string | null
+  tech_pills: string[] | null
+  sort_order: number
+  active:     boolean
+}</code></pre>
+
+    <h3>6.2 Soft Delete for Contacts</h3>
+    <p>Currently contacts are hard-deleted. Add soft delete for audit trail.</p>
+    <pre><code>ALTER TABLE contacts ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+CREATE INDEX IF NOT EXISTS contacts_deleted_at_idx ON contacts (deleted_at);
+
+-- In admin: filter WHERE deleted_at IS NULL
+-- Delete: UPDATE contacts SET deleted_at = NOW() WHERE id = $1</code></pre>
+
+    <h3>6.3 Add Indexes for Performance</h3>
+    <pre><code>-- Contacts: admin filters by status and searches by email
+CREATE INDEX IF NOT EXISTS contacts_status_idx      ON contacts (status);
+CREATE INDEX IF NOT EXISTS contacts_created_at_idx  ON contacts (created_at DESC);
+CREATE INDEX IF NOT EXISTS contacts_email_idx       ON contacts (email);
+
+-- Analytics: admin filters by event and date range
+CREATE INDEX IF NOT EXISTS analytics_event_idx      ON analytics_events (event);
+CREATE INDEX IF NOT EXISTS analytics_created_at_idx ON analytics_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS analytics_session_idx    ON analytics_events (session_id);
+
+-- Projects/Services: sort by sort_order
+CREATE INDEX IF NOT EXISTS services_sort_idx  ON services  (sort_order, active);
+CREATE INDEX IF NOT EXISTS projects_sort_idx  ON projects  (sort_order, active);</code></pre>
+
+    <h3>6.4 Row Level Security (RLS)</h3>
+    <p>Enable RLS on all tables. Public site reads services/projects via anon key. Admin uses service role. Contact writes use anon key (public form). Analytics writes use anon key.</p>
+    <pre><code>-- Enable RLS
+ALTER TABLE services          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE projects          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contacts          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE analytics_events  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings     ENABLE ROW LEVEL SECURITY;
+
+-- Public read: services and projects (active only)
+CREATE POLICY "public_read_services" ON services
+  FOR SELECT USING (active = true);
+
+CREATE POLICY "public_read_projects" ON projects
+  FOR SELECT USING (active = true);
+
+-- Public read: site_settings
+CREATE POLICY "public_read_settings" ON site_settings
+  FOR SELECT USING (true);
+
+-- Public insert: contacts (form submissions)
+CREATE POLICY "public_insert_contacts" ON contacts
+  FOR INSERT WITH CHECK (true);
+
+-- Public insert: analytics_events
+CREATE POLICY "public_insert_analytics" ON analytics_events
+  FOR INSERT WITH CHECK (true);
+
+-- Admin full access via service role key (bypasses RLS)</code></pre>
+
+    <h3>6.5 Image Storage</h3>
+    <p>Currently project images are stored as external URLs. Add Supabase Storage bucket for managed uploads.</p>
+    <pre><code>-- Create storage bucket in Supabase dashboard:
+-- Bucket name: "project-images"
+-- Public: true
+-- File size limit: 5MB
+-- Allowed MIME types: image/jpeg, image/png, image/webp, image/avif
+
+-- Update projects table
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS image_storage_path text;
+
+-- Usage in admin upload:
+const { data } = await supabase.storage
+  .from('project-images')
+  .upload(`${projectId}/${filename}`, file, { upsert: true })
+
+const url = supabase.storage.from('project-images').getPublicUrl(data.path).data.publicUrl</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 07 API ════════════════ -->
+  <div class="section" id="api">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>API Routes</h2>
+    </div>
+
+    <h3>7.1 /api/contact — Full Upgrade</h3>
+    <pre><code>// apps/web/src/app/api/contact/route.ts
+import { z } from 'zod'
+import { createAdminClient } from '@nous/db'
+import { sendContactNotification } from '@/lib/email'  // Phase 2
+
+const schema = z.object({
+  name:     z.string().min(1).max(120).trim(),
+  email:    z.string().email().max(255).toLowerCase().trim(),
+  phone:    z.string().max(30).trim().optional(),
+  services: z.array(z.string().max(80)).min(1).max(10),
+  message:  z.string().max(2000).trim().optional(),
+})
+
+export async function POST(req: Request) {
+  // Rate limit check happens in middleware.ts (see §4.2)
+
+  let body: unknown
+  try { body = await req.json() }
+  catch { return Response.json({ error: 'Invalid JSON' }, { status: 400 }) }
+
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    return Response.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const db = createAdminClient()
+  const { error } = await db.from('contacts').insert({
+    ...parsed.data,
+    status: 'new',
+  })
+
+  if (error) {
+    console.error('[contact] insert failed:', error)
+    return Response.json({ error: 'Failed to save' }, { status: 500 })
+  }
+
+  // Send email notification (non-blocking)
+  sendContactNotification(parsed.data).catch(console.error)
+
+  return Response.json({ ok: true }, { status: 201 })
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': process.env.SITE_URL ?? 'https://nous.qa',
+      'Access-Control-Allow-Methods': 'POST',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    }
+  })
+}</code></pre>
+
+    <h3>7.2 New Routes to Add</h3>
+    <table class="task-table">
+      <thead><tr><th>Route</th><th>Method</th><th>Purpose</th><th>Auth</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/admin/services</code></td><td>GET, POST, PATCH, DELETE</td><td>Services CRUD</td><td>Supabase session</td></tr>
+        <tr><td><code>/api/admin/projects</code></td><td>GET, POST, PATCH, DELETE</td><td>Projects CRUD</td><td>Supabase session</td></tr>
+        <tr><td><code>/api/admin/settings</code></td><td>GET, PATCH</td><td>Site settings upsert</td><td>Supabase session</td></tr>
+        <tr><td><code>/api/admin/contacts/[id]</code></td><td>PATCH, DELETE</td><td>Status update, soft delete</td><td>Supabase session</td></tr>
+        <tr><td><code>/api/admin/upload</code></td><td>POST</td><td>Image upload to Supabase Storage</td><td>Supabase session</td></tr>
+        <tr><td><code>/api/admin/analytics</code></td><td>GET</td><td>Aggregated events for dashboard</td><td>Supabase session</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <strong>All /api/admin/* routes</strong> must verify the Supabase session server-side before executing. Use <code>createServerClient</code> and check <code>getUser()</code> — do not rely only on middleware for admin API routes.
+    </div>
+  </div>
+
+
+  <!-- ════════════════ 08 MIDDLEWARE ════════════════ -->
+  <div class="section" id="middleware">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2>Middleware</h2>
+    </div>
+
+    <h3>8.1 Web App Middleware (apps/web)</h3>
+    <p>Currently missing. Create <code>apps/web/src/middleware.ts</code>:</p>
+    <pre><code>import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+// In-memory rate limiter (replace with Upstash Redis in production)
+const contactLimit = new Map&lt;string, { count: number; reset: number }&gt;()
+const trackLimit   = new Map&lt;string, { count: number; reset: number }&gt;()
+
+function isRateLimited(map: Map&lt;string, { count: number; reset: number }&gt;, key: string, max: number, windowMs: number) {
+  const now = Date.now()
+  const entry = map.get(key)
+  if (!entry || now &gt;= entry.reset) {
+    map.set(key, { count: 1, reset: now + windowMs })
+    return false
+  }
+  if (entry.count &gt;= max) return true
+  entry.count++
+  return false
+}
+
+export function middleware(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  const { pathname } = req.nextUrl
+
+  // Rate limit: contact form (5 per 10 min)
+  if (pathname === '/api/contact' && req.method === 'POST') {
+    if (isRateLimited(contactLimit, ip, 5, 10 * 60 * 1000)) {
+      return NextResponse.json({ error: 'Too many requests. Try again later.' }, { status: 429 })
+    }
+  }
+
+  // Rate limit: analytics (60 per min per IP)
+  if (pathname === '/api/track' && req.method === 'POST') {
+    if (isRateLimited(trackLimit, ip, 60, 60 * 1000)) {
+      return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
+    }
+  }
+
+  // Security headers for all responses
+  const res = NextResponse.next()
+  res.headers.set('X-Content-Type-Options', 'nosniff')
+  res.headers.set('X-Frame-Options', 'DENY')
+  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  return res
+}
+
+export const config = {
+  matcher: ['/api/:path*', '/((?!_next/static|_next/image|favicon.ico).*)'],
+}</code></pre>
+
+    <h3>8.2 Admin Middleware Improvement</h3>
+    <p>The current admin middleware has no error handling — if Supabase is unreachable, the middleware crashes and blocks all routes. Add a try/catch fallback:</p>
+    <pre><code>// apps/admin/src/middleware.ts — add error handling
+export async function middleware(req: NextRequest) {
+  try {
+    // ... existing Supabase session check ...
+  } catch (err) {
+    console.error('[middleware] auth check failed:', err)
+    // On error: redirect to login to be safe (fail closed, not open)
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+}</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 09 EMAIL ════════════════ -->
+  <div class="section" id="email">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2>Email Notification System</h2>
+    </div>
+
+    <div class="callout warn">
+      <strong>High priority.</strong> There is currently zero notification when a client submits the contact form. The team finds leads only by logging into the admin dashboard manually.
+    </div>
+
+    <h3>9.1 Setup with Resend</h3>
+    <p>Resend is the best option for a Next.js + TypeScript project — simple SDK, free tier (3,000/mo), React Email templates.</p>
+    <pre><code>pnpm add resend @react-email/components --filter=@nous/web</code></pre>
+
+    <h3>9.2 Email Template</h3>
+    <pre><code>// apps/web/src/emails/ContactNotification.tsx
+import { Html, Head, Body, Container, Heading, Text, Hr, Section } from '@react-email/components'
+
+interface Props {
+  name: string; email: string; phone?: string
+  services: string[]; message?: string
+}
+
+export function ContactNotification({ name, email, phone, services, message }: Props) {
+  return (
+    &lt;Html&gt;
+      &lt;Head /&gt;
+      &lt;Body style={{ background: '#F9F8F6', fontFamily: 'monospace' }}&gt;
+        &lt;Container style={{ maxWidth: 560, margin: '40px auto', background: '#fff',
+                            border: '1px solid rgba(18,28,26,.08)', padding: '40px 48px' }}&gt;
+          &lt;Text style={{ fontSize: 10, letterSpacing: '.2em', color: '#0A5C47',
+                         textTransform: 'uppercase', marginBottom: 24 }}&gt;
+            [ NEW BRIEF — NOUS.QA ]
+          &lt;/Text&gt;
+          &lt;Heading style={{ fontSize: 28, fontWeight: 700, color: '#121C1A',
+                            letterSpacing: '-.02em', margin: '0 0 24px' }}&gt;
+            {name} sent a brief.
+          &lt;/Heading&gt;
+          &lt;Hr style={{ borderColor: 'rgba(18,28,26,.08)', margin: '0 0 24px' }} /&gt;
+          &lt;Section&gt;
+            &lt;Text&gt;&lt;strong&gt;Email:&lt;/strong&gt; {email}&lt;/Text&gt;
+            {phone &amp;&amp; &lt;Text&gt;&lt;strong&gt;Phone:&lt;/strong&gt; {phone}&lt;/Text&gt;}
+            &lt;Text&gt;&lt;strong&gt;Services:&lt;/strong&gt; {services.join(', ')}&lt;/Text&gt;
+            {message &amp;&amp; &lt;Text&gt;&lt;strong&gt;Vision:&lt;/strong&gt; {message}&lt;/Text&gt;}
+          &lt;/Section&gt;
+          &lt;Hr style={{ borderColor: 'rgba(18,28,26,.08)', margin: '24px 0' }} /&gt;
+          &lt;Text style={{ fontSize: 11, color: '#556B66' }}&gt;
+            Reply directly to this email or open the admin dashboard.
+          &lt;/Text&gt;
+        &lt;/Container&gt;
+      &lt;/Body&gt;
+    &lt;/Html&gt;
+  )
+}
+</code></pre>
+
+    <h3>9.3 Send Function</h3>
+    <pre><code>// apps/web/src/lib/email.ts
+import { Resend } from 'resend'
+import { render } from '@react-email/render'
+import { ContactNotification } from '@/emails/ContactNotification'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export async function sendContactNotification(data: {
+  name: string; email: string; phone?: string
+  services: string[]; message?: string
+}) {
+  const html = await render(&lt;ContactNotification {...data} /&gt;)
+  await resend.emails.send({
+    from:    'Nous Notifications &lt;notify@nous.qa&gt;',
+    to:      [process.env.NOTIFY_EMAIL ?? 'hello@nous.qa'],
+    replyTo: data.email,
+    subject: `New Brief from ${data.name} — ${data.services.join(', ')}`,
+    html,
+  })
+}
+</code></pre>
+
+    <p>Add to <code>.env</code>: <code>RESEND_API_KEY=re_...</code> and <code>NOTIFY_EMAIL=hello@nous.qa</code></p>
+  </div>
+
+
+  <!-- ════════════════ 10 PERFORMANCE ════════════════ -->
+  <div class="section" id="performance">
+    <div class="section-header">
+      <span class="section-num">10</span>
+      <h2>Performance</h2>
+    </div>
+
+    <h3>10.1 Font Subsetting — Amiri Arabic</h3>
+    <p>The full Amiri font is loaded as a WOFF2 — this includes thousands of glyphs the site never uses. Subset to Arabic + Latin only:</p>
+    <pre><code># Install pyftsubset (fonttools)
+pip install fonttools brotli
+
+# Subset Amiri to Arabic + extended Latin
+pyftsubset Amiri-Bold.ttf \
+  --output-file=amiri-subset.woff2 \
+  --flavor=woff2 \
+  --layout-features='*' \
+  --unicodes="U+0600-06FF,U+0020-007F,U+00A0-00FF"</code></pre>
+    <p>This typically reduces the file from ~200KB to ~35KB — an 80%+ reduction.</p>
+
+    <h3>10.2 Amiri Font Preload</h3>
+    <p>Amiri is self-hosted but has no <code>&lt;link rel="preload"&gt;</code>. Add to layout.tsx:</p>
+    <pre><code>// apps/web/src/app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    &lt;html&gt;
+      &lt;head&gt;
+        &lt;link
+          rel="preload"
+          href="/fonts/amiri-subset.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        /&gt;
+      &lt;/head&gt;
+      &lt;body&gt;{children}&lt;/body&gt;
+    &lt;/html&gt;
+  )
+}</code></pre>
+
+    <h3>10.3 Hero Image Strategy</h3>
+    <p>Currently the hero has no image — it's text + CSS. If an image is added later, it must be:</p>
+    <ul class="checklist">
+      <li><strong>next/image with priority</strong> — prevents LCP delays</li>
+      <li><strong>AVIF/WebP format</strong> — Next.js Image handles this automatically</li>
+      <li><strong>Explicit width/height</strong> — prevents CLS</li>
+    </ul>
+
+    <h3>10.4 Capabilities Orbital — Performance Fix</h3>
+    <p>The orbital system creates DOM elements via JavaScript (not React) and runs a continuous <code>requestAnimationFrame</code> loop. On mobile, this kills battery and frame rate.</p>
+    <ul class="checklist">
+      <li><strong>Stop RAF when tab is hidden</strong> — use <code>document.addEventListener('visibilitychange', ...)</code></li>
+      <li><strong>Reduce ring count on mobile</strong> — 1 ring instead of 3</li>
+      <li><strong>Use <code>contain: layout style</code></strong> on the orbit container — limits repaint scope</li>
+      <li><strong>Use <code>will-change: transform</code></strong> only on satellite elements, remove after animation stops</li>
+    </ul>
+    <pre><code>// Add to orbital RAF loop
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    cancelAnimationFrame(activeRaf)
+    activeRaf = 0
+  } else if (activeRaf === 0) {
+    activeRaf = requestAnimationFrame(tick)
+  }
+})</code></pre>
+
+    <h3>10.5 Caching Headers</h3>
+    <pre><code>// next.config.ts — add static asset caching
+async headers() {
+  return [
+    {
+      source: '/fonts/:path*',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+    },
+    {
+      source: '/nous-logo.svg',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+    },
+    {
+      source: '/:path*.webp',
+      headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+    },
+  ]
+}</code></pre>
+
+    <h3>10.6 Core Web Vitals Targets</h3>
+    <table class="task-table">
+      <thead><tr><th>Metric</th><th>Target</th><th>Current Risk</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>LCP</td><td>&lt; 2.5s</td><td>Amiri font no preload</td><td>Preload + subset (§10.2, §10.1)</td></tr>
+        <tr><td>INP</td><td>&lt; 200ms</td><td>Orbital RAF + multiple useEffects in Hero</td><td>Tab visibility guard (§10.4)</td></tr>
+        <tr><td>CLS</td><td>&lt; 0.1</td><td>Hero layout shift (100dvh vs content)</td><td>Reserve space, min-h-[100dvh] (already done)</td></tr>
+        <tr><td>FCP</td><td>&lt; 1.8s</td><td>Google Fonts round-trip</td><td>next/font already handles this — OK</td></tr>
+        <tr><td>TTFB</td><td>&lt; 600ms</td><td>force-dynamic on homepage (no cache)</td><td>Add Supabase query caching (§caching)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- ════════════════ 11 SEO ════════════════ -->
+  <div class="section" id="seo">
+    <div class="section-header">
+      <span class="section-num">11</span>
+      <h2>SEO</h2>
+    </div>
+
+    <h3>11.1 Sitemap</h3>
+    <pre><code>// apps/web/src/app/sitemap.ts
+import type { MetadataRoute } from 'next'
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: 'https://nous.qa',
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 1,
+    },
+  ]
+}</code></pre>
+
+    <h3>11.2 Robots.txt</h3>
+    <pre><code>// apps/web/src/app/robots.ts
+import type { MetadataRoute } from 'next'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/api/', '/offline'],
+    },
+    sitemap: 'https://nous.qa/sitemap.xml',
+  }
+}</code></pre>
+
+    <h3>11.3 JSON-LD Structured Data</h3>
+    <pre><code>// apps/web/src/app/layout.tsx — add inside &lt;head&gt;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Nous',
+  url: 'https://nous.qa',
+  logo: 'https://nous.qa/nous-logo.svg',
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    email: 'hello@nous.qa',
+    areaServed: 'QA',
+    availableLanguage: ['English', 'Arabic'],
+  },
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Doha',
+    addressCountry: 'QA',
+  },
+}
+
+// In &lt;head&gt;:
+&lt;script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+/&gt;</code></pre>
+
+    <h3>11.4 Open Graph Image</h3>
+    <p>Generate a dynamic OG image using Next.js ImageResponse:</p>
+    <pre><code>// apps/web/src/app/opengraph-image.tsx
+import { ImageResponse } from 'next/og'
+
+export const runtime = 'edge'
+export const size = { width: 1200, height: 630 }
+
+export default function OGImage() {
+  return new ImageResponse(
+    &lt;div style={{ background: '#0d1410', width: '100%', height: '100%',
+                  display: 'flex', alignItems: 'center', padding: '80px' }}&gt;
+      &lt;div&gt;
+        &lt;div style={{ color: '#0A5C47', fontSize: 14, letterSpacing: '0.2em',
+                      marginBottom: 24 }}&gt;NOUS · DOHA, QATAR&lt;/div&gt;
+        &lt;div style={{ color: '#e8e5e0', fontSize: 72, fontWeight: 800,
+                      lineHeight: 1.1, letterSpacing: '-0.03em' }}&gt;
+          Engineered Intelligence.
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}</code></pre>
+
+    <h3>11.5 Canonical URL</h3>
+    <pre><code>// apps/web/src/app/layout.tsx — add to metadata
+export const metadata: Metadata = {
+  // ... existing ...
+  alternates: {
+    canonical: 'https://nous.qa',
+  },
+}</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 12 ACCESSIBILITY ════════════════ -->
+  <div class="section" id="accessibility">
+    <div class="section-header">
+      <span class="section-num">12</span>
+      <h2>Accessibility</h2>
+    </div>
+
+    <h3>12.1 Custom Cursor — Keyboard Users</h3>
+    <p><code>cursor: none</code> on the body hides the cursor for keyboard and switch users. Restrict it to pointer devices only:</p>
+    <pre><code>/* globals.css */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+}</code></pre>
+
+    <h3>12.2 Focus Styles</h3>
+    <p>Add visible focus rings for keyboard navigation across all interactive elements:</p>
+    <pre><code>/* globals.css */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}</code></pre>
+
+    <h3>12.3 Contact Form ARIA</h3>
+    <ul class="checklist">
+      <li>Add <code>htmlFor</code> to every <code>&lt;label&gt;</code> pointing to its <code>&lt;input id&gt;</code></li>
+      <li>Add <code>aria-required="true"</code> to required fields (name, email, services)</li>
+      <li>Add <code>aria-describedby</code> linking error messages to their fields</li>
+      <li>Add <code>role="alert"</code> to the error message <code>&lt;p&gt;</code></li>
+      <li>The service selector grid needs <code>role="group"</code> and <code>aria-label="Select services"</code></li>
+    </ul>
+
+    <h3>12.4 Orbital Widget — Screen Readers</h3>
+    <pre><code>&lt;div
+  ref={orbitRef}
+  id="orbit-vp"
+  aria-hidden="true"          // ← decorative, hide from screen readers
+  role="presentation"
+&gt;</code></pre>
+
+    <h3>12.5 Reduced Motion Audit</h3>
+    <p>The following animations currently ignore <code>prefers-reduced-motion</code>:</p>
+    <ul class="checklist">
+      <li><strong>CSS keyframes in globals.css</strong> — wrap all <code>@keyframes</code> animations in <code>@media (prefers-reduced-motion: no-preference)</code></li>
+      <li><strong>Capabilities orbital RAF</strong> — check <code>reduced</code> flag before starting RAF loop</li>
+      <li><strong>OrbitalWidget</strong> — add <code>useReducedMotion</code> guard</li>
+      <li><strong>Works card 3D hover</strong> — disable perspective transform under reduced motion</li>
+    </ul>
+    <pre><code>/* globals.css — wrap all animation assignments */
+@media (prefers-reduced-motion: no-preference) {
+  .h-line {
+    transform: translateY(106%);
+    animation: hero-reveal 1.3s cubic-bezier(.16,1,.3,1) forwards;
+  }
+  /* ... all other animation rules ... */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .h-line { transform: none; opacity: 1; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 13 ANIMATIONS ════════════════ -->
+  <div class="section" id="animations">
+    <div class="section-header">
+      <span class="section-num">13</span>
+      <h2>Animation Architecture</h2>
+    </div>
+
+    <h3>13.1 Current Issues</h3>
+    <ul class="checklist">
+      <li><strong>Hero has 3 useEffects</strong> running on mount — stagger them to avoid blocking paint</li>
+      <li><strong>Magnetic buttons add/remove event listeners</strong> on every render — memoize with refs</li>
+      <li><strong>Reveal IntersectionObserver</strong> in Hero leaks if component unmounts before fallback fires</li>
+      <li><strong>Orbital RAF</strong> runs at full speed on hidden tabs — add visibility guard (§10.4)</li>
+      <li><strong>Works 3D hover</strong> uses <code>mousemove</code> listener on every card — throttle to 60fps max</li>
+    </ul>
+
+    <h3>13.2 Hero Effect Staggering</h3>
+    <pre><code>// Hero.tsx — stagger heavy effects so they don't compete on first paint
+useEffect(() => {
+  // High priority: scramble text (visual, user sees this first)
+  // ... scramble code ...
+}, [headlineEn, reduced])
+
+// Defer magnetic buttons until after paint
+useEffect(() => {
+  if (reduced) return
+  const raf = requestAnimationFrame(() => {
+    // magnetic button setup
+  })
+  return () => cancelAnimationFrame(raf)
+}, [reduced])</code></pre>
+
+    <h3>13.3 Animation Layer Decision Guide</h3>
+    <table class="task-table">
+      <thead><tr><th>Use case</th><th>Use</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Entry animations (fade, slide)</td><td>CSS keyframes or Motion <code>whileInView</code></td><td>Lightest, compositor-only</td></tr>
+        <tr><td>Scroll-pinned sections</td><td>GSAP ScrollTrigger</td><td>Only library that does pin reliably</td></tr>
+        <tr><td>Mouse physics (magnetic)</td><td>Motion <code>useMotionValue</code></td><td>Stays off React render cycle</td></tr>
+        <tr><td>Orbital system</td><td>Raw RAF (current)</td><td>Correct — Math.cos/sin loop</td></tr>
+        <tr><td>State transitions</td><td>Motion <code>layout</code> prop</td><td>Handles DOM reflow smoothly</td></tr>
+        <tr><td>Hover UI effects</td><td>CSS transitions</td><td>Zero JS overhead</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- ════════════════ 14 MOBILE ════════════════ -->
+  <div class="section" id="mobile">
+    <div class="section-header">
+      <span class="section-num">14</span>
+      <h2>Mobile Experience</h2>
+    </div>
+
+    <h3>14.1 Remaining Issues</h3>
+    <table class="task-table">
+      <thead><tr><th>Issue</th><th>Location</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Works cards use 3D hover (mouse-only) but no touch equivalent</td><td>Works.tsx</td><td>Add tap-to-reveal details overlay on mobile</td></tr>
+        <tr><td>Capabilities orbital shows for click mode at 900px+ but is hidden on mobile — no fallback explanation</td><td>Capabilities.tsx</td><td>Already fixed with accordion; add empty-state hint</td></tr>
+        <tr><td>Contact form inputs have <code>font-size: clamp(22px,...)</code> which prevents iOS auto-zoom (16px threshold)</td><td>Contact.tsx</td><td>Already above 16px — OK. Verify on iOS Safari.</td></tr>
+        <tr><td>Nav CONTACT button: small tap target on mobile (9px+4px padding)</td><td>Nav.tsx</td><td>Increase mobile padding: <code>padding: 12px 24px</code></td></tr>
+        <tr><td>Hero Arabic headline — font size uses <code>clamp(85px,...)</code> but viewport width varies</td><td>Hero.tsx</td><td>Already handled with <code>h-line-ar</code> class override</td></tr>
+      </tbody>
+    </table>
+
+    <h3>14.2 Touch Target Sizes</h3>
+    <p>All interactive elements should be minimum 44×44px on mobile (WCAG 2.5.5):</p>
+    <pre><code>/* globals.css — minimum touch targets */
+@media (max-width: 900px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 15 ADMIN CRUD ════════════════ -->
+  <div class="section" id="admin-crud">
+    <div class="section-header">
+      <span class="section-num">15</span>
+      <h2>Admin CRUD Pages</h2>
+    </div>
+
+    <div class="callout warn">
+      <strong>High priority.</strong> 4 admin pages are stubs with no implementation. Services, Projects, and Settings are the core content management layer for the public site.
+    </div>
+
+    <h3>15.1 Services Page</h3>
+    <ul class="checklist">
+      <li><strong>List view</strong> — table with sort_order, name, name_ar, category, tech_pills, active toggle</li>
+      <li><strong>Inline edit</strong> — click row to edit in place (not a separate page)</li>
+      <li><strong>Drag to reorder</strong> — updates sort_order via PATCH /api/admin/services</li>
+      <li><strong>Add new</strong> — bottom row form or slide-in drawer</li>
+      <li><strong>Delete</strong> — with confirmation dialog, service name must be typed to confirm</li>
+      <li><strong>Tech pills editor</strong> — tag input (comma-separated, remove on backspace)</li>
+    </ul>
+
+    <h3>15.2 Projects Page</h3>
+    <ul class="checklist">
+      <li><strong>Card grid</strong> — thumbnail, name, year, tags, active toggle</li>
+      <li><strong>Image upload</strong> — drag-and-drop to Supabase Storage (§6.5)</li>
+      <li><strong>Edit drawer</strong> — slide-in from right with full project form</li>
+      <li><strong>Tags editor</strong> — same tag input pattern as tech pills</li>
+      <li><strong>Sort</strong> — drag to reorder</li>
+    </ul>
+
+    <h3>15.3 Settings Page</h3>
+    <ul class="checklist">
+      <li><strong>Group by category</strong> — Hero, About, Footer, Contact sections</li>
+      <li><strong>Live preview panel</strong> — renders the current headline as it would appear on site</li>
+      <li><strong>Bilingual fields side-by-side</strong> — EN on left, AR on right with RTL input</li>
+      <li><strong>Auto-save</strong> — debounced PATCH on change (500ms delay), no submit button needed</li>
+      <li><strong>Save indicator</strong> — "Saving…" → "Saved" status chip</li>
+    </ul>
+
+    <h3>15.4 Shared Admin Components to Build</h3>
+    <pre><code>// apps/admin/src/components/
+TagInput.tsx         // comma-separated pill input
+ImageUploader.tsx    // drag-drop + preview + Supabase upload
+ConfirmDialog.tsx    // "type the name to confirm" pattern
+InlineEditor.tsx     // click-to-edit cell
+SortableList.tsx     // drag-to-reorder (use @dnd-kit/sortable)
+StatusChip.tsx       // already exists in contacts — extract to shared
+AutoSave.tsx         // debounced save state indicator</code></pre>
+
+    <p>Install: <code>pnpm add @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities --filter=@nous/admin</code></p>
+  </div>
+
+
+  <!-- ════════════════ 16 ANALYTICS DASH ════════════════ -->
+  <div class="section" id="analytics-dash">
+    <div class="section-header">
+      <span class="section-num">16</span>
+      <h2>Analytics Dashboard</h2>
+    </div>
+
+    <h3>16.1 Queries to Implement</h3>
+    <pre><code>-- Total page views (last 30d)
+SELECT COUNT(*) FROM analytics_events
+WHERE event = 'page_view' AND created_at &gt; NOW() - INTERVAL '30 days';
+
+-- Form funnel (last 30d)
+SELECT event, COUNT(*) as count
+FROM analytics_events
+WHERE event LIKE 'contact_form%' AND created_at &gt; NOW() - INTERVAL '30 days'
+GROUP BY event ORDER BY count DESC;
+
+-- Views by day (last 14d)
+SELECT DATE(created_at) as day, COUNT(*) as views
+FROM analytics_events
+WHERE event = 'page_view' AND created_at &gt; NOW() - INTERVAL '14 days'
+GROUP BY day ORDER BY day;
+
+-- Top countries
+SELECT country, COUNT(*) as visits
+FROM analytics_events WHERE event = 'page_view' AND country IS NOT NULL
+GROUP BY country ORDER BY visits DESC LIMIT 10;
+
+-- Device breakdown
+SELECT device, COUNT(*) as count
+FROM analytics_events WHERE event = 'page_view'
+GROUP BY device;</code></pre>
+
+    <h3>16.2 Dashboard Widgets</h3>
+    <ul class="checklist">
+      <li><strong>Stat cards</strong> — total views (30d), form starts, form completions, conversion rate</li>
+      <li><strong>Line chart</strong> — daily page views (14d) — use <code>recharts</code> (lightweight, already React)</li>
+      <li><strong>Funnel chart</strong> — form step progression (started → step 1 → 2 → 3 → submitted)</li>
+      <li><strong>Country list</strong> — top 10 countries by visit</li>
+      <li><strong>Device pie</strong> — mobile / tablet / desktop split</li>
+    </ul>
+
+    <p>Install: <code>pnpm add recharts --filter=@nous/admin</code></p>
+  </div>
+
+
+  <!-- ════════════════ 17 ADMIN UX ════════════════ -->
+  <div class="section" id="admin-ux">
+    <div class="section-header">
+      <span class="section-num">17</span>
+      <h2>Admin UX Improvements</h2>
+    </div>
+
+    <h3>17.1 Contacts View — Enhancements</h3>
+    <ul class="checklist">
+      <li><strong>Reply button</strong> — opens <code>mailto:{email}?subject=Re: Your Brief</code> pre-filled</li>
+      <li><strong>WhatsApp button</strong> — if phone is provided, links to <code>wa.me/{phone}</code></li>
+      <li><strong>Bulk status update</strong> — select multiple → change status</li>
+      <li><strong>Date filter</strong> — today / this week / this month / custom range</li>
+      <li><strong>Unread badge</strong> — count of 'new' contacts in sidebar nav</li>
+      <li><strong>Real-time updates</strong> — use Supabase Realtime subscription to show new contacts without refresh</li>
+    </ul>
+
+    <h3>17.2 Real-time Contact Notifications</h3>
+    <pre><code>// apps/admin/src/components/RealtimeContacts.tsx
+'use client'
+import { useEffect } from 'react'
+import { createBrowserClient } from '@nous/db'
+
+export function RealtimeContacts({ onNew }: { onNew: () => void }) {
+  useEffect(() => {
+    const db = createBrowserClient()
+    const channel = db
+      .channel('contacts-changes')
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'contacts' },
+        () => onNew()
+      )
+      .subscribe()
+
+    return () => { db.removeChannel(channel) }
+  }, [onNew])
+
+  return null
+}</code></pre>
+
+    <h3>17.3 Dark Mode for Admin</h3>
+    <p>The public site uses a light cream theme. The admin should use a dark theme (already partially done) — ensure full dark mode CSS coverage and a theme toggle in the header.</p>
+  </div>
+
+
+  <!-- ════════════════ 18 DEPLOYMENT ════════════════ -->
+  <div class="section" id="deployment">
+    <div class="section-header">
+      <span class="section-num">18</span>
+      <h2>Deployment</h2>
+    </div>
+
+    <h3>18.1 Recommended: Vercel</h3>
+    <p>Vercel is the optimal deployment target for this stack — native Next.js support, edge middleware, automatic image optimization, and first-class monorepo support.</p>
+
+    <table class="task-table">
+      <thead><tr><th>App</th><th>Domain</th><th>Vercel Project</th></tr></thead>
+      <tbody>
+        <tr><td>apps/web</td><td>nous.qa</td><td><code>nous-web</code></td></tr>
+        <tr><td>apps/admin</td><td>admin.nous.qa</td><td><code>nous-admin</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>18.2 Environment Variables Checklist</h3>
+    <table class="task-table">
+      <thead><tr><th>Variable</th><th>App</th><th>Required</th></tr></thead>
+      <tbody>
+        <tr><td><code>NEXT_PUBLIC_SUPABASE_URL</code></td><td>web + admin</td><td>Yes</td></tr>
+        <tr><td><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td>web + admin</td><td>Yes</td></tr>
+        <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>web + admin</td><td>Yes</td></tr>
+        <tr><td><code>RESEND_API_KEY</code></td><td>web</td><td>Phase 2</td></tr>
+        <tr><td><code>NOTIFY_EMAIL</code></td><td>web</td><td>Phase 2</td></tr>
+        <tr><td><code>SITE_URL</code></td><td>web</td><td>Yes (for CORS)</td></tr>
+        <tr><td><code>UPSTASH_REDIS_REST_URL</code></td><td>web</td><td>Phase 1 (production)</td></tr>
+        <tr><td><code>UPSTASH_REDIS_REST_TOKEN</code></td><td>web</td><td>Phase 1 (production)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>18.3 Remove Hardcoded IP</h3>
+    <pre><code>// apps/web/next.config.ts — REMOVE this:
+allowedDevOrigins: ['192.168.1.38']
+
+// Use env var instead:
+allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(',') ?? []</code></pre>
+
+    <h3>18.4 Vercel Monorepo Setup</h3>
+    <pre><code># vercel.json in apps/web/
+{
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@nous/web",
+  "outputDirectory": ".next",
+  "installCommand": "pnpm install --frozen-lockfile"
+}</code></pre>
+  </div>
+
+
+  <!-- ════════════════ 19 MONITORING ════════════════ -->
+  <div class="section" id="monitoring">
+    <div class="section-header">
+      <span class="section-num">19</span>
+      <h2>Monitoring &amp; Observability</h2>
+    </div>
+
+    <h3>19.1 Sentry Error Tracking</h3>
+    <pre><code>pnpm add @sentry/nextjs --filter=@nous/web --filter=@nous/admin</code></pre>
+    <p>Run <code>npx @sentry/wizard@latest -i nextjs</code> — it auto-configures <code>instrumentation.ts</code>, <code>sentry.client.config.ts</code>, and <code>sentry.server.config.ts</code>.</p>
+    <p>Capture: unhandled errors, API route failures, slow transactions (set <code>tracesSampleRate: 0.1</code> in production).</p>
+
+    <h3>19.2 Web Vitals Reporting</h3>
+    <pre><code>// apps/web/src/app/layout.tsx — add after existing analytics
+import { useReportWebVitals } from 'next/web-vitals'  // App Router version
+
+// In a client component:
+export function WebVitalsReporter() {
+  useReportWebVitals(metric => {
+    // Send to analytics_events table
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'web_vital',
+        metadata: {
+          name:  metric.name,
+          value: metric.value,
+          rating: metric.rating,  // 'good' | 'needs-improvement' | 'poor'
+        },
+      }),
+    })
+  })
+  return null
+}</code></pre>
+
+    <h3>19.3 Uptime Monitoring</h3>
+    <p>Use <strong>Betteruptime</strong> (free tier) or <strong>UptimeRobot</strong>. Monitor:</p>
+    <ul class="checklist">
+      <li><strong>https://nous.qa</strong> — every 3 minutes</li>
+      <li><strong>https://admin.nous.qa/dashboard</strong> — every 5 minutes</li>
+      <li><strong>https://nous.qa/api/contact</strong> — POST health check every 10 minutes</li>
+    </ul>
+    <p>Alert destinations: email + WhatsApp webhook (ironically, to the same number on the site).</p>
+  </div>
+
+
+  <!-- ════════════════ 20 CACHING ════════════════ -->
+  <div class="section" id="caching">
+    <div class="section-header">
+      <span class="section-num">20</span>
+      <h2>Caching Strategy</h2>
+    </div>
+
+    <div class="callout warn">
+      <strong>Currently the homepage is <code>force-dynamic</code></strong> — it always hits Supabase on every page request. This is fine for correctness but hurts TTFB at scale. Add a revalidation strategy.
+    </div>
+
+    <h3>20.1 Incremental Static Regeneration (ISR)</h3>
+    <pre><code>// apps/web/src/app/page.tsx — switch from force-dynamic to ISR
+// Remove: export const dynamic = 'force-dynamic'
+
+// Add: revalidate every 60 seconds
+export const revalidate = 60
+
+// When admin updates content, trigger revalidation:
+// In /api/admin/settings PATCH handler:
+import { revalidatePath } from 'next/cache'
+revalidatePath('/')  // ← clears homepage cache immediately</code></pre>
+
+    <h3>20.2 Supabase Query Caching</h3>
+    <pre><code>// Use Next.js fetch cache for Supabase data
+// (Supabase JS client wraps fetch internally)
+
+// For rarely-changing data (services, projects):
+const { data } = await supabase
+  .from('services')
+  .select('*')
+  .eq('active', true)
+  .order('sort_order')
+  // Next.js caches this for 60s
+  // Call revalidatePath('/') after admin changes</code></pre>
+
+    <h3>20.3 Service Worker Cache Strategy (Current vs Recommended)</h3>
+    <table class="task-table">
+      <thead><tr><th>Resource</th><th>Current</th><th>Recommended</th></tr></thead>
+      <tbody>
+        <tr><td>Navigation (HTML)</td><td>Stale-while-revalidate</td><td>Keep — correct</td></tr>
+        <tr><td>API routes</td><td>Network-first</td><td>Keep — API must be fresh</td></tr>
+        <tr><td>Static assets (JS/CSS)</td><td>Not specified</td><td>Cache-first with hash key (Next.js handles via _next/static)</td></tr>
+        <tr><td>Fonts</td><td>Not specified</td><td>Cache-first, immutable (1 year)</td></tr>
+        <tr><td>Images</td><td>Not specified</td><td>Cache-first, max-age 1 week</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- ════════════════ 21 i18n ════════════════ -->
+  <div class="section" id="i18n">
+    <div class="section-header">
+      <span class="section-num">21</span>
+      <h2>Internationalization (i18n)</h2>
+    </div>
+
+    <div class="callout">
+      <strong>Lower priority</strong> — the current bilingual approach (hardcoded EN + AR side by side) works well for the single-page design. Full i18n routing (<code>/en</code>, <code>/ar</code>) is a phase 6+ consideration. But lay the groundwork now.
+    </div>
+
+    <h3>21.1 Groundwork (Do Now)</h3>
+    <ul class="checklist">
+      <li>Move all bilingual strings to <strong>site_settings</strong> in Supabase (the headline_en / headline_ar pattern already exists — expand it to all visible text)</li>
+      <li>Pass all strings as props from page.tsx to components (no hardcoded English strings in component files)</li>
+      <li>Add <code>lang="ar"</code> attribute to Arabic text spans for correct screen reader pronunciation</li>
+      <li>Add <code>dir="rtl"</code> to Arabic containers (already done in some places — audit all)</li>
+    </ul>
+
+    <h3>21.2 Future: Next.js i18n Routing</h3>
+    <pre><code>// next.config.ts — when ready for separate routes
+const config: NextConfig = {
+  i18n: {
+    locales: ['en', 'ar'],
+    defaultLocale: 'en',
+    localeDetection: false,  // explicit routing preferred
+  },
+}</code></pre>
+    <p>With this: <code>nous.qa/</code> → English, <code>nous.qa/ar</code> → Arabic. Full RTL layout switch via <code>&lt;html dir="rtl"&gt;</code>.</p>
+  </div>
+
+
+  <div class="divider"></div>
+
+  <!-- SUMMARY TABLE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">22</span>
+      <h2>Priority Summary</h2>
+    </div>
+
+    <table class="task-table">
+      <thead><tr><th>Task</th><th>Priority</th><th>Phase</th><th>Effort</th></tr></thead>
+      <tbody>
+        <tr><td>Fix XSS in Capabilities (innerHTML)</td><td><span class="badge badge-crit">Critical</span></td><td>1</td><td>1h</td></tr>
+        <tr><td>Add rate limiting to API routes</td><td><span class="badge badge-crit">Critical</span></td><td>1</td><td>2h</td></tr>
+        <tr><td>Remove hardcoded IP in next.config.ts</td><td><span class="badge badge-crit">Critical</span></td><td>1</td><td>15m</td></tr>
+        <tr><td>Add Zod validation to /api/contact</td><td><span class="badge badge-crit">Critical</span></td><td>1</td><td>1h</td></tr>
+        <tr><td>Add error.tsx + not-found.tsx</td><td><span class="badge badge-crit">Critical</span></td><td>1</td><td>1h</td></tr>
+        <tr><td>Add CORS headers</td><td><span class="badge badge-high">High</span></td><td>1</td><td>30m</td></tr>
+        <tr><td>Add middleware to apps/web</td><td><span class="badge badge-high">High</span></td><td>1</td><td>1h</td></tr>
+        <tr><td>Add env validation</td><td><span class="badge badge-high">High</span></td><td>1</td><td>30m</td></tr>
+        <tr><td>Email notifications (Resend)</td><td><span class="badge badge-high">High</span></td><td>2</td><td>3h</td></tr>
+        <tr><td>Admin: Services CRUD page</td><td><span class="badge badge-high">High</span></td><td>2</td><td>6h</td></tr>
+        <tr><td>Admin: Projects CRUD page</td><td><span class="badge badge-high">High</span></td><td>2</td><td>5h</td></tr>
+        <tr><td>Admin: Settings page</td><td><span class="badge badge-high">High</span></td><td>2</td><td>4h</td></tr>
+        <tr><td>Image upload to Supabase Storage</td><td><span class="badge badge-high">High</span></td><td>2</td><td>3h</td></tr>
+        <tr><td>sitemap.xml + robots.txt</td><td><span class="badge badge-high">High</span></td><td>3</td><td>30m</td></tr>
+        <tr><td>JSON-LD structured data</td><td><span class="badge badge-high">High</span></td><td>3</td><td>1h</td></tr>
+        <tr><td>OG image (Next.js ImageResponse)</td><td><span class="badge badge-high">High</span></td><td>3</td><td>1h</td></tr>
+        <tr><td>Amiri font subset + preload</td><td><span class="badge badge-high">High</span></td><td>3</td><td>1h</td></tr>
+        <tr><td>Database indexes</td><td><span class="badge badge-high">High</span></td><td>1</td><td>30m</td></tr>
+        <tr><td>RLS policies on all tables</td><td><span class="badge badge-high">High</span></td><td>1</td><td>1h</td></tr>
+        <tr><td>Add services.name_ar to types</td><td><span class="badge badge-med">Medium</span></td><td>1</td><td>15m</td></tr>
+        <tr><td>Soft delete for contacts</td><td><span class="badge badge-med">Medium</span></td><td>2</td><td>1h</td></tr>
+        <tr><td>Admin: Analytics dashboard</td><td><span class="badge badge-med">Medium</span></td><td>4</td><td>8h</td></tr>
+        <tr><td>Admin: Real-time contact updates</td><td><span class="badge badge-med">Medium</span></td><td>4</td><td>2h</td></tr>
+        <tr><td>Sentry error tracking</td><td><span class="badge badge-med">Medium</span></td><td>6</td><td>1h</td></tr>
+        <tr><td>Web Vitals reporting</td><td><span class="badge badge-med">Medium</span></td><td>6</td><td>1h</td></tr>
+        <tr><td>ISR caching (revalidate: 60)</td><td><span class="badge badge-med">Medium</span></td><td>3</td><td>30m</td></tr>
+        <tr><td>Accessibility: focus styles</td><td><span class="badge badge-med">Medium</span></td><td>5</td><td>1h</td></tr>
+        <tr><td>Accessibility: cursor:none fix</td><td><span class="badge badge-med">Medium</span></td><td>5</td><td>15m</td></tr>
+        <tr><td>Accessibility: ARIA on contact form</td><td><span class="badge badge-med">Medium</span></td><td>5</td><td>2h</td></tr>
+        <tr><td>Orbital RAF: visibility guard</td><td><span class="badge badge-med">Medium</span></td><td>3</td><td>30m</td></tr>
+        <tr><td>Reduced motion: CSS audit</td><td><span class="badge badge-med">Medium</span></td><td>5</td><td>2h</td></tr>
+        <tr><td>Section-level error boundaries</td><td><span class="badge badge-med">Medium</span></td><td>1</td><td>1h</td></tr>
+        <tr><td>Touch targets 44×44px</td><td><span class="badge badge-low">Low</span></td><td>5</td><td>30m</td></tr>
+        <tr><td>i18n groundwork (move strings to DB)</td><td><span class="badge badge-low">Low</span></td><td>5</td><td>3h</td></tr>
+        <tr><td>i18n routing (/en, /ar)</td><td><span class="badge badge-low">Low</span></td><td>6+</td><td>12h</td></tr>
+        <tr><td>Uptime monitoring</td><td><span class="badge badge-low">Low</span></td><td>6</td><td>30m</td></tr>
+        <tr><td>Admin: multi-user support</td><td><span class="badge badge-low">Low</span></td><td>6+</td><td>4h</td></tr>
+        <tr><td>Admin: audit log</td><td><span class="badge badge-low">Low</span></td><td>6+</td><td>3h</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top: 80px; padding-top: 32px; border-top: 1px solid rgba(10,92,71,.12);">
+    <p style="font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase;">
+      Nous Platform — Technical Plan · Generated June 2026 · Scan-based audit of 21 source files, 5 DB tables, 2 apps, 3 packages
+    </p>
+  </div>
+
+</main>
+</div>
+</body>
+</html>
