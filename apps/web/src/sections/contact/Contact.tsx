@@ -3,6 +3,110 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { track } from '@/lib/analytics'
 
+// ── Exit guard modal ─────────────────────────────────────────────────────────
+function ExitGuard({ onStay, onLeave }: { onStay: () => void; onLeave: () => void }) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9998,
+        background: 'rgba(10,14,12,.78)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        animation: 'overlay-in .35s cubic-bezier(.16,1,.3,1) forwards',
+      }}
+      onClick={onStay}
+    >
+      <div
+        style={{
+          background: 'var(--bg)',
+          border: '1px solid rgba(10,92,71,.18)',
+          padding: '48px 48px 40px',
+          maxWidth: 420,
+          width: 'calc(100vw - 40px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: 0,
+          position: 'relative',
+          overflow: 'hidden',
+          animation: 'card-up .45s cubic-bezier(.16,1,.3,1) .04s both',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Accent top border */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg, var(--accent) 0%, transparent 100%)' }} />
+
+        {/* Icon */}
+        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid rgba(10,92,71,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, flexShrink: 0 }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v5m0 3v.5" stroke="#60B89A" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+
+        {/* Headline */}
+        <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(22px,4vw,32px)', fontWeight: 700, fontStyle: 'italic', color: 'var(--text)', letterSpacing: '-.03em', lineHeight: 1.1, marginBottom: 10 }}>
+          Your brief isn&apos;t sent yet.
+        </h3>
+
+        {/* Sub */}
+        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.1em', lineHeight: 1.9, marginBottom: 32 }}>
+          Leave now and your progress will be lost.<br />
+          Finish takes under a minute.
+        </p>
+
+        {/* Hairline */}
+        <div style={{ width: '100%', height: 1, background: 'rgba(10,92,71,.14)', marginBottom: 24 }} />
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 12, width: '100%' }}>
+          <button
+            onClick={onStay}
+            style={{
+              flex: 1,
+              fontFamily: 'var(--font-mono)',
+              fontSize: 9,
+              fontWeight: 700,
+              color: 'var(--bg)',
+              letterSpacing: '.18em',
+              textTransform: 'uppercase',
+              background: 'var(--accent)',
+              border: 'none',
+              padding: '14px 0',
+              cursor: 'pointer',
+              transition: 'opacity .2s',
+            }}
+          >
+            Stay &amp; Finish
+          </button>
+          <button
+            onClick={onLeave}
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 9,
+              color: 'var(--muted)',
+              letterSpacing: '.14em',
+              textTransform: 'uppercase',
+              background: 'none',
+              border: '1px solid var(--border)',
+              padding: '14px 20px',
+              cursor: 'pointer',
+              transition: 'border-color .2s, color .2s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Leave
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface Service {
   id: string
   name: string
@@ -270,6 +374,10 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
   const [submitted,   setSubmitted]   = useState(false)
   const [submitting,  setSubmitting]  = useState(false)
   const [error,       setError]       = useState('')
+  const [exitGuard,   setExitGuard]   = useState(false)
+
+  const pendingHref   = useRef<string | null>(null)
+  const allowNav      = useRef(false)
 
   const sectionRef    = useRef<HTMLElement>(null)
   const formHeaderRef = useRef<HTMLDivElement>(null)
@@ -290,6 +398,54 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
     if (!t.s3 && hasSvc)   { t.s3 = true; track('contact_form_step', { step: 3 }) }
     if (!t.s4 && hasMsg)   { t.s4 = true; track('contact_form_step', { step: 4 }) }
   }, [name, hasName, hasEmail, hasSvc, hasMsg])
+
+  // Dirty = user has entered any content
+  const isDirty = name.length > 0 || email.length > 0 || phone.length > 0 || message.length > 0 || selectedSvc.size > 0
+
+  // Intercept <a> clicks when form is dirty but not yet submitted
+  useEffect(() => {
+    if (!isDirty || submitted) return
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as Element).closest('a[href]') as HTMLAnchorElement | null
+      if (!anchor) return
+      const href = anchor.getAttribute('href') ?? ''
+      // Only intercept internal navigation and external links — skip anchors within the page
+      if (href === '#contact' || href === '' || href.startsWith('#')) return
+      if (allowNav.current) return
+      e.preventDefault()
+      e.stopImmediatePropagation()
+      pendingHref.current = href
+      setExitGuard(true)
+    }
+    document.addEventListener('click', handleClick, true)
+    return () => document.removeEventListener('click', handleClick, true)
+  }, [isDirty, submitted])
+
+  // Native browser unload guard (back button, close tab)
+  useEffect(() => {
+    if (!isDirty || submitted) return
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [isDirty, submitted])
+
+  const handleExitStay  = () => { setExitGuard(false); pendingHref.current = null }
+  const handleExitLeave = () => {
+    allowNav.current = true
+    setExitGuard(false)
+    const href = pendingHref.current
+    pendingHref.current = null
+    if (href) {
+      if (href.startsWith('http') || href.startsWith('//')) {
+        window.open(href, '_blank', 'noopener,noreferrer')
+      } else {
+        window.location.href = href
+      }
+    }
+  }
 
   const filled  = [hasName, hasEmail, hasSvc, hasMsg].filter(Boolean).length
   const pct     = Math.round((filled / 4) * 100)
@@ -480,6 +636,8 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
           </div>
         </div>
       )}
+
+      {exitGuard && <ExitGuard onStay={handleExitStay} onLeave={handleExitLeave} />}
 
       {/* Mobile-only sticky greeting + progress bar */}
       <div
@@ -759,8 +917,8 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
               )}
             </div>
 
-            {/* Step 4: Vision */}
-            <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(3) }}>
+            {/* Step 4: Vision — always visible on mobile regardless of prior steps */}
+            <div className="step-vision" style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(3) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                 <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>04</span>
                 <label htmlFor="contact-message" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Describe your vision</label>
@@ -831,6 +989,8 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
           #contact-cols { grid-template-columns: 1fr !important; min-height: auto !important; }
           #brief-preview { display: none !important; }
           #form-side { padding: 28px 20px 72px !important; min-height: auto !important; justify-content: flex-start !important; }
+          /* Vision textarea always fully visible on mobile — user can fill any order */
+          .step-vision { opacity: 1 !important; pointer-events: auto !important; }
         }
         @media (max-width:600px) {
           #svc-pills-grid { grid-template-columns: 1fr 1fr !important; }

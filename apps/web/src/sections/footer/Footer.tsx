@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import {
   EnvelopeSimple, WhatsappLogo, Phone, InstagramLogo, LinkedinLogo,
   XLogo, TiktokLogo, YoutubeLogo, GithubLogo, BehanceLogo, DribbbleLogo,
@@ -208,7 +207,8 @@ export default function Footer({
             <a href="#" aria-label={`${companyName} — return to homepage`}
               style={{ display: 'flex', alignItems: 'center', gap: 12 }}
             >
-              <Image src="/nous-logo.svg" alt="" aria-hidden="true"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/nous-logo.svg" alt="" aria-hidden="true"
                 width={48} height={48} style={{ width: 48, height: 48 }} />
               <span style={{
                 fontFamily: 'var(--font-fraunces)', fontSize: 24, fontWeight: 700,

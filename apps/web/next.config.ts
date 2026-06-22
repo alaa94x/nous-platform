@@ -37,7 +37,7 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
-      // Static images
+      // Pre-optimised static images — 1 year immutable (filenames are versioned by content)
       {
         source: '/:path*.webp',
         headers: [
@@ -45,12 +45,32 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: '/:path*.avif',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/:path*.jpg',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // SVG assets — shorter TTL since they may be updated with brand changes
+      {
         source: '/:path*.svg',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=86400' },
         ],
       },
-      // API: no-cache + CORS preflight
+      // PWA icons — long cache, filenames are stable
+      {
+        source: '/icons/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // API: no-cache + security headers
       {
         source: '/api/:path*',
         headers: [

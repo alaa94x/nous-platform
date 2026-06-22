@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 export const metadata = {
   title: 'Offline — Nous',
   robots: { index: false },
@@ -20,7 +18,8 @@ export default function OfflinePage() {
         textAlign: 'center',
       }}
     >
-      <Image src="/nous-logo.svg" alt="nous." width={48} height={48} style={{ opacity: .5 }} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/nous-logo.svg" alt="nous." width={48} height={48} style={{ opacity: .5 }} />
       <div>
         <h1
           style={{

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useReducedMotion } from 'motion/react'
+import { useReveal } from '@/components/useReveal'
 
 interface Service {
   id: string
@@ -17,10 +18,13 @@ interface CapabilitiesProps {
 }
 
 export default function Capabilities({ services }: CapabilitiesProps) {
-  const reduced   = !!useReducedMotion()
-  const vpRef     = useRef<HTMLDivElement>(null)  // service list (for querying .svc-item)
-  const orbitRef  = useRef<HTMLDivElement>(null)  // orbit circle (for pill insertion)
-  const lblRef    = useRef<HTMLDivElement>(null)
+  const reduced     = !!useReducedMotion()
+  const sectionRef  = useRef<HTMLElement>(null)
+  const vpRef       = useRef<HTMLDivElement>(null)  // service list (for querying .svc-item)
+  const orbitRef    = useRef<HTMLDivElement>(null)  // orbit circle (for pill insertion)
+  const lblRef      = useRef<HTMLDivElement>(null)
+
+  useReveal(sectionRef)
 
   // Orbital visualization — RAF trig, matches prototype exactly
   useEffect(() => {
@@ -290,6 +294,7 @@ export default function Capabilities({ services }: CapabilitiesProps) {
 
   return (
     <section
+      ref={sectionRef}
       id="capabilities"
       aria-label="Capabilities"
       className="relative z-10"
