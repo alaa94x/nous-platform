@@ -1,6 +1,7 @@
 'use client'
 
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { useReducedMotion, useScroll, useTransform, motion } from 'motion/react'
 
 const langData = [
@@ -43,6 +44,7 @@ export default function Hero({
   const reduced = !!reducedRaw
   const nameRef = useRef<HTMLSpanElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
+  const scrambleRef = useRef<HTMLSpanElement>(null)
   const idxRef = useRef(0)
   const sectionRef = useRef<HTMLElement>(null)
 
@@ -53,37 +55,29 @@ export default function Hero({
   })
   const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '40%'])
 
-  const [scrambledEn, setScrambledEn] = useState(headlineEn)
-
+  // Scramble drives DOM directly — no React state to avoid 28 re-renders/s
   useEffect(() => {
-    if (reduced || !headlineEn) {
-      setScrambledEn(headlineEn)
-      return
-    }
+    const el = scrambleRef.current
+    if (!el || reduced || !headlineEn) return
 
-    // Delay the scramble slightly so it happens as the element reveals
     const timeout = setTimeout(() => {
       let iteration = 0
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%*'
       const interval = setInterval(() => {
-        setScrambledEn(
-          headlineEn
-            .split('')
-            .map((letter, index) => {
-              if (index < iteration || letter === ' ' || letter === '[' || letter === ']') {
-                return headlineEn[index]
-              }
-              return chars[Math.floor(Math.random() * chars.length)]
-            })
-            .join('')
-        )
-        if (iteration >= headlineEn.length) {
-          clearInterval(interval)
-        }
+        el.textContent = headlineEn
+          .split('')
+          .map((letter, index) => {
+            if (index < iteration || letter === ' ' || letter === '[' || letter === ']') {
+              return headlineEn[index]
+            }
+            return chars[Math.floor(Math.random() * chars.length)]
+          })
+          .join('')
+        if (iteration >= headlineEn.length) clearInterval(interval)
         iteration += 1 / 2.5
       }, 35)
       return () => clearInterval(interval)
-    }, 400) // Delay to match the fade up
+    }, 400)
 
     return () => clearTimeout(timeout)
   }, [headlineEn, reduced])
@@ -110,11 +104,12 @@ export default function Hero({
     return () => nameEl.removeEventListener('animationiteration', onIter)
   }, [])
 
-  // Scroll reveal setup
+  // Scroll reveal — scoped to this section only, not the whole document
   useEffect(() => {
-    const els = Array.from(document.querySelectorAll<HTMLElement>('.reveal'))
+    const section = sectionRef.current
+    if (!section) return
+    const els = Array.from(section.querySelectorAll<HTMLElement>('.reveal'))
 
-    // Stagger siblings in the same parent
     els.forEach(el => {
       const siblings = el.parentElement
         ? Array.from(el.parentElement.querySelectorAll<HTMLElement>(':scope > .reveal'))
@@ -128,7 +123,6 @@ export default function Hero({
       setTimeout(() => el.classList.add('visible'), del)
     }
 
-    // Use rootMargin so elements start animating 120px before entering view
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach(e => {
@@ -141,21 +135,25 @@ export default function Hero({
     )
     els.forEach(el => io.observe(el))
 
-    // Fallback: force all reveals visible after 2s to handle edge cases
     const fallback = setTimeout(() => {
-      document.querySelectorAll<HTMLElement>('.reveal:not(.visible)').forEach(reveal)
+      section.querySelectorAll<HTMLElement>('.reveal:not(.visible)').forEach(reveal)
     }, 800)
 
     return () => { io.disconnect(); clearTimeout(fallback) }
   }, [])
 
-  // Magnetic buttons
+  // Magnetic buttons — with proper cleanup to prevent listener accumulation
   useEffect(() => {
     if (reduced) return
     const isMouse = window.matchMedia('(hover:hover) and (pointer:fine)').matches
     if (!isMouse) return
 
-    document.querySelectorAll<HTMLElement>('[data-magnetic-btn]').forEach(el => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const cleanups: (() => void)[] = []
+
+    section.querySelectorAll<HTMLElement>('[data-magnetic-btn]').forEach(el => {
       const str = el.classList.contains('init-btn') ? 0.34 : 0.2
       const onMove = (e: MouseEvent) => {
         const r = el.getBoundingClientRect()
@@ -170,7 +168,13 @@ export default function Hero({
       }
       el.addEventListener('mousemove', onMove)
       el.addEventListener('mouseleave', onLeave)
+      cleanups.push(() => {
+        el.removeEventListener('mousemove', onMove)
+        el.removeEventListener('mouseleave', onLeave)
+      })
     })
+
+    return () => cleanups.forEach(fn => fn())
   }, [reduced])
 
   return (
@@ -180,28 +184,27 @@ export default function Hero({
       className="relative z-10"
       style={{ minHeight: '100dvh', overflow: 'hidden' }}
     >
-      {/* NASA nebula — full image, zoom + drift + parallax on scroll */}
+      {/* Hero nebula — local asset, next/image for automatic WebP/AVIF + preload */}
       <motion.div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
+          // extra height so parallax never exposes the bottom edge
+          height: '115%',
           y: reduced ? 0 : imageY,
-          willChange: 'transform',
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e002076/GSFC_20171208_Archive_e002076~orig.jpg"
+        <Image
+          src="/orig1.jpg"
           alt=""
+          fill
+          priority
+          sizes="100vw"
           style={{
-            width: '100%',
-            height: '115%',        // extra height so parallax never shows edge
             objectFit: 'cover',
             objectPosition: 'center',
-            display: 'block',
             animation: reduced ? 'none' : 'hero-drift 32s ease-in-out infinite alternate',
-            willChange: 'transform',
           }}
         />
       </motion.div>
@@ -294,7 +297,7 @@ export default function Hero({
               animationPlayState: reduced ? 'paused' : 'running',
             }}
           >
-            [{scrambledEn}]
+            <span ref={scrambleRef}>{headlineEn}</span>
           </span>
         </span>
       </h1>
@@ -456,8 +459,6 @@ export default function Hero({
     .h-line-en { font-size: 14px !important; }
     .h-line-ar { line-height: 1.35 !important; padding-bottom: 0.15em !important; text-align: center !important; }
   }
-
-  html { scroll-behavior: smooth; }
 
   /* Zoom + drift — alternates so no jump at loop point.
      translate moves the crop window across the image revealing different regions. */

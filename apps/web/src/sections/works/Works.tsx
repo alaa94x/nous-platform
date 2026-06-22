@@ -37,6 +37,7 @@ function useCardTilt(reduced: boolean) {
 
     let trx = 0, tryY = 0, crx = 0, cry = 0
     let hovering = false, raf = 0
+    let cachedRect: DOMRect | null = null
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
     const tick = () => {
@@ -57,18 +58,20 @@ function useCardTilt(reduced: boolean) {
 
     const onEnter = () => {
       hovering = true
+      cachedRect = card.getBoundingClientRect()  // measure once on enter, not on every mousemove
       card.style.willChange = 'transform'
       if (content) content.style.transform = 'translateZ(50px)'
       if (line)    line.style.transform    = 'scaleX(1)'
       if (!raf)    raf = requestAnimationFrame(tick)
     }
     const onMove = (e: MouseEvent) => {
-      const r = card.getBoundingClientRect()
+      const r = cachedRect ?? card.getBoundingClientRect()
       trx  = -((e.clientY - (r.top  + r.height / 2)) / (r.height / 2)) * 9
       tryY =  ((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2)) * 9
     }
     const onLeave = () => {
       hovering = false; trx = 0; tryY = 0
+      cachedRect = null
       if (content) content.style.transform = 'translateZ(0)'
       if (line)    line.style.transform    = 'scaleX(0)'
       if (!raf)    raf = requestAnimationFrame(tick)

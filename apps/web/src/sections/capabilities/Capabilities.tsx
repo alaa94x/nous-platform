@@ -256,17 +256,35 @@ export default function Capabilities({ services }: CapabilitiesProps) {
     const onVisibilityChange = () => {
       if (document.hidden) {
         if (activeRaf) { cancelAnimationFrame(activeRaf); activeRaf = 0 }
-      } else if (activeRaf === 0 && satEls.length) {
-        // RAF will be restarted next time the user hovers
       }
+      // RAF restarts on next hover — no action needed when becoming visible
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
+
+    // Gate RAF on viewport visibility — pause when section is off-screen
+    let sectionVisible = false
+    const sectionEl = vp.closest('section')
+    const vpObserver = sectionEl
+      ? new IntersectionObserver(
+          (entries) => {
+            sectionVisible = entries[0]!.isIntersecting
+            if (!sectionVisible && activeRaf) {
+              cancelAnimationFrame(activeRaf)
+              activeRaf = 0
+            }
+            // RAF restarts on next hover when section re-enters viewport
+          },
+          { threshold: 0 },
+        )
+      : null
+    if (sectionEl && vpObserver) vpObserver.observe(sectionEl)
 
     return () => {
       clearSats()
       window.removeEventListener('touchstart', onScrollStart)
       window.removeEventListener('scroll', onScroll)
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      vpObserver?.disconnect()
     }
   }, [services, reduced])
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useReducedMotion } from 'motion/react'
 import Image from 'next/image'
 
@@ -16,29 +16,23 @@ const NAV_LINKS = [
 ] as const
 
 export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps = {}) {
-  const navRef      = useRef<HTMLElement>(null)
-  const logoRef     = useRef<HTMLDivElement>(null)
-  const reduced     = !!useReducedMotion()
-  const [active, setActive] = useState<string>('')
-  const [scrolled, setScrolled] = useState(false)
+  const navRef    = useRef<HTMLElement>(null)
+  const logoRef   = useRef<HTMLDivElement>(null)
+  const railRef   = useRef<HTMLDivElement>(null)   // mobile rail inner div
+  const reduced   = !!useReducedMotion()
 
-  // Logo fade — DOM-direct, no React re-render in the hot path
+  // ── Logo fade — DOM-direct ──────────────────────────────────────────────
   useEffect(() => {
     const el = logoRef.current
     if (!el) return
-
-    // Set CSS transition once
     el.style.transition = 'opacity .3s ease, transform .3s ease'
-
     const apply = () => {
       const hidden = window.scrollY > 40
-      el.style.opacity   = hidden ? '0' : '1'
-      el.style.transform = hidden ? 'translateY(-10px) scale(0.95)' : 'translateY(0) scale(1)'
+      el.style.opacity       = hidden ? '0' : '1'
+      el.style.transform     = hidden ? 'translateY(-10px) scale(0.95)' : 'translateY(0) scale(1)'
       el.style.pointerEvents = hidden ? 'none' : 'auto'
     }
-
-    apply() // set initial state
-
+    apply()
     window.addEventListener('scroll',    apply, { passive: true })
     window.addEventListener('touchmove', apply, { passive: true })
     window.addEventListener('touchend',  apply, { passive: true })
@@ -49,31 +43,63 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
     }
   }, [])
 
-  // scrolled state only used for desktop nav glassmorphism
+  // ── Desktop nav glassmorphism — DOM-direct, no React state on scroll ────
   useEffect(() => {
-    const update = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', update, { passive: true })
-    update()
-    return () => window.removeEventListener('scroll', update)
+    const nav = navRef.current
+    if (!nav) return
+    const apply = () => {
+      const scrolled = window.scrollY > 40
+      nav.style.background        = scrolled ? 'rgba(17,29,26,.92)' : 'linear-gradient(to bottom, rgba(5,18,15,.55) 0%, transparent 100%)'
+      nav.style.backdropFilter         = scrolled ? 'blur(20px)' : 'none'
+      nav.style['webkitBackdropFilter' as 'backdropFilter'] = scrolled ? 'blur(20px)' : 'none'
+      nav.style.borderBottom      = scrolled ? '1px solid rgba(255,255,255,.07)' : 'none'
+    }
+    apply()
+    window.addEventListener('scroll', apply, { passive: true })
+    return () => window.removeEventListener('scroll', apply)
   }, [])
 
-  // Active section via IntersectionObserver (disabled on contact page — no sections)
+  // ── Active section — DOM-direct rail indicator updates ──────────────────
   useEffect(() => {
     if (variant === 'contact') return
-    const sections = NAV_LINKS.map(l => document.getElementById(l.section)).filter(Boolean) as HTMLElement[]
+    const rail = railRef.current
+    if (!rail) return
+
+    const linkEls = Array.from(rail.querySelectorAll<HTMLAnchorElement>('[data-section]'))
+
+    const setActive = (sectionId: string) => {
+      linkEls.forEach(el => {
+        const isActive  = el.dataset['section'] === sectionId
+        const isContact = el.dataset['section'] === 'contact'
+        el.style.color      = isActive ? '#60B89A' : 'rgba(240,237,234,.55)'
+        el.style.background = isContact && isActive ? 'rgba(96,184,154,.08)' : 'transparent'
+        el.setAttribute('aria-current', isActive ? 'page' : '')
+
+        const bar = el.querySelector<HTMLSpanElement>('[data-bar]')
+        const dot = el.querySelector<HTMLSpanElement>('[data-dot]')
+        if (bar) bar.style.transform = isActive ? 'scaleX(1)' : 'scaleX(0)'
+        if (dot) {
+          dot.style.background = isActive ? '#60B89A' : 'rgba(240,237,234,.2)'
+          dot.style.transform  = isActive ? 'scale(1.5)' : 'scale(1)'
+        }
+      })
+    }
+
+    const sections = NAV_LINKS
+      .map(l => document.getElementById(l.section))
+      .filter(Boolean) as HTMLElement[]
     if (!sections.length) return
 
+    let currentActive = ''
     const io = new IntersectionObserver(
       entries => {
         entries.forEach(e => {
           if (e.isIntersecting) {
-            setActive(e.target.id)
-          } else {
-            // If the section is leaving upward (scrolling back to hero), clear active
-            setActive(prev => {
-              if (prev === e.target.id && e.boundingClientRect.top > 0) return ''
-              return prev
-            })
+            currentActive = e.target.id
+            setActive(currentActive)
+          } else if (currentActive === e.target.id && e.boundingClientRect.top > 0) {
+            currentActive = ''
+            setActive('')
           }
         })
       },
@@ -83,17 +109,15 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
     return () => io.disconnect()
   }, [variant])
 
-  // Magnetic effect on desktop nav links — proper cleanup
+  // ── Magnetic nav links ──────────────────────────────────────────────────
   useEffect(() => {
     if (reduced) return
     const isMouse = window.matchMedia('(hover:hover) and (pointer:fine)').matches
     if (!isMouse) return
-
     const nav = navRef.current
     if (!nav) return
 
     const cleanups: (() => void)[] = []
-
     nav.querySelectorAll<HTMLElement>('[data-magnetic-btn]').forEach(el => {
       const onMove = (e: MouseEvent) => {
         const r  = el.getBoundingClientRect()
@@ -113,7 +137,6 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
         el.removeEventListener('mouseleave', onLeave)
       })
     })
-
     return () => cleanups.forEach(fn => fn())
   }, [reduced])
 
@@ -126,16 +149,12 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
         className="desktop-nav fixed top-0 left-0 right-0 flex items-center justify-between"
         style={{
           padding: '0 56px',
-        height: 64,
+          height: 64,
           zIndex: 300,
           transition: 'background .4s, backdrop-filter .4s, border-color .4s',
-          background:     scrolled ? 'rgba(17,29,26,.92)' : 'linear-gradient(to bottom, rgba(5,18,15,.55) 0%, transparent 100%)',
-          backdropFilter: scrolled ? 'blur(20px)'        : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(20px)'  : 'none',
-          borderBottom:   scrolled ? '1px solid rgba(255,255,255,.07)' : 'none',
+          background: 'linear-gradient(to bottom, rgba(5,18,15,.55) 0%, transparent 100%)',
         }}
       >
-        {/* Logo + wordmark + status tag */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <a
             href={variant === 'contact' ? '/' : '#'}
@@ -166,10 +185,8 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
               {siteName}
             </span>
           </a>
-
         </div>
 
-        {/* Nav links */}
         <div className="flex items-center" style={{ gap: 36 }}>
           {NAV_LINKS.slice(0, 2).map(link => (
             <a
@@ -192,7 +209,6 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
             </a>
           ))}
 
-          {/* Contact CTA */}
           <a
             href="/contact"
             data-magnetic-btn="true"
@@ -217,7 +233,7 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
         </div>
       </nav>
 
-      {/* ── MOBILE FLOATING LOGO — DOM-driven fade, no React state in hot path ── */}
+      {/* ── MOBILE FLOATING LOGO ─────────────────────────────── */}
       <div
         ref={logoRef}
         className="mobile-logo-strip"
@@ -259,120 +275,93 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
           left: 0,
           right: 0,
           zIndex: 300,
-          display: 'none', // shown via CSS media query
+          display: 'none',
           background: 'rgba(17,29,26,.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(255,255,255,.08)',
-          // iOS safe area
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'stretch',
-            height: 56,
-          }}
-        >
-          {NAV_LINKS.map((link, i) => {
-            const isActive  = active === link.section
-            const isContact = link.section === 'contact'
-            return (
-              <a
-                key={link.href}
-                href={link.href}
-                aria-current={isActive ? 'page' : undefined}
+        <div ref={railRef} style={{ display: 'flex', alignItems: 'stretch', height: 56 }}>
+          {NAV_LINKS.map((link, i) => (
+            <a
+              key={link.href}
+              href={link.href}
+              data-section={link.section}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                fontFamily: 'var(--font-mono)',
+                fontSize: 8,
+                letterSpacing: '.18em',
+                textTransform: 'uppercase',
+                color: 'rgba(240,237,234,.55)',
+                textDecoration: 'none',
+                position: 'relative',
+                transition: 'color .25s',
+                background: 'transparent',
+                borderLeft: i > 0 ? '1px solid rgba(255,255,255,.06)' : 'none',
+                minWidth: 44,
+              }}
+            >
+              {/* Active top bar */}
+              <span
+                data-bar="true"
+                aria-hidden="true"
                 style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 8,
-                  letterSpacing: '.18em',
-                  textTransform: 'uppercase',
-                  color: isActive ? '#60B89A' : 'rgba(240,237,234,.55)',
-                  textDecoration: 'none',
-                  position: 'relative',
-                  transition: 'color .25s',
-                  // Contact gets a subtle accent background
-                  background: isContact && isActive ? 'rgba(96,184,154,.08)' : 'transparent',
-                  borderLeft: i > 0 ? '1px solid rgba(255,255,255,.06)' : 'none',
-                  // Ensure min touch target
-                  minWidth: 44,
+                  position: 'absolute',
+                  top: 0,
+                  left: '30%',
+                  right: '30%',
+                  height: 1,
+                  background: '#60B89A',
+                  borderRadius: '0 0 2px 2px',
+                  transformOrigin: 'center',
+                  transform: 'scaleX(0)',
+                  transition: reduced ? 'none' : 'transform .35s cubic-bezier(.16,1,.3,1)',
                 }}
-              >
-                {/* Active top bar */}
-                <span
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '30%',
-                    right: '30%',
-                    height: 1,
-                    background: '#60B89A',
-                    borderRadius: '0 0 2px 2px',
-                    transformOrigin: 'center',
-                    transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
-                    transition: reduced ? 'none' : 'transform .35s cubic-bezier(.16,1,.3,1)',
-                  }}
-                />
-
-                {/* Dot indicator */}
-                <span
-                  aria-hidden="true"
-                  style={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: '50%',
-                    background: isActive ? '#60B89A' : 'rgba(240,237,234,.2)',
-                    transition: reduced ? 'none' : 'background .25s, transform .3s cubic-bezier(.16,1,.3,1)',
-                    transform: isActive ? 'scale(1.5)' : 'scale(1)',
-                    flexShrink: 0,
-                  }}
-                />
-
-                {/* Label */}
-                <span style={{ lineHeight: 1 }}>{link.label}</span>
-              </a>
-            )
-          })}
+              />
+              {/* Dot indicator */}
+              <span
+                data-dot="true"
+                aria-hidden="true"
+                style={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: '50%',
+                  background: 'rgba(240,237,234,.2)',
+                  transition: reduced ? 'none' : 'background .25s, transform .3s cubic-bezier(.16,1,.3,1)',
+                  transform: 'scale(1)',
+                  flexShrink: 0,
+                }}
+              />
+              <span style={{ lineHeight: 1 }}>{link.label}</span>
+            </a>
+          ))}
         </div>
       </nav>
 
       <style>{`
-        /* ── Desktop nav hover ── */
         .nav-link:hover { color: #5FB89A !important; }
         .nav-contact-cta:hover {
           border-color: rgba(255,255,255,.8) !important;
           background: rgba(255,255,255,.12) !important;
           color: #FFFFFF !important;
         }
-
-        /* ── Show bottom rail, hide desktop nav on mobile ── */
         @media (max-width: 900px) {
           .desktop-nav { display: none !important; }
           .mobile-rail { display: block !important; }
         }
-
-        /* ── Hide floating logo on desktop ── */
         @media (min-width: 901px) {
-          .mobile-logo-strip {
-            display: none !important;
-          }
+          .mobile-logo-strip { display: none !important; }
         }
-
-        /* ── Tap highlight suppression on mobile links ── */
         .mobile-rail a { -webkit-tap-highlight-color: rgba(10,92,71,.08); }
-
-        /* ── Active press feedback ── */
-        .mobile-rail a:active {
-          background: rgba(10,92,71,.06) !important;
-        }
+        .mobile-rail a:active { background: rgba(10,92,71,.06) !important; }
       `}</style>
     </>
   )

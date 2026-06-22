@@ -135,6 +135,9 @@ input:focus, textarea:focus, select:focus {
   text-transform: uppercase;
   display: block;
   margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Page-level heading */
@@ -179,48 +182,48 @@ input:focus, textarea:focus, select:focus {
 
 /* ── Layout grids ──────────────────────────────────────────────────────────── */
 
-/* 4-column stat grid used on dashboard + analytics */
+/* 4-column stat grid — mobile-first */
 .adm-stat-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-@media (max-width: 1024px) {
-  .adm-stat-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 480px) {
-  .adm-stat-grid { grid-template-columns: 1fr; gap: 10px; }
-}
-
-/* 2-column charts row */
-.adm-charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
-@media (max-width: 720px) {
-  .adm-charts-row { grid-template-columns: 1fr; }
+@media (min-width: 480px) {
+  .adm-stat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+
+@media (min-width: 1024px) {
+  .adm-stat-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* 2-column charts row — mobile-first */
+.adm-charts-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 720px) {
+  .adm-charts-row { grid-template-columns: 1fr 1fr; }
 }
 
 /* Funnel layout is handled inside analytics/page.tsx via
    .funnel-desktop / .funnel-mobile classes for cleaner mobile control */
 
-/* 3-column quick-links grid (dashboard) */
+/* 3-column quick-links grid — mobile-first */
 .adm-links-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 
-@media (max-width: 900px) {
+@media (min-width: 480px) {
   .adm-links-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 480px) {
-  .adm-links-grid { grid-template-columns: 1fr; }
+@media (min-width: 900px) {
+  .adm-links-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ── Touch interaction resets ──────────────────────────────────────────────── */

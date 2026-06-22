@@ -403,7 +403,9 @@ export default async function AnalyticsPage() {
           {/* ── Recent events ───────────────────────────────────────────── */}
           <div className="an-panel">
             <span className="an-panel-title">Recent Events</span>
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+
+            {/* Desktop table */}
+            <div className="events-table-wrap">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'ui-monospace, monospace', fontSize: 9, minWidth: 560 }}>
                 <thead>
                   <tr>
@@ -431,6 +433,27 @@ export default async function AnalyticsPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile stacked cards */}
+            <div className="events-cards-wrap">
+              {recent.map((e, i) => (
+                <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,.04)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
+                    <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'var(--accent)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.event}</span>
+                    <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'rgba(255,255,255,.22)', flexShrink: 0 }}>{fmtTime(e.created_at)}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{e.path ?? '/'}</span>
+                    {e.country && (
+                      <span style={{ fontSize: 8, color: 'var(--text)', flexShrink: 0 }}>{countryFlag(e.country)} {e.country}</span>
+                    )}
+                    {e.device && (
+                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'rgba(255,255,255,.28)', flexShrink: 0, textTransform: 'capitalize' }}>{e.device}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </>
@@ -477,9 +500,15 @@ export default async function AnalyticsPage() {
         }
         .funnel-row:last-child { border-bottom: none; }
 
-        @media (max-width: 600px) {
+        /* Events: table on tablet+, stacked cards on mobile */
+        .events-table-wrap { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .events-cards-wrap { display: none; }
+
+        @media (max-width: 767px) {
           .funnel-desktop { display: none; }
           .funnel-mobile  { display: flex; flex-direction: column; }
+          .events-table-wrap { display: none; }
+          .events-cards-wrap { display: block; }
         }
       `}</style>
     </div>
