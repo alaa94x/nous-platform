@@ -24,7 +24,7 @@ const SEED_SETTINGS: Record<string, string> = {
   hero_location:      'Doha, Qatar · 2026',
   hero_cta_primary:   'Initialize Project',
   hero_cta_secondary: 'View Selected Works',
-  contact_email:      'hello@nous.qa',
+  contact_email:      'nouslab@icould.com',
   footer_location:    'Qatar · 2026',
   footer_copyright:   '© 2025 Nous. All Rights Reserved.',
   footer_badge:       'AN NOUS MASTERPIECE ✦ AN NOUS MASTERPIECE ✦ ',

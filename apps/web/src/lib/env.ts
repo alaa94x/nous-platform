@@ -19,6 +19,6 @@ export const env = {
   supabaseAnonKey:    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
   siteUrl:            process.env.SITE_URL ?? 'https://nous.qa',
-  notifyEmail:        process.env.NOTIFY_EMAIL ?? 'hello@nous.qa',
+  notifyEmail:        process.env.NOTIFY_EMAIL ?? 'nouslab@icould.com',
   resendApiKey:       process.env.RESEND_API_KEY ?? '',
 } as const

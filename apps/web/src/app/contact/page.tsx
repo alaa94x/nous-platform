@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 const SEED_SETTINGS: Record<string, string> = {
   site_name:     'nous.',
-  contact_email: 'hello@nous.qa',
+  contact_email: 'nouslab@icould.com',
 }
 
 const SEED_SERVICES = [

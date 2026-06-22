@@ -108,7 +108,7 @@ const COUNTRY_CODES = [
   { iso: 'ZW', code: '+263', name: 'Zimbabwe',            flag: '🇿🇼' },
 ]
 
-export default function ContactPage({ services, contactEmail = 'hello@nous.qa' }: ContactPageProps) {
+export default function ContactPage({ services, contactEmail = 'nouslab@icould.com' }: ContactPageProps) {
   const [name,        setName]        = useState('')
   const [email,       setEmail]       = useState('')
   const [phone,       setPhone]       = useState('')

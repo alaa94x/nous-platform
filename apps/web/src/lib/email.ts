@@ -2,7 +2,7 @@ import type { ContactNotificationProps } from '@/emails/ContactNotification'
 
 export async function sendContactNotification(data: ContactNotificationProps): Promise<void> {
   const apiKey     = process.env.RESEND_API_KEY
-  const notifyTo   = process.env.NOTIFY_EMAIL ?? 'hello@nous.qa'
+  const notifyTo   = process.env.NOTIFY_EMAIL ?? 'nouslab@icould.com'
   const fromDomain = process.env.NOTIFY_FROM   ?? 'notify@nous.qa'
 
   if (!apiKey) {

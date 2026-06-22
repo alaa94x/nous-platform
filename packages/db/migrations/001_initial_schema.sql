@@ -98,7 +98,7 @@ INSERT INTO public.site_settings (key, value) VALUES
   ('hero_location',      'Doha, Qatar · 2025'),
   ('hero_cta_primary',   'Initialize Project'),
   ('hero_cta_secondary', 'View Selected Works'),
-  ('contact_email',      'hello@nous.qa'),
+  ('contact_email',      'nouslab@icould.com'),
   ('footer_location',    'Qatar · 2025'),
   ('footer_copyright',   '© 2025 Nous. All Rights Reserved.'),
   ('footer_badge',       'AN NOUS MASTERPIECE ✦ AN NOUS MASTERPIECE ✦ ')

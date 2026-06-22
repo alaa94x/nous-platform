@@ -1046,7 +1046,7 @@ export async function sendContactNotification(data: {
   const html = await render(&lt;ContactNotification {...data} /&gt;)
   await resend.emails.send({
     from:    'Nous Notifications &lt;notify@nous.qa&gt;',
-    to:      [process.env.NOTIFY_EMAIL ?? 'hello@nous.qa'],
+    to:      [process.env.NOTIFY_EMAIL ?? 'nouslab@icould.com'],
     replyTo: data.email,
     subject: `New Brief from ${data.name} — ${data.services.join(', ')}`,
     html,
@@ -1054,7 +1054,7 @@ export async function sendContactNotification(data: {
 }
 </code></pre>
 
-    <p>Add to <code>.env</code>: <code>RESEND_API_KEY=re_...</code> and <code>NOTIFY_EMAIL=hello@nous.qa</code></p>
+    <p>Add to <code>.env</code>: <code>RESEND_API_KEY=re_...</code> and <code>NOTIFY_EMAIL=nouslab@icould.com</code></p>
   </div>
 
 
@@ -1205,7 +1205,7 @@ const jsonLd = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'customer service',
-    email: 'hello@nous.qa',
+    email: 'nouslab@icould.com',
     areaServed: 'QA',
     availableLanguage: ['English', 'Arabic'],
   },

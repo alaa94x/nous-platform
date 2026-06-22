@@ -260,7 +260,7 @@ const COUNTRY_CODES = [
   { iso: 'ZW', code: '+263',  label: 'ZW +263'  },
 ]
 
-export default function Contact({ services, contactEmail = 'hello@nous.qa' }: ContactProps) {
+export default function Contact({ services, contactEmail = 'nouslab@icould.com' }: ContactProps) {
   const [name,        setName]        = useState('')
   const [email,       setEmail]       = useState('')
   const [phone,       setPhone]       = useState('')

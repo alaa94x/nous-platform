@@ -63,7 +63,7 @@ const SOCIAL_ICONS: Record<SocialIconSlug, React.ComponentType<{ size?: number; 
 // ── Defaults ──────────────────────────────────────────────────────────────────
 
 export const DEFAULT_CONTACT_ITEMS: ContactItem[] = [
-  { id: '1', label: 'hello@nous.qa',           href: 'mailto:hello@nous.qa',          icon: 'email',    primary: true,  enabled: true },
+  { id: '1', label: 'nouslab@icould.com',           href: 'mailto:nouslab@icould.com',          icon: 'email',    primary: true,  enabled: true },
   { id: '2', label: 'WhatsApp',                href: 'https://wa.me/97477484004',     icon: 'whatsapp', primary: false, enabled: true },
   { id: '3', label: 'Call Us',                 href: 'tel:+97477484004',              icon: 'phone',    primary: false, enabled: true },
 ]
