@@ -60,7 +60,7 @@ const SECTIONS: Section[] = [
     fields: [
       { key: 'site_name',    label: 'Site Wordmark',  hint: 'Nav bar next to the logo',    placeholder: 'nous.',  maxChars: 20 },
       { key: 'company_name', label: 'Company Name',   hint: 'Used in copyright line',      placeholder: 'Nous',   maxChars: 40 },
-      { key: 'contact_email', label: 'Contact Email', hint: 'Shown in Contact section',    placeholder: 'hello@nous.qa', colSpan: 2 },
+      { key: 'contact_email', label: 'Contact Email', hint: 'Shown in Contact section',    placeholder: 'nouslab@icould.com', colSpan: 2 },
     ],
   },
 ]
@@ -96,7 +96,7 @@ const DISPLAY_MODE_OPTIONS: { value: SocialItem['displayMode']; label: string }[
 ]
 
 const DEFAULT_CONTACT: ContactItem[] = [
-  { id: '1', label: 'hello@nous.qa',       href: 'mailto:hello@nous.qa',      icon: 'email',    primary: true,  enabled: true },
+  { id: '1', label: 'nouslab@icould.com',       href: 'mailto:nouslab@icould.com',      icon: 'email',    primary: true,  enabled: true },
   { id: '2', label: 'WhatsApp',            href: 'https://wa.me/97477484004', icon: 'whatsapp', primary: false, enabled: true },
   { id: '3', label: 'Call Us',             href: 'tel:+97477484004',          icon: 'phone',    primary: false, enabled: true },
 ]

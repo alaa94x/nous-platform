@@ -227,7 +227,7 @@ export default function Hero({
           bottom: 72,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
+          alignItems: 'center',
         }}
       >
 
@@ -239,7 +239,8 @@ export default function Hero({
           marginBottom: 0,
           display: 'block',
           overflow: 'visible',
-          maxWidth: '58%',
+          width: '100%',
+          textAlign: 'center',
         }}
       >
         {/* Wrap only the Arabic span in its own overflow clip so the
@@ -268,7 +269,7 @@ export default function Hero({
               color: '#FFFFFF',
               display: 'block',
               direction: 'rtl',
-              textAlign: 'right',
+              textAlign: 'center',
               lineHeight: 1.35,
               paddingTop: '0.2em',
               paddingBottom: '0.15em',
@@ -304,6 +305,8 @@ export default function Hero({
         style={{
           marginTop: 28,
           maxWidth: 520,
+          width: '100%',
+          textAlign: 'center',
           opacity: reduced ? 1 : 0,
           animation: reduced ? 'none' : 'fade-up 1s ease 1s forwards',
         }}
@@ -315,6 +318,7 @@ export default function Hero({
             color: 'rgba(255,255,255,.70)',
             lineHeight: 1.85,
             letterSpacing: '.01em',
+            textAlign: 'center',
           }}
         >
           {subtextEn}
@@ -330,7 +334,7 @@ export default function Hero({
             fontSize: 13,
             color: 'rgba(255,255,255,.60)',
             lineHeight: 2.0,
-            textAlign: 'right',
+            textAlign: 'center',
             direction: 'rtl',
           }}
         >
@@ -345,8 +349,10 @@ export default function Hero({
           marginTop: 44,
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'center',
           gap: 16,
           flexWrap: 'wrap',
+          width: '100%',
           opacity: reduced ? 1 : 0,
           animation: reduced ? 'none' : 'fade-up 1s ease 1.3s forwards',
         }}

@@ -357,7 +357,7 @@ Capabilities  ·  Work  ·  Contact
 as a single horizontal row in small mono type above the wordmark row.
 
 **6.1.B No contact information**
-Qatar-based agency with no email, phone, or WhatsApp in the footer. Clients who scroll to the bottom looking for "how to reach them" find nothing. Add `hello@nous.qa` and the WhatsApp number in the footer.
+Qatar-based agency with no email, phone, or WhatsApp in the footer. Clients who scroll to the bottom looking for "how to reach them" find nothing. Add `nouslab@icould.com` and the WhatsApp number in the footer.
 
 **6.1.C No social links**
 No LinkedIn, Instagram, Behance, or X link anywhere on the page — not in the footer, not in the nav, not in the hero. Even one link (LinkedIn) establishes credibility. Add to footer.
@@ -375,7 +375,7 @@ At 480px, the three items (wordmark + badge + legal) with `flex-wrap` and `gap: 
 
 Proposed mobile footer layout:
 ```
-[ Nous logo ]        hello@nous.qa
+[ Nous logo ]        nouslab@icould.com
 ─────────────────────────────────
 Capabilities · Work · Contact
 ─────────────────────────────────

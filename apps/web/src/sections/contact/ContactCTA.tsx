@@ -68,7 +68,7 @@ export default function ContactCTA() {
           opacity:       .5,
           paddingLeft:   2,
         }}>
-          hello@nous.qa
+          nouslab@icould.com
         </span>
       </div>
 

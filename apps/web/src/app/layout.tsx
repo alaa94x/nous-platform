@@ -60,7 +60,7 @@ const jsonLd = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'customer service',
-    email: 'hello@nous.qa',
+    email: 'nouslab@icould.com',
     areaServed: 'QA',
     availableLanguage: ['English', 'Arabic'],
   },

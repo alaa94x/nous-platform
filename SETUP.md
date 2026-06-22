@@ -42,14 +42,14 @@ TXT     send.nous.qa                v=spf1 include:amazonses.com ~all
 **`apps/web/.env.local`** (local dev):
 ```
 RESEND_API_KEY=re_your_key_here
-NOTIFY_EMAIL=hello@nous.qa
+NOTIFY_EMAIL=nouslab@icould.com
 NOTIFY_FROM=notify@nous.qa
 ```
 
 **Vercel** (production — go to your `nous-web` project → Settings → Environment Variables):
 ```
 RESEND_API_KEY        re_your_key_here
-NOTIFY_EMAIL          hello@nous.qa
+NOTIFY_EMAIL          nouslab@icould.com
 NOTIFY_FROM           notify@nous.qa
 ```
 
@@ -57,7 +57,7 @@ NOTIFY_FROM           notify@nous.qa
 
 1. Run the web app locally: `pnpm dev` from the monorepo root
 2. Fill in and submit the contact form at `http://localhost:3002/#contact`
-3. Check your inbox at `hello@nous.qa` — the email should arrive within seconds
+3. Check your inbox at `nouslab@icould.com` — the email should arrive within seconds
 4. If nothing arrives, check the terminal for `[email]` log lines
 
 ---
@@ -156,7 +156,7 @@ It is usually your username or company name lowercased with hyphens.
 In each Sentry project → **Alerts** → **Create Alert**:
 
 - **Trigger**: New issue created
-- **Action**: Send email to `hello@nous.qa`
+- **Action**: Send email to `nouslab@icould.com`
 - **Frequency**: At most once per hour per issue
 
 ---
@@ -173,7 +173,7 @@ No code needed — just configure a free account.
 | `https://nous.qa` | 3 min | 5 min |
 | `https://admin.nous.qa` | 5 min | 10 min |
 
-3. Set alert destination to `hello@nous.qa`
+3. Set alert destination to `nouslab@icould.com`
 
 ---
 
@@ -188,7 +188,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
 # Resend
 RESEND_API_KEY=re_...
-NOTIFY_EMAIL=hello@nous.qa
+NOTIFY_EMAIL=nouslab@icould.com
 NOTIFY_FROM=notify@nous.qa
 
 # Site
