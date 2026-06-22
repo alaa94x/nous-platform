@@ -314,7 +314,7 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
         window.scrollTo({ top, behavior: 'smooth' })
       }
     }
-    const links = document.querySelectorAll<HTMLAnchorElement>('a[href="#contact"]')
+    const links = document.querySelectorAll<HTMLAnchorElement>('a[href="/contact"]')
     links.forEach(l => l.addEventListener('click', handleNavContact))
     return () => links.forEach(l => l.removeEventListener('click', handleNavContact))
   }, [])

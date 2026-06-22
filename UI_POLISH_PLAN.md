@@ -403,7 +403,7 @@ One `·` per line is within the 1-per-line ration. Keep.
 A subtle upward arrow anchored to `#` on the right side of the footer (or overlapping it). Smooth-scrolls to the top. Standard UX that reduces back-button dependence.
 
 **6.3.B Make the rotating badge the CTA anchor**
-The center badge is purely decorative. Make it a link: `<a href="#contact">`. On hover, slow the rotation to 0 (pause) and show "Start a project →" text in the center instead of the accent dot. This turns dead decoration into a conversion touchpoint.
+The center badge is purely decorative. Make it a link: `<a href="/contact">`. On hover, slow the rotation to 0 (pause) and show "Start a project →" text in the center instead of the accent dot. This turns dead decoration into a conversion touchpoint.
 
 **6.3.C Add a tagline below the wordmark**
 "Engineered Intelligence." or "Intelligence, engineered." (the OG image copy) as a 1-line mono caption below the wordmark. This makes the footer feel complete rather than sparse.

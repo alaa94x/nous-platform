@@ -352,7 +352,7 @@ export default function Hero({
         }}
       >
         <a
-          href="#contact"
+          href="/contact"
           data-mag="true"
           data-magnetic-btn="true"
           className="init-btn"
