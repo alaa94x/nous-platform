@@ -75,14 +75,14 @@ export default function Capabilities({ services }: CapabilitiesProps) {
         const s = document.createElement('span')
         s.style.cssText =
           'font-family:var(--font-fraunces);font-size:clamp(18px,2.2vw,26px);' +
-          'font-weight:300;font-style:italic;color:#0A5C47;letter-spacing:-.015em;' +
+          'font-weight:300;font-style:italic;color:#60B89A;letter-spacing:-.015em;' +
           'line-height:1.3;text-align:center;display:block;max-width:220px;word-wrap:break-word;hyphens:auto;'
         s.textContent = text
         return s
       }
 
       const showOrbit = () => {
-        if (titleEl) { titleEl.style.color = '#0A5C47'; titleEl.style.fontStyle = 'italic' }
+        if (titleEl) { titleEl.style.color = '#60B89A'; titleEl.style.fontStyle = 'italic' }
         item.style.paddingLeft = '14px'
         clearSats()
 
@@ -106,9 +106,9 @@ export default function Capabilities({ services }: CapabilitiesProps) {
           el.style.cssText =
             'position:absolute;top:0;left:0;will-change:transform;cursor:default;' +
             'font-family:var(--font-mono);font-size:9px;' +
-            'color:#0A5C47;letter-spacing:.09em;text-transform:uppercase;' +
+            'color:#60B89A;letter-spacing:.09em;text-transform:uppercase;' +
             'border-radius:50px;' +
-            'background:rgba(255,255,255,.82);border:1px solid rgba(10,92,71,.22);' +
+            'background:rgba(26,43,39,.85);border:1px solid rgba(96,184,154,.25);' +
             'padding:5px 11px;pointer-events:auto;white-space:nowrap;z-index:3;' +
             `opacity:0;` +
             `transition:opacity .35s ease ${i * 0.055}s,background .18s,border-color .18s,box-shadow .18s;`
@@ -117,20 +117,20 @@ export default function Capabilities({ services }: CapabilitiesProps) {
 
           el.addEventListener('mouseenter', () => {
             hoveredSats.add(el)
-            el.style.background    = 'rgba(10,92,71,.12)'
-            el.style.borderColor   = 'rgba(10,92,71,.55)'
-            el.style.boxShadow     = '0 0 12px rgba(10,92,71,.18)'
+            el.style.background    = 'rgba(96,184,154,.15)'
+            el.style.borderColor   = 'rgba(96,184,154,.6)'
+            el.style.boxShadow     = '0 0 12px rgba(96,184,154,.2)'
             if (lbl) {
               lbl.textContent = ''
               const tag = document.createElement('span')
               tag.style.cssText =
-                'font-family:var(--font-mono);font-size:7.5px;color:rgba(10,92,71,.5);' +
+                'font-family:var(--font-mono);font-size:7.5px;color:rgba(96,184,154,.5);' +
                 'letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:8px;'
               tag.textContent = 'STACK'
               const name = document.createElement('span')
               name.style.cssText =
                 'font-family:var(--font-fraunces);font-size:clamp(14px,1.6vw,20px);' +
-                'font-weight:300;font-style:italic;color:#0A5C47;letter-spacing:-.01em;' +
+                'font-weight:300;font-style:italic;color:#60B89A;letter-spacing:-.01em;' +
                 'line-height:1.4;text-align:center;display:block;'
               name.textContent = tech
               lbl.append(tag, name)
@@ -138,8 +138,8 @@ export default function Capabilities({ services }: CapabilitiesProps) {
           })
           el.addEventListener('mouseleave', () => {
             hoveredSats.delete(el)
-            el.style.background    = 'rgba(255,255,255,.82)'
-            el.style.borderColor   = 'rgba(10,92,71,.22)'
+            el.style.background    = 'rgba(26,43,39,.85)'
+            el.style.borderColor   = 'rgba(96,184,154,.25)'
             el.style.boxShadow     = ''
             if (lbl) { lbl.textContent = ''; lbl.appendChild(makeSvcLabel(svcName)) }
           })
@@ -228,7 +228,7 @@ export default function Capabilities({ services }: CapabilitiesProps) {
             item.classList.add('acc-open')
             pills.classList.add('open')
             const n = item.querySelector<HTMLElement>('.svc-name')
-            if (n) n.style.color = '#0A5C47'
+            if (n) n.style.color = '#60B89A'
           }
         }, { passive: true })
       }
@@ -406,8 +406,8 @@ export default function Capabilities({ services }: CapabilitiesProps) {
               {/* Mobile tap hint — positioned directly below name row, hidden when open */}
               <div className="tap-hint">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <circle cx="6.5" cy="6.5" r="5.5" stroke="#0A5C47" strokeWidth="1" strokeDasharray="2 2" />
-                  <path d="M6.5 3.5v3l2 1.5" stroke="#0A5C47" strokeWidth="1" strokeLinecap="round" />
+                  <circle cx="6.5" cy="6.5" r="5.5" stroke="#60B89A" strokeWidth="1" strokeDasharray="2 2" />
+                  <path d="M6.5 3.5v3l2 1.5" stroke="#60B89A" strokeWidth="1" strokeLinecap="round" />
                 </svg>
                 Tap to explore
               </div>
@@ -419,8 +419,9 @@ export default function Capabilities({ services }: CapabilitiesProps) {
                     style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: 8,
-                      color: 'var(--accent)',
-                      border: '1px solid rgba(10,92,71,.2)',
+                      color: '#60B89A',
+                      border: '1px solid rgba(96,184,154,.25)',
+                      background: 'rgba(26,43,39,.85)',
                       padding: '4px 10px',
                       letterSpacing: '.08em',
                       textTransform: 'uppercase',

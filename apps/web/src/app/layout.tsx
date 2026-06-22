@@ -43,6 +43,11 @@ export const metadata: Metadata = {
     description: 'Quiet luxury. Engineered systems. Doha, Qatar.',
   },
   robots: { index: true, follow: true },
+  icons: {
+    icon: [{ url: '/nous-logo-Tabs.png', type: 'image/png' }],
+    shortcut: '/nous-logo-Tabs.png',
+    apple: '/nous-logo-Tabs.png',
+  },
 }
 
 const jsonLd = {

@@ -6,15 +6,16 @@ import Image from 'next/image'
 
 interface NavProps {
   siteName?: string
+  variant?:  'default' | 'contact'
 }
 
 const NAV_LINKS = [
   { href: '#capabilities', label: 'Capabilities', section: 'capabilities' },
   { href: '#works',        label: 'Work',         section: 'works'        },
-  { href: '#contact',      label: 'Contact',      section: 'contact'      },
+  { href: '/contact',      label: 'Contact',      section: 'contact'      },
 ] as const
 
-export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
+export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps = {}) {
   const navRef      = useRef<HTMLElement>(null)
   const logoRef     = useRef<HTMLDivElement>(null)
   const reduced     = !!useReducedMotion()
@@ -56,22 +57,31 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
     return () => window.removeEventListener('scroll', update)
   }, [])
 
-  // Active section via IntersectionObserver
+  // Active section via IntersectionObserver (disabled on contact page — no sections)
   useEffect(() => {
+    if (variant === 'contact') return
     const sections = NAV_LINKS.map(l => document.getElementById(l.section)).filter(Boolean) as HTMLElement[]
     if (!sections.length) return
 
     const io = new IntersectionObserver(
       entries => {
         entries.forEach(e => {
-          if (e.isIntersecting) setActive(e.target.id)
+          if (e.isIntersecting) {
+            setActive(e.target.id)
+          } else {
+            // If the section is leaving upward (scrolling back to hero), clear active
+            setActive(prev => {
+              if (prev === e.target.id && e.boundingClientRect.top > 0) return ''
+              return prev
+            })
+          }
         })
       },
       { threshold: 0.25, rootMargin: '-64px 0px -35% 0px' },
     )
     sections.forEach(s => io.observe(s))
     return () => io.disconnect()
-  }, [])
+  }, [variant])
 
   // Magnetic effect on desktop nav links — proper cleanup
   useEffect(() => {
@@ -115,44 +125,49 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
         aria-label="Main navigation"
         className="desktop-nav fixed top-0 left-0 right-0 flex items-center justify-between"
         style={{
-          padding: '20px 56px',
+          padding: '0 56px',
+        height: 64,
           zIndex: 300,
           transition: 'background .4s, backdrop-filter .4s, border-color .4s',
-          background:     scrolled ? 'rgba(249,248,246,.93)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)'            : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(20px)'      : 'none',
-          borderBottom:   scrolled ? '1px solid rgba(18,28,26,.07)' : 'none',
+          background:     scrolled ? 'rgba(17,29,26,.92)' : 'linear-gradient(to bottom, rgba(5,18,15,.55) 0%, transparent 100%)',
+          backdropFilter: scrolled ? 'blur(20px)'        : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(20px)'  : 'none',
+          borderBottom:   scrolled ? '1px solid rgba(255,255,255,.07)' : 'none',
         }}
       >
-        {/* Logo + wordmark */}
-        <a
-          href="#"
-          aria-label="Nous — return to homepage"
-          data-magnetic-btn="true"
-          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-        >
-          <Image
-            src="/nous-logo.svg"
-            alt=""
-            aria-hidden="true"
-            width={42}
-            height={42}
-            priority
-            style={{ width: 42, height: 42 }}
-          />
-          <span
-            style={{
-              fontFamily: 'var(--font-fraunces)',
-              fontSize: 18,
-              fontWeight: 700,
-              letterSpacing: '-.01em',
-              color: 'var(--text)',
-              lineHeight: 1,
-            }}
+        {/* Logo + wordmark + status tag */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <a
+            href={variant === 'contact' ? '/' : '#'}
+            aria-label="Nous — return to homepage"
+            data-magnetic-btn="true"
+            style={{ display: 'flex', alignItems: 'center', gap: 12 }}
           >
-            {siteName}
-          </span>
-        </a>
+            <Image
+              src="/nous-logo.svg"
+              alt=""
+              aria-hidden="true"
+              width={90}
+              height={90}
+              priority
+              style={{ width: 90, height: 90, flexShrink: 0 }}
+            />
+            <span
+              style={{
+                fontFamily: 'var(--font-fraunces)',
+                fontSize: 26,
+                fontWeight: 700,
+                letterSpacing: '-.02em',
+                color: '#F0EDEA',
+                lineHeight: 1,
+                transition: 'color .4s',
+              }}
+            >
+              {siteName}
+            </span>
+          </a>
+
+        </div>
 
         {/* Nav links */}
         <div className="flex items-center" style={{ gap: 36 }}>
@@ -164,44 +179,34 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
               className="nav-link"
               style={{
                 fontFamily: 'var(--font-mono)',
-                fontSize: 9,
-                color: active === link.section ? 'var(--accent)' : 'var(--text)',
+                fontSize: 11,
+                fontWeight: 700,
+                color: 'rgba(240,237,234,.88)',
                 letterSpacing: '.18em',
                 textTransform: 'uppercase',
-                transition: 'color .25s',
+                transition: 'color .4s',
                 position: 'relative',
               }}
             >
               {link.label}
-              {/* Active underline */}
-              <span style={{
-                position: 'absolute',
-                bottom: -3,
-                left: 0,
-                right: 0,
-                height: 1,
-                background: 'var(--accent)',
-                transformOrigin: 'left',
-                transform: active === link.section ? 'scaleX(1)' : 'scaleX(0)',
-                transition: 'transform .35s cubic-bezier(.16,1,.3,1)',
-              }} />
             </a>
           ))}
 
           {/* Contact CTA */}
           <a
-            href="#contact"
+            href="/contact"
             data-magnetic-btn="true"
             className="nav-contact-cta"
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 9,
-              color: active === 'contact' ? 'var(--bg)' : 'var(--text)',
+              fontSize: 11,
+              fontWeight: 700,
+              color: 'rgba(240,237,234,.88)',
               letterSpacing: '.18em',
               textTransform: 'uppercase',
               border: '1px solid',
-              borderColor: active === 'contact' ? 'var(--accent)' : 'var(--border)',
-              background: active === 'contact' ? 'var(--accent)' : 'transparent',
+              borderColor: 'rgba(255,255,255,.35)',
+              background: 'transparent',
               padding: '9px 20px',
               display: 'inline-block',
               transition: 'border-color .25s, color .25s, background .25s',
@@ -230,16 +235,16 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
         }}
       >
         <a
-          href="#"
+          href={variant === 'contact' ? '/' : '#'}
           aria-label="Nous — return to homepage"
           style={{ display: 'block' }}
         >
           <Image
             src="/nous-logo.svg"
             alt="Nous"
-            width={76}
-            height={76}
-            style={{ width: 85, height: 85 }}
+            width={70}
+            height={70}
+            style={{ width: 70, height: 70 }}
           />
         </a>
       </div>
@@ -255,10 +260,10 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
           right: 0,
           zIndex: 300,
           display: 'none', // shown via CSS media query
-          background: 'rgba(249,248,246,.94)',
+          background: 'rgba(17,29,26,.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(18,28,26,.09)',
+          borderTop: '1px solid rgba(255,255,255,.08)',
           // iOS safe area
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
@@ -284,32 +289,32 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 5,
+                  gap: 6,
                   fontFamily: 'var(--font-mono)',
                   fontSize: 8,
                   letterSpacing: '.18em',
                   textTransform: 'uppercase',
-                  color: isActive ? 'var(--accent)' : 'var(--text)',
+                  color: isActive ? '#60B89A' : 'rgba(240,237,234,.55)',
                   textDecoration: 'none',
                   position: 'relative',
                   transition: 'color .25s',
                   // Contact gets a subtle accent background
-                  background: isContact && isActive ? 'rgba(10,92,71,.06)' : 'transparent',
-                  borderLeft: i > 0 ? '1px solid rgba(18,28,26,.07)' : 'none',
+                  background: isContact && isActive ? 'rgba(96,184,154,.08)' : 'transparent',
+                  borderLeft: i > 0 ? '1px solid rgba(255,255,255,.06)' : 'none',
                   // Ensure min touch target
                   minWidth: 44,
                 }}
               >
-                {/* Active top indicator bar */}
+                {/* Active top bar */}
                 <span
                   aria-hidden="true"
                   style={{
                     position: 'absolute',
                     top: 0,
-                    left: '25%',
-                    right: '25%',
-                    height: 1.5,
-                    background: 'var(--accent)',
+                    left: '30%',
+                    right: '30%',
+                    height: 1,
+                    background: '#60B89A',
                     borderRadius: '0 0 2px 2px',
                     transformOrigin: 'center',
                     transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
@@ -317,26 +322,22 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
                   }}
                 />
 
-                {/* Dot */}
+                {/* Dot indicator */}
                 <span
                   aria-hidden="true"
                   style={{
-                    width: 3,
-                    height: 3,
+                    width: 4,
+                    height: 4,
                     borderRadius: '50%',
-                    background: isActive ? 'var(--accent)' : 'rgba(18,28,26,.35)',
+                    background: isActive ? '#60B89A' : 'rgba(240,237,234,.2)',
                     transition: reduced ? 'none' : 'background .25s, transform .3s cubic-bezier(.16,1,.3,1)',
-                    transform: isActive ? 'scale(1.4)' : 'scale(1)',
+                    transform: isActive ? 'scale(1.5)' : 'scale(1)',
+                    flexShrink: 0,
                   }}
                 />
 
                 {/* Label */}
-                <span>{link.label}</span>
-
-                {/* Arrow on contact */}
-                {isContact && (
-                  <span aria-hidden="true" style={{ fontSize: 5, opacity: .5, marginTop: -3 }}>→</span>
-                )}
+                <span style={{ lineHeight: 1 }}>{link.label}</span>
               </a>
             )
           })}
@@ -345,11 +346,11 @@ export default function Nav({ siteName = 'Nous' }: NavProps = {}) {
 
       <style>{`
         /* ── Desktop nav hover ── */
-        .nav-link:hover { color: var(--accent) !important; }
+        .nav-link:hover { color: #5FB89A !important; }
         .nav-contact-cta:hover {
-          border-color: var(--text) !important;
-          background: var(--text) !important;
-          color: var(--bg) !important;
+          border-color: rgba(255,255,255,.8) !important;
+          background: rgba(255,255,255,.12) !important;
+          color: #FFFFFF !important;
         }
 
         /* ── Show bottom rail, hide desktop nav on mobile ── */

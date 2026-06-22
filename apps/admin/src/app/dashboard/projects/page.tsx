@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, KeyboardEvent } from 'react'
 import { supabase } from '@/lib/supabase'
+import ImageUpload from '@/components/ImageUpload'
 
 type Project = {
   id: string
@@ -11,13 +12,14 @@ type Project = {
   year: string | null
   tags: string[] | null
   image_url: string | null
+  url: string | null
   sort_order: number | null
   active: boolean | null
 }
 
 const EMPTY: Omit<Project, 'id'> = {
   name: '', name_ar: '', description: '', year: new Date().getFullYear().toString(),
-  tags: [], image_url: null, sort_order: 99, active: true,
+  tags: [], image_url: null, url: null, sort_order: 99, active: true,
 }
 
 // ── Pill chip input ────────────────────────────────────────────────────────────
@@ -116,20 +118,45 @@ function ProjectForm({
         <input value={buf.description ?? ''} onChange={e => onChange({ description: e.target.value })} placeholder="Brief project description" />
       </div>
 
-      {/* Tags + Image URL */}
-      <div className="proj-row-2">
-        <div>
-          <label style={{ ...labelStyle, marginBottom: 7 }}>Tags</label>
-          <PillInput pills={Array.isArray(buf.tags) ? buf.tags : []} onChange={tags => onChange({ tags })} placeholder="AI, Web, Mobile..." />
+      {/* Tags */}
+      <div>
+        <label style={{ ...labelStyle, marginBottom: 7 }}>Tags</label>
+        <PillInput pills={Array.isArray(buf.tags) ? buf.tags : []} onChange={tags => onChange({ tags })} placeholder="AI, Web, Mobile..." />
+      </div>
+
+      {/* Image upload */}
+      <div>
+        <label style={{ ...labelStyle, marginBottom: 7 }}>Project Image</label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start' }}>
+          {/* Upload zone */}
+          <ImageUpload
+            value={buf.image_url ?? null}
+            onChange={url => onChange({ image_url: url })}
+          />
+          {/* Manual URL fallback */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ ...labelStyle, fontSize: 8, opacity: .7 }}>Or paste image URL</label>
+            <input
+              value={buf.image_url ?? ''}
+              onChange={e => onChange({ image_url: e.target.value || null })}
+              placeholder="https://..."
+            />
+            <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'var(--muted)', opacity: .55, lineHeight: 1.6, margin: 0 }}>
+              Paste a URL from an external CDN or leave empty to use the upload above.
+            </p>
+          </div>
         </div>
-        <div>
-          <label style={labelStyle}>Image URL</label>
-          <input value={buf.image_url ?? ''} onChange={e => onChange({ image_url: e.target.value || null })} placeholder="https://..." />
-          {buf.image_url && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={buf.image_url} alt="" style={{ marginTop: 8, width: '100%', height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)', opacity: .8 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
-          )}
-        </div>
+      </div>
+
+      {/* Site URL */}
+      <div>
+        <label style={labelStyle}>Site URL</label>
+        <input value={buf.url ?? ''} onChange={e => onChange({ url: e.target.value || null })} placeholder="https://clientsite.com" />
+        {buf.url && (
+          <a href={buf.url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 6, fontSize: 9, color: 'var(--accent)', fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em', textDecoration: 'none', opacity: .8 }}>
+            Visit site →
+          </a>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -172,6 +199,7 @@ export default function ProjectsPage() {
       year:        editBuf.year,
       tags:        Array.isArray(editBuf.tags) ? editBuf.tags : [],
       image_url:   editBuf.image_url || null,
+      url:         editBuf.url || null,
     }).eq('id', editing)
     await fetchProjects()
     setSaving(false)
@@ -189,6 +217,7 @@ export default function ProjectsPage() {
       year:        newBuf.year,
       tags:        Array.isArray(newBuf.tags) ? newBuf.tags : [],
       image_url:   newBuf.image_url || null,
+      url:         newBuf.url || null,
       sort_order:  projects.length + 1,
       active:      true,
     })
@@ -278,7 +307,12 @@ export default function ProjectsPage() {
                   <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'ui-monospace, monospace' }}>{p.year}</span>
                 </div>
                 {p.description && (
-                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6, lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4, lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
+                )}
+                {p.url && (
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, color: 'var(--accent)', fontFamily: 'ui-monospace, monospace', letterSpacing: '.06em', textDecoration: 'none', opacity: .7, marginBottom: 4, display: 'inline-block' }}>
+                    {p.url.replace(/^https?:\/\//, '')} →
+                  </a>
                 )}
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                   {p.tags?.map(t => (

@@ -71,7 +71,7 @@ export default function Cursor() {
           break
         case 'project':
           ring.style.width = ring.style.height = '80px'
-          ring.style.background = '#0A5C47'
+          ring.style.background = '#60B89A'
           inn.style.opacity = '0'
           dot.style.opacity = '0'
           ctxt.style.opacity = '1'
@@ -152,7 +152,7 @@ export default function Cursor() {
         style={{
           width: 4, height: 4,
           borderRadius: '50%',
-          background: '#0A5C47',
+          background: '#60B89A',
           willChange: 'transform',
           transform: 'translate(-40px,-40px)',
           mixBlendMode: 'difference',
@@ -180,7 +180,7 @@ export default function Cursor() {
             className="absolute inset-0"
             style={{
               borderRadius: '50%',
-              border: '1.5px dashed #0A5C47',
+              border: '1.5px dashed #60B89A',
               animation: 'spin-cw 8s linear infinite',
               transition: 'border-style .2s, opacity .2s',
               mixBlendMode: 'difference',

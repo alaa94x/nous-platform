@@ -1,11 +1,32 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
 
+// Pull Supabase hostname from env so no hardcoded project ref
+const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : '*.supabase.co'
+
 const nextConfig: NextConfig = {
   // Use env var for dev origins — no hardcoded IPs
   ...(process.env.ALLOWED_DEV_ORIGINS
     ? { allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS.split(',') }
     : {}),
+
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      // Supabase Storage (project images uploaded via admin)
+      { protocol: 'https', hostname: supabaseHostname, pathname: '/storage/v1/object/public/**' },
+      // Client site CDNs (for external image_url entries)
+      { protocol: 'https', hostname: 'stitchedqa.com' },
+      { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
+      // Picsum fallbacks
+      { protocol: 'https', hostname: 'picsum.photos' },
+    ],
+    // Limit sizes served — browser picks nearest via srcset
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes:  [16, 32, 48, 64, 96, 128, 256, 384],
+  },
 
   async headers() {
     return [

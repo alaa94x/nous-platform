@@ -12,13 +12,15 @@ interface Project {
   year: string | null
   tags: string[] | null
   image_url: string | null
+  url?: string | null
 }
 
 interface WorksProps {
   projects: Project[]
 }
 
-function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index: number; reduced: boolean | null; priority?: boolean }) {
+// ── Tilt physics hook ─────────────────────────────────────────────────────
+function useCardTilt(reduced: boolean) {
   const cardRef    = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const lineRef    = useRef<HTMLDivElement>(null)
@@ -35,54 +37,47 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
 
     let trx = 0, tryY = 0, crx = 0, cry = 0
     let hovering = false, raf = 0
-
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
     const tick = () => {
-      crx = lerp(crx, trx, 0.09)
-      cry = lerp(cry, tryY, 0.09)
-      card.style.transform  = `rotateX(${crx}deg) rotateY(${cry}deg)`
-      card.style.boxShadow  = hovering
-        ? `${cry * -2.5}px ${crx * 2.5}px 50px rgba(0,0,0,.07)`
-        : '0 2px 24px rgba(18,28,26,.04)'
-
+      crx  = lerp(crx,  trx,  0.09)
+      cry  = lerp(cry,  tryY, 0.09)
+      card.style.transform = `rotateX(${crx}deg) rotateY(${cry}deg)`
+      card.style.boxShadow = hovering
+        ? `${cry * -3}px ${crx * 3}px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(96,184,154,.18)`
+        : '0 4px 24px rgba(0,0,0,.3)'
       const still = Math.abs(crx - trx) < 0.01 && Math.abs(cry - tryY) < 0.01
       if (!hovering && still) {
         crx = 0; cry = 0
         card.style.transform = ''
-        card.style.boxShadow = '0 2px 24px rgba(18,28,26,.04)'
+        card.style.boxShadow = '0 4px 24px rgba(0,0,0,.3)'
         raf = 0
-      } else {
-        raf = requestAnimationFrame(tick)
-      }
+      } else { raf = requestAnimationFrame(tick) }
     }
 
     const onEnter = () => {
       hovering = true
-      if (card)    card.style.willChange  = 'transform'
-      if (content) content.style.transform = 'translateZ(80px)'
+      card.style.willChange = 'transform'
+      if (content) content.style.transform = 'translateZ(50px)'
       if (line)    line.style.transform    = 'scaleX(1)'
       if (!raf)    raf = requestAnimationFrame(tick)
     }
     const onMove = (e: MouseEvent) => {
       const r = card.getBoundingClientRect()
-      trx  = -((e.clientY - (r.top  + r.height / 2)) / (r.height / 2)) * 12
-      tryY =  ((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2)) * 12
+      trx  = -((e.clientY - (r.top  + r.height / 2)) / (r.height / 2)) * 9
+      tryY =  ((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2)) * 9
     }
     const onLeave = () => {
-      hovering = false
-      trx = 0; tryY = 0
+      hovering = false; trx = 0; tryY = 0
       if (content) content.style.transform = 'translateZ(0)'
       if (line)    line.style.transform    = 'scaleX(0)'
       if (!raf)    raf = requestAnimationFrame(tick)
-      // Remove will-change after animation settles to free GPU memory
       setTimeout(() => { if (card) card.style.willChange = 'auto' }, 800)
     }
 
     card.addEventListener('mouseenter', onEnter)
     card.addEventListener('mousemove',  onMove)
     card.addEventListener('mouseleave', onLeave)
-
     return () => {
       card.removeEventListener('mouseenter', onEnter)
       card.removeEventListener('mousemove',  onMove)
@@ -91,215 +86,197 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
     }
   }, [reduced])
 
+  return { cardRef, contentRef, lineRef }
+}
+
+// ── Single card — always same height, always equal ────────────────────────
+function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index: number; reduced: boolean; priority?: boolean }) {
+  const { cardRef, contentRef, lineRef } = useCardTilt(reduced)
   const idx = String(index + 1).padStart(2, '0')
 
-  return (
+  const cardEl = (
     <div
       ref={cardRef}
       className="proj-card reveal"
-      data-card="true"
       style={{
-        background: 'var(--bg2)',
         position: 'relative',
-        minHeight: 480,
-        border: '1px solid var(--border)',
+        height: '100%',
+        border: '1px solid rgba(255,255,255,.08)',
         overflow: 'hidden',
         transformStyle: 'preserve-3d',
-        boxShadow: '0 2px 24px rgba(18,28,26,.04)',
-        transition: 'box-shadow .5s',
+        boxShadow: '0 4px 24px rgba(0,0,0,.3)',
+        transition: 'box-shadow .5s, border-color .3s',
+        cursor: proj.url ? 'pointer' : 'default',
+        background: '#0D1A17',
       }}
     >
-      {/* Background grid */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(145deg, var(--bg) 0%, var(--bg2) 100%)',
-          zIndex: 0,
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'linear-gradient(var(--border2) 1px, transparent 1px), linear-gradient(90deg, var(--border2) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }}
-        />
-      </div>
-
-      {/* Project image */}
+      {/* Photo — next/image for automatic WebP/AVIF + srcset */}
       {proj.image_url && (
         <Image
           src={proj.image_url}
           alt={proj.name}
           fill
           priority={priority}
-          style={{ objectFit: 'cover', zIndex: 1, opacity: .7 }}
-          sizes="(max-width:768px) 100vw, 33vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 900px) 50vw, 33vw"
+          className="proj-img"
+          style={{
+            objectFit: 'cover',
+            filter: 'brightness(.52) saturate(.82)',
+            transition: 'filter .5s, transform .6s',
+          }}
         />
       )}
 
-      {/* Top metadata */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          padding: '28px 32px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          zIndex: 2,
-        }}
-      >
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.08em' }}>
+      {/* Grid texture fallback when no image */}
+      {!proj.image_url && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: 'linear-gradient(145deg, #0D1A17 0%, #111D1A 100%)' }}>
+          <div style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: 'linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }} />
+        </div>
+      )}
+
+      {/* Gradient scrim */}
+      <div style={{
+        position: 'absolute', inset: 0, zIndex: 1,
+        background: 'linear-gradient(to top, rgba(8,16,13,.96) 0%, rgba(8,16,13,.18) 55%, transparent 100%)',
+      }} />
+
+      {/* Top meta */}
+      <div style={{
+        position: 'absolute', top: 20, left: 24, right: 24,
+        display: 'flex', justifyContent: 'space-between', zIndex: 2,
+      }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'rgba(240,237,234,.38)', letterSpacing: '.12em' }}>
           {proj.year}
         </span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', letterSpacing: '.08em' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#60B89A', letterSpacing: '.12em' }}>
           {idx}
         </span>
       </div>
 
-      {/* Center placeholder (when no image) */}
-      {!proj.image_url && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%,-50%)',
-            zIndex: 1,
-            opacity: .35,
-          }}
-        >
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.18em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-            — Project Visual
-          </span>
-        </div>
+      {/* Visit arrow — only when url set */}
+      {proj.url && (
+        <div className="proj-arrow" style={{
+          position: 'absolute', bottom: 24, right: 24, zIndex: 4,
+          width: 34, height: 34, borderRadius: '50%',
+          border: '1px solid rgba(96,184,154,.38)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#60B89A', fontSize: 13,
+          transition: 'background .3s, border-color .3s',
+        }}>↗</div>
       )}
 
-      {/* Card content */}
+      {/* Content footer */}
       <div
         ref={contentRef}
-        className="card-content"
         style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '28px 32px',
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          padding: '24px 24px 24px',
           zIndex: 3,
           transformStyle: 'preserve-3d',
           transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
-          background: 'linear-gradient(to top, rgba(255,255,255,.97) 70%, rgba(255,255,255,0))',
         }}
       >
-        {/* Tags */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
-          {(proj.tags ?? []).map(tag => (
-            <span
-              key={tag}
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 7.5,
-                color: 'var(--muted)',
-                letterSpacing: '.1em',
-                textTransform: 'uppercase',
-                border: '1px solid var(--border)',
-                padding: '3px 8px',
-              }}
-            >
-              {tag}
-            </span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
+          {(proj.tags ?? []).slice(0, 3).map(tag => (
+            <span key={tag} style={{
+              fontFamily: 'var(--font-mono)', fontSize: 7,
+              color: '#60B89A', letterSpacing: '.13em', textTransform: 'uppercase',
+              border: '1px solid rgba(96,184,154,.25)',
+              background: 'rgba(26,43,39,.9)',
+              padding: '3px 8px', borderRadius: 50,
+            }}>{tag}</span>
           ))}
         </div>
 
-        <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(17px, 2.1vw, 28px)', fontWeight: 300, color: 'var(--text)', letterSpacing: '-.01em', lineHeight: 1.18, marginBottom: 8, display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+        <h3 style={{
+          fontFamily: 'var(--font-fraunces)',
+          fontSize: 'clamp(18px, 1.8vw, 28px)',
+          fontWeight: 300, fontStyle: 'italic',
+          color: '#F0EDEA', lineHeight: 1.18, letterSpacing: '-.01em',
+          marginBottom: 5,
+        }}>
           {proj.name}
           {proj.name_ar && (
-            <span lang="ar" dir="rtl" style={{ fontFamily: 'var(--font-arabic)', fontSize: '0.65em', color: 'var(--muted)', opacity: 0.7, direction: 'rtl' }}>{proj.name_ar}</span>
+            <span lang="ar" dir="rtl" style={{
+              fontFamily: 'var(--font-arabic)',
+              fontSize: '.54em', color: 'rgba(240,237,234,.52)',
+              marginRight: 9,
+            }}> {proj.name_ar}</span>
           )}
         </h3>
-        <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.03em', lineHeight: 1.85, marginBottom: 16 }}>
-          {proj.description}
-        </p>
 
-        <div
-          ref={lineRef}
-          className="card-line"
-          style={{
-            height: 1.5,
-            background: 'var(--accent)',
-            transform: 'scaleX(0)',
-            transformOrigin: 'left',
-            transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
-          }}
-        />
+        <p style={{
+          fontFamily: 'var(--font-mono)', fontSize: 8.5,
+          color: 'rgba(240,237,234,.4)', letterSpacing: '.03em',
+          lineHeight: 1.75, marginBottom: 12,
+        }}>{proj.description}</p>
+
+        <div ref={lineRef} style={{
+          height: 1.5, background: '#60B89A',
+          transform: 'scaleX(0)', transformOrigin: 'left',
+          transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
+        }} />
       </div>
     </div>
   )
+
+  if (proj.url) {
+    return (
+      <a href={proj.url} target="_blank" rel="noopener noreferrer"
+        style={{ display: 'block', height: '100%', textDecoration: 'none' }}>
+        {cardEl}
+      </a>
+    )
+  }
+  return <div style={{ height: '100%' }}>{cardEl}</div>
 }
 
+// ── Section ───────────────────────────────────────────────────────────────
 export default function Works({ projects }: WorksProps) {
   const reduced = !!useReducedMotion()
+
+  // Grid columns: 1 card = 1 col, 2 = 2 col, 3+ = 3 col (wraps naturally)
+  const cols = projects.length === 1 ? 1 : projects.length === 2 ? 2 : 3
 
   return (
     <section
       id="works"
       aria-label="Selected Works"
       className="relative z-10"
-      style={{
-        padding: '80px 56px 64px',
-        borderTop: '1px solid var(--border)',
-      }}
+      style={{ padding: '80px 56px 64px', borderTop: '1px solid rgba(255,255,255,.08)' }}
     >
-      <div style={{ marginBottom: 64 }} className="reveal">
-        <h2
-          style={{
-            fontFamily: 'var(--font-fraunces)',
-            fontSize: 'clamp(26px, 4.5vw, 54px)',
-            fontWeight: 300,
-            color: 'var(--text)',
-            lineHeight: 1.08,
-            letterSpacing: '-.025em',
-          }}
-        >
-          Digital<br /><em>Masterpieces</em>
+      <div style={{ marginBottom: 48 }} className="reveal">
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 8,
+          color: 'var(--accent)',
+          letterSpacing: '.24em',
+          textTransform: 'uppercase',
+          display: 'block',
+          marginBottom: 14,
+        }}>
+          [ 003 — THE ART ]
+        </span>
+        <h2 style={{
+          fontFamily: 'var(--font-fraunces)',
+          fontSize: 'clamp(26px, 4.5vw, 54px)',
+          fontWeight: 300, color: 'var(--text)',
+          lineHeight: 1.08, letterSpacing: '-.025em',
+        }}>
+          Nous Masterpieces
         </h2>
       </div>
 
       {projects.length === 0 ? (
-        /* Empty state */
-        <div
-          className="reveal"
-          style={{
-            border: '1px dashed var(--border)',
-            padding: '80px 40px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <div style={{
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: '1px dashed rgba(10,92,71,.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 16, color: 'var(--accent)', opacity: .5 }}>+</span>
-          </div>
+        <div className="reveal" style={{
+          border: '1px dashed rgba(255,255,255,.1)', padding: '80px 40px', textAlign: 'center',
+        }}>
           <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.14em', textTransform: 'uppercase' }}>
             Projects coming soon
-          </p>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', opacity: .5, letterSpacing: '.06em', maxWidth: '32ch', lineHeight: 1.8 }}>
-            Add projects via the admin dashboard to display them here.
           </p>
         </div>
       ) : (
@@ -307,27 +284,46 @@ export default function Works({ projects }: WorksProps) {
           id="works-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: projects.length === 1 ? '1fr' : projects.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
-            gap: 24,
-            perspective: 1500,
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
+            gap: 16,
+            perspective: 1400,
+            // Fixed card height — same for all cards always
+            gridAutoRows: '420px',
           }}
         >
           {projects.map((proj, i) => (
-            <ProjectCard key={proj.id} proj={proj} index={i} reduced={reduced} priority={i === 0} />
+            <ProjectCard key={proj.id} proj={proj} index={i} reduced={reduced} priority={i < 3} />
           ))}
         </div>
       )}
 
       <style>{`
-        @media (max-width:900px) {
-          #works { padding: 64px 24px !important; }
-          #works-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
-          .card-content { position: relative !important; transform: none !important; padding: 24px !important; background: linear-gradient(to top, rgba(249,248,246,.98) 80%, rgba(249,248,246,.6)) !important; }
-          .proj-card { min-height: 220px !important; display: flex !important; flex-direction: column !important; justify-content: flex-end !important; }
+        .proj-card:hover .proj-img {
+          filter: brightness(.72) saturate(1.05) !important;
+          transform: scale(1.04);
         }
-        @media (max-width:480px) {
+        .proj-card:hover .proj-arrow {
+          background: rgba(96,184,154,.15) !important;
+          border-color: rgba(96,184,154,.7) !important;
+        }
+        .proj-card:hover {
+          border-color: rgba(96,184,154,.28) !important;
+        }
+
+        /* Mobile: 1 column, tall enough to show the image */
+        @media (max-width: 900px) {
+          #works { padding: 64px 24px !important; }
+          #works-grid {
+            grid-template-columns: 1fr !important;
+            grid-auto-rows: 340px !important;
+            gap: 12px !important;
+          }
+        }
+        @media (max-width: 480px) {
           #works { padding: 56px 20px !important; }
-          .proj-card { min-height: 200px !important; }
+          #works-grid {
+            grid-auto-rows: 300px !important;
+          }
         }
       `}</style>
     </section>

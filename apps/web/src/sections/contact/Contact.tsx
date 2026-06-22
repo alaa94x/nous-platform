@@ -453,7 +453,7 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
                 <circle cx="28" cy="28" r="26" fill="none" stroke="rgba(10,92,71,.15)" strokeWidth="1" strokeDasharray="3 5" />
               </svg>
               <svg width="20" height="15" viewBox="0 0 20 15" fill="none">
-                <path d="M1 7.5l5.5 5.5L19 1" stroke="#0A5C47" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1 7.5l5.5 5.5L19 1" stroke="#60B89A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
 
@@ -659,7 +659,7 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
                     ))}
                   </select>
                   <svg style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} width="10" height="6" viewBox="0 0 10 6" fill="none">
-                    <path d="M1 1l4 4 4-4" stroke="#0A5C47" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M1 1l4 4 4-4" stroke="#60B89A" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <div style={{ width: 1, height: 32, background: 'var(--border)', marginRight: 16, flexShrink: 0 }} />
@@ -794,14 +794,14 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
                 fontFamily: 'var(--font-mono)',
                 fontSize: 9,
                 fontWeight: 700,
-                color: 'var(--bg)',
+                color: isReady ? 'var(--bg)' : 'rgba(255,255,255,.3)',
                 letterSpacing: '.2em',
                 textTransform: 'uppercase',
-                background: isReady ? 'var(--text)' : 'rgba(18,28,26,.25)',
+                background: isReady ? 'var(--accent)' : 'rgba(255,255,255,.06)',
+                border: isReady ? 'none' : '1px solid rgba(255,255,255,.12)',
                 padding: '16px 48px',
-                border: 'none',
                 opacity: 1,
-                transition: 'background .4s, transform .2s',
+                transition: 'background .4s, transform .2s, color .4s',
                 cursor: isReady ? 'pointer' : 'not-allowed',
               }}
             >

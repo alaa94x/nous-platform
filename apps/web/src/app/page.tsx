@@ -4,7 +4,7 @@ import Noise              from '@/components/noise/Noise'
 import Hero               from '@/sections/hero/Hero'
 import Capabilities       from '@/sections/capabilities/Capabilities'
 import Works              from '@/sections/works/Works'
-import Contact            from '@/sections/contact/Contact'
+import ContactCTA         from '@/sections/contact/ContactCTA'
 import Footer, { DEFAULT_CONTACT_ITEMS, DEFAULT_SOCIAL_ITEMS } from '@/sections/footer/Footer'
 import type { ContactItem, SocialItem } from '@/sections/footer/Footer'
 import { SectionBoundary } from '@/components/SectionBoundary'
@@ -39,11 +39,8 @@ const SEED_SERVICES = [
   { id: '6', idx: '06', name: 'Design & Motion',         category: 'UX · Visual',    tech_pills: ['Figma', 'Framer', 'GSAP', 'Three.js', 'Motion Design'] },
 ]
 
-const SEED_PROJECTS = [
-  { id: '1', name: 'Azaya Studio',    description: 'Premium Abaya E-Commerce Platform',     year: '2024', tags: ['Fashion', 'Shopify', 'UX Design'],   image_url: null },
-  { id: '2', name: 'Sandara',         description: 'Arabic Leather Goods + Enterprise CRM', year: '2024', tags: ['E-Commerce', 'CRM', 'Admin Portal'], image_url: null },
-  { id: '3', name: 'Hayati Wellness', description: 'Wellness & Body Products by Shopify',   year: '2025', tags: ['Health', 'Shopify', 'Branding'],     image_url: null },
-]
+// Real data lives in Supabase — run migration 006_seed_real_projects.sql
+const SEED_PROJECTS: { id: string; name: string; name_ar: string; description: string; year: string; tags: string[]; image_url: string | null; url: string | null }[] = []
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
@@ -64,7 +61,7 @@ async function getPageData() {
     const [{ data: rawSettings }, { data: services }, { data: projects }] = await Promise.all([
       supabase.from('site_settings').select('key, value'),
       supabase.from('services').select('id, idx, name, name_ar, category, tech_pills').eq('active', true).order('sort_order'),
-      supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url').eq('active', true).order('sort_order'),
+      supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url, url').eq('active', true).order('sort_order'),
     ])
 
     // Merge DB settings over seeds so missing keys still have defaults
@@ -108,7 +105,6 @@ export default async function HomePage() {
             headlineAr     = {s['hero_headline_ar']}
             subtextEn      = {s['hero_subtext_en']}
             subtextAr      = {s['hero_subtext_ar']}
-            location       = {s['hero_location']}
             ctaPrimary     = {s['hero_cta_primary']}
             ctaSecondary   = {s['hero_cta_secondary']}
           />
@@ -120,7 +116,7 @@ export default async function HomePage() {
           <Works projects={projects} />
         </SectionBoundary>
         <SectionBoundary name="contact">
-          <Contact services={services} contactEmail={s['contact_email']} />
+          <ContactCTA />
         </SectionBoundary>
       </main>
       <Footer

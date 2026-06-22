@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: 'Nous Admin',
   description: 'Nous internal admin portal',
   robots: { index: false, follow: false },
+  icons: {
+    icon: '/admin.svg',
+    shortcut: '/admin.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,8 +1,7 @@
 'use client'
 
 import { ReactNode, useEffect, useRef, useState } from 'react'
-import { useReducedMotion } from 'motion/react'
-import OrbitalWidget from '@/components/hero/OrbitalWidget'
+import { useReducedMotion, useScroll, useTransform, motion } from 'motion/react'
 
 const langData = [
   { name: 'nous.', label: '— EN', rtl: false },
@@ -15,7 +14,6 @@ interface HeroProps {
   headlineAr?: string
   subtextEn?: ReactNode
   subtextAr?: ReactNode
-  location?: string
   ctaPrimary?: string
   ctaSecondary?: string
 }
@@ -26,27 +24,34 @@ export default function Hero({
   subtextEn = (
     <>
       Transforming complex visions into{' '}
-      <strong style={{ color: 'var(--text)', fontWeight: 700 }}>intelligent systems</strong>{' '}
+      <strong style={{ color: '#FFFFFF', fontWeight: 700 }}>intelligent systems</strong>{' '}
       and{' '}
-      <em style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', color: 'var(--accent)' }}>quiet luxury interfaces</em>. We design and develop websites and apps that deliver true value, dedicating ourselves to excellence and embodying mastery in every detail.
+      <em style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', color: '#5FB89A' }}>quiet luxury interfaces</em>. We design and develop websites and apps that deliver true value, dedicating ourselves to excellence and embodying mastery in every detail.
     </>
   ),
   subtextAr = (
     <>
       نحوّل الرؤى المعقدة إلى{' '}
-      <strong style={{ fontWeight: 700, color: 'var(--text)' }}>أنظمة ذكية</strong>{' '}
-      و<strong style={{ color: 'var(--accent)', fontWeight: 700 }}>واجهات فاخرة</strong>. نصمم ونطور مواقع وتطبيقات تقدم قيمة حقيقية، ونكرس جهودنا لنمنحك التميز، مجسدين معاني الإتقان والإحسان في كل تفصيل.
+      <strong style={{ fontWeight: 700, color: '#FFFFFF' }}>أنظمة ذكية</strong>{' '}
+      و<strong style={{ color: '#5FB89A', fontWeight: 700 }}>واجهات فاخرة</strong>. نصمم ونطور مواقع وتطبيقات تقدم قيمة حقيقية، ونكرس جهودنا لنمنحك التميز، مجسدين معاني الإتقان والإحسان في كل تفصيل.
     </>
   ),
-  location = 'Doha, Qatar · 2026',
   ctaPrimary = 'Initialize Project',
   ctaSecondary = 'WhatsApp Us',
 }: HeroProps) {
   const reducedRaw = useReducedMotion()
-  const reduced = !!reducedRaw // null on server → false, matches client initial value
+  const reduced = !!reducedRaw
   const nameRef = useRef<HTMLSpanElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
   const idxRef = useRef(0)
+  const sectionRef = useRef<HTMLElement>(null)
+
+  // Parallax: image moves at 40% of scroll speed (slower = depth illusion)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  })
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '40%'])
 
   const [scrambledEn, setScrambledEn] = useState(headlineEn)
 
@@ -170,62 +175,61 @@ export default function Hero({
 
   return (
     <section
+      ref={sectionRef}
       id="hero"
-      className="relative z-10 flex flex-col"
-      style={{ minHeight: '100dvh', padding: '140px 56px 80px' }}
+      className="relative z-10"
+      style={{ minHeight: '100dvh', overflow: 'hidden' }}
     >
-      {/* System initialized tag — decorative, hidden from screen readers */}
-      <div
+      {/* NASA nebula — full image, zoom + drift + parallax on scroll */}
+      <motion.div
         aria-hidden="true"
-        className="hero-status-bar"
         style={{
-          marginBottom: 24,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          flexWrap: 'nowrap',
-          minWidth: 0,
-          opacity: 0,
-          animation: reduced ? 'none' : 'fade-up .7s ease .05s forwards',
+          position: 'absolute',
+          inset: 0,
+          y: reduced ? 0 : imageY,
+          willChange: 'transform',
         }}
       >
-        {/* Pulsing dot */}
-        <span
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e002076/GSFC_20171208_Archive_e002076~orig.jpg"
+          alt=""
           style={{
-            flexShrink: 0,
-            width: 6,
-            height: 6,
-            borderRadius: '50%',
-            backgroundColor: 'var(--accent)',
-            animation: reduced ? 'none' : 'pulse-opacity 2s infinite ease-in-out',
+            width: '100%',
+            height: '115%',        // extra height so parallax never shows edge
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block',
+            animation: reduced ? 'none' : 'hero-drift 32s ease-in-out infinite alternate',
+            willChange: 'transform',
           }}
         />
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--accent)',
-            letterSpacing: '.01em',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-            animation: reduced ? 'none' : 'blink 1.1s step-end 5',
-          }}
-        >
-          [ SYSTEM // INITIALIZED ]
-        </span>
-        <span style={{ flexShrink: 0, width: 15, height: 1, background: 'rgba(10,92,71,.35)' }} />
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'var(--muted)',
-            letterSpacing: '.08em',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {location}
-        </span>
-      </div>
+      </motion.div>
+
+      {/* Scrim — gradient from dark bottom to semi-dark top so text is always readable */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to top, rgba(5,18,15,.85) 0%, rgba(5,18,15,.40) 45%, rgba(5,18,15,.55) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* ── Bottom-left content block — SpaceX style ── */}
+      <div
+        className="hero-content"
+        style={{
+          position: 'absolute',
+          left: 56,
+          right: 56,
+          bottom: 72,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+        }}
+      >
 
       {/* Headline — constrained to left 58% so it never bleeds into the OrbitalWidget */}
       <h1
@@ -250,6 +254,8 @@ export default function Hero({
             overflow: 'hidden',
             paddingTop: '0.45em',
             marginTop: '-0.45em',
+            paddingBottom: '0.3em',
+            marginBottom: '-0.3em',
           }}
         >
           <span
@@ -259,12 +265,13 @@ export default function Hero({
               fontFamily: 'var(--font-arabic)',
               fontSize: 'clamp(85px, 15vw, 150px)',
               fontWeight: 700,
-              color: 'var(--text)',
+              color: '#FFFFFF',
               display: 'block',
               direction: 'rtl',
               textAlign: 'right',
-              lineHeight: 1.2,
+              lineHeight: 1.35,
               paddingTop: '0.2em',
+              paddingBottom: '0.15em',
               animationDelay: reduced ? '0s' : '.25s',
               animationPlayState: reduced ? 'paused' : 'running',
             }}
@@ -279,7 +286,7 @@ export default function Hero({
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 'clamp(13px, 2vw, 24px)',
-              color: 'var(--accent)',
+              color: '#5FB89A',
               letterSpacing: '.2em',
               display: 'block',
               animationDelay: reduced ? '0s' : '.3s',
@@ -291,15 +298,12 @@ export default function Hero({
         </span>
       </h1>
 
-      {/* Bilingual subtext */}
+      {/* Bilingual subtext — stacked with hairline separator */}
       <div
         className="hero-grid"
         style={{
-          marginTop: 52,
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 44,
-          maxWidth: 840,
+          marginTop: 28,
+          maxWidth: 520,
           opacity: reduced ? 1 : 0,
           animation: reduced ? 'none' : 'fade-up 1s ease 1s forwards',
         }}
@@ -307,23 +311,25 @@ export default function Hero({
         <p
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 12.5,
-            color: 'var(--muted)',
-            lineHeight: 1.9,
+            fontSize: 12,
+            color: 'rgba(255,255,255,.70)',
+            lineHeight: 1.85,
             letterSpacing: '.01em',
           }}
         >
           {subtextEn}
         </p>
+        {/* hairline */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '14px 0' }} />
         <p
           lang="ar"
           dir="rtl"
           className="hero-grid-ar"
           style={{
             fontFamily: 'var(--font-arabic)',
-            fontSize: 14,
-            color: 'var(--muted)',
-            lineHeight: 2.1,
+            fontSize: 13,
+            color: 'rgba(255,255,255,.60)',
+            lineHeight: 2.0,
             textAlign: 'right',
             direction: 'rtl',
           }}
@@ -354,10 +360,10 @@ export default function Hero({
             fontFamily: 'var(--font-mono)',
             fontSize: 9,
             fontWeight: 700,
-            color: 'var(--bg)',
+            color: '#0D1614',
             letterSpacing: '.2em',
             textTransform: 'uppercase',
-            background: 'var(--text)',
+            background: '#FFFFFF',
             padding: '15px 42px',
             display: 'inline-block',
           }}
@@ -373,10 +379,10 @@ export default function Hero({
           style={{
             fontFamily: 'var(--font-mono)',
             fontSize: 9,
-            color: 'var(--text)',
+            color: 'rgba(255,255,255,.9)',
             letterSpacing: '.15em',
             textTransform: 'uppercase',
-            border: '1px solid var(--border)',
+            border: '1px solid rgba(255,255,255,.35)',
             padding: '15px 30px',
             display: 'inline-block',
             transition: 'border-color .25s',
@@ -386,78 +392,7 @@ export default function Hero({
         </a>
       </div>
 
-      {/* Corner orbital logo widget — aria-hidden applied inside the component */}
-      <OrbitalWidget />
-
-      {/* Scroll indicator — decorative, hidden from screen readers */}
-      <div
-        aria-hidden="true"
-        className={`scroll-indicator${reduced ? ' scroll-indicator--reduced' : ''}`}
-        style={{
-          position: 'absolute',
-          bottom: 44,
-          right: 56,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 14,
-        }}
-      >
-        {/* Track + dual scanner beams */}
-        <div
-          className="scroll-track"
-          style={{
-            width: 2,
-            height: 88,
-            background: 'rgba(10,92,71,.32)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {!reduced && (
-            <>
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '-1px',
-                  width: 3,
-                  height: '40%',
-                  background: 'linear-gradient(to bottom, transparent, var(--accent), transparent)',
-                  filter: 'blur(0.5px)',
-                  animation: 'scroll-scan 1.8s cubic-bezier(.4,0,.6,1) 2.2s infinite',
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: '-1px',
-                  width: 3,
-                  height: '25%',
-                  background: 'linear-gradient(to bottom, transparent, rgba(10,92,71,.45), transparent)',
-                  animation: 'scroll-scan 1.8s cubic-bezier(.4,0,.6,1) 3.15s infinite',
-                }}
-              />
-            </>
-          )}
-        </div>
-
-        {/* SCROLL label */}
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 7,
-            color: 'var(--accent)',
-            letterSpacing: '.22em',
-            textTransform: 'uppercase',
-            writingMode: 'vertical-rl',
-            userSelect: 'none',
-          }}
-        >
-          SCROLL
-        </span>
-      </div>
+      </div>{/* end hero-content */}
 
       {/* Bottom divider */}
       <div
@@ -468,7 +403,7 @@ export default function Hero({
           left: 56,
           right: 56,
           height: 1,
-          background: 'var(--border)',
+          background: 'rgba(255,255,255,.18)',
           transformOrigin: 'left',
           animation: reduced ? 'none' : 'line-grow 1.2s cubic-bezier(.16,1,.3,1) 1.6s both',
         }}
@@ -480,87 +415,53 @@ export default function Hero({
     opacity: 0;
     animation: fade-up 1s ease 1.8s forwards;
   }
-  .scroll-indicator--reduced {
-    opacity: 1 !important;
-    animation: none !important;
-  }
-
   @media (max-width:900px) {
-    /* On mobile: centered horizontally, always visible, no animation delay */
-    .scroll-indicator {
-      position: absolute !important;
-      bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
-      left: 50% !important;
-      right: auto !important;
-      transform: translateX(-50%) !important;
-      opacity: 1 !important;
-      animation: none !important;
-    }
-    .scroll-track { height: 52px !important; }
-
-    /* Headline fills full width on mobile — no widget to avoid */
     .hero-headline { max-width: 100% !important; }
-
-    /* ── Layout — top clears floating logo (6px top + 76px logo + 20px gap) ── */
-    #hero {
-      padding: 112px 24px calc(80px + 56px + env(safe-area-inset-bottom, 0px)) !important;
-      min-height: 100dvh !important;
-    }
     .bottom-divider { left: 24px !important; right: 24px !important; }
-
-    /* ── Status bar ── */
-    .hero-status-bar { font-size: 9.5px !important; gap: 8px !important; }
-    .hero-status-bar span { font-size: 9.5px !important; letter-spacing: .04em !important; }
-
-    /* ── Bilingual grid: show only EN column, but show 1 line of Arabic below it ── */
-    .hero-grid {
-      grid-template-columns: 1fr !important;
-      gap: 12px !important;
-      margin-top: 32px !important;
+    .hero-content {
+      left: 24px !important;
+      right: 24px !important;
+      bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
     }
-    /* Show condensed Arabic — 1 line summary, not full paragraph */
+    .hero-grid { margin-top: 16px !important; }
     .hero-grid-ar {
-      display: block !important;
-      font-size: 12px !important;
-      line-height: 1.7 !important;
-      opacity: .65 !important;
-      /* Truncate to 2 lines — feels like a teaser, not hidden entirely */
       display: -webkit-box !important;
       -webkit-line-clamp: 2 !important;
       -webkit-box-orient: vertical !important;
       overflow: hidden !important;
     }
-
-    /* ── CTAs: full-width column ── */
     .hero-ctas {
       flex-direction: column !important;
       align-items: stretch !important;
       gap: 12px !important;
       width: 100% !important;
-      margin-top: 32px !important;
+      margin-top: 20px !important;
     }
     .hero-ctas a {
       width: 100% !important;
       text-align: center !important;
       box-sizing: border-box !important;
     }
-
-  }
-
-  /* Hide scroll indicator on very short phones to avoid overflow */
-  @media (max-width:900px) and (max-height:700px) {
-    .scroll-indicator { display: none !important; }
   }
 
   @media (max-width:480px) {
-    #hero { padding: 90px 16px calc(72px + 56px + env(safe-area-inset-bottom, 0px)) !important; }
+    .hero-content { left: 16px !important; right: 16px !important; }
     .h-line-ar { font-size: clamp(68px, 19vw, 110px) !important; }
     .h-line-en { font-size: 14px !important; }
-    .hero-grid { margin-top: 24px !important; }
-    .hero-ctas { margin-top: 24px !important; }
+    .h-line-ar { line-height: 1.35 !important; padding-bottom: 0.15em !important; text-align: center !important; }
   }
 
   html { scroll-behavior: smooth; }
+
+  /* Zoom + drift — alternates so no jump at loop point.
+     translate moves the crop window across the image revealing different regions. */
+  @keyframes hero-drift {
+    0%   { transform: scale(1.08) translate(0%,    0%);    }
+    25%  { transform: scale(1.13) translate(-1.5%, -0.8%); }
+    50%  { transform: scale(1.10) translate(-2.5%, -1.5%); }
+    75%  { transform: scale(1.15) translate(-1.0%, -0.5%); }
+    100% { transform: scale(1.12) translate(-2.0%, -1.2%); }
+  }
 
   @keyframes pulse-opacity {
     0%, 100% { opacity: 1; }
