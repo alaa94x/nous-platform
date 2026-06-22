@@ -44,9 +44,12 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
   icons: {
-    icon: [{ url: '/nous-logo-Tabs.png', type: 'image/png' }],
-    shortcut: '/nous-logo-Tabs.png',
-    apple: '/nous-logo-Tabs.png',
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    shortcut: '/icons/icon-192.png',
+    apple: '/icons/apple-touch-icon.png',
   },
 }
 
@@ -81,6 +84,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceMono.variable}`}>
       <head>
+        {/* Hero image — preload AVIF for supporting browsers, WebP as universal fallback.
+            imagesrcset on the WebP link lets the browser pick the right breakpoint file
+            before JS executes, eliminating the LCP discovery delay. */}
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-1920.avif"
+          type="image/avif"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/hero-1920.webp"
+          type="image/webp"
+          // @ts-expect-error — imagesrcset is valid HTML but not in React's type defs yet
+          imagesrcset="/hero-828.webp 828w, /hero-1200.webp 1200w, /hero-1920.webp 1920w"
+          imagesizes="100vw"
+        />
         {/* Amiri Arabic font — preload the subset for LCP */}
         <link
           rel="preload"

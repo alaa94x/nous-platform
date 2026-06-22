@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react'
 import { useReducedMotion } from 'motion/react'
-import Image from 'next/image'
 
 interface NavProps {
   siteName?: string
@@ -162,13 +161,13 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
             data-magnetic-btn="true"
             style={{ display: 'flex', alignItems: 'center', gap: 12 }}
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/nous-logo.svg"
               alt=""
               aria-hidden="true"
               width={90}
               height={90}
-              priority
               style={{ width: 90, height: 90, flexShrink: 0 }}
             />
             <span
@@ -255,7 +254,8 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
           aria-label="Nous — return to homepage"
           style={{ display: 'block' }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/nous-logo.svg"
             alt="Nous"
             width={70}

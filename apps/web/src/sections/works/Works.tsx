@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { useReducedMotion } from 'motion/react'
+import { useReveal } from '@/components/useReveal'
 
 interface Project {
   id: string
@@ -120,7 +121,7 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
           alt={proj.name}
           fill
           priority={priority}
-          sizes="(max-width: 640px) 50vw, (max-width: 900px) 50vw, 33vw"
+          sizes="(max-width: 900px) 100vw, 33vw"
           className="proj-img"
           style={{
             objectFit: 'cover',
@@ -240,13 +241,17 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
 
 // ── Section ───────────────────────────────────────────────────────────────
 export default function Works({ projects }: WorksProps) {
-  const reduced = !!useReducedMotion()
+  const reduced    = !!useReducedMotion()
+  const sectionRef = useRef<HTMLElement>(null)
+
+  useReveal(sectionRef)
 
   // Grid columns: 1 card = 1 col, 2 = 2 col, 3+ = 3 col (wraps naturally)
   const cols = projects.length === 1 ? 1 : projects.length === 2 ? 2 : 3
 
   return (
     <section
+      ref={sectionRef}
       id="works"
       aria-label="Selected Works"
       className="relative z-10"

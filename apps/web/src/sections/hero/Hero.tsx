@@ -1,8 +1,8 @@
 'use client'
 
 import { ReactNode, useEffect, useRef } from 'react'
-import Image from 'next/image'
 import { useReducedMotion, useScroll, useTransform, motion } from 'motion/react'
+import { useReveal } from '@/components/useReveal'
 
 const langData = [
   { name: 'nous.', label: '— EN', rtl: false },
@@ -104,43 +104,7 @@ export default function Hero({
     return () => nameEl.removeEventListener('animationiteration', onIter)
   }, [])
 
-  // Scroll reveal — scoped to this section only, not the whole document
-  useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-    const els = Array.from(section.querySelectorAll<HTMLElement>('.reveal'))
-
-    els.forEach(el => {
-      const siblings = el.parentElement
-        ? Array.from(el.parentElement.querySelectorAll<HTMLElement>(':scope > .reveal'))
-        : []
-      const idx = siblings.indexOf(el)
-      if (idx > 0) el.dataset['revealDelay'] = String(idx * 80)
-    })
-
-    const reveal = (el: HTMLElement) => {
-      const del = parseFloat(el.dataset['revealDelay'] ?? '0')
-      setTimeout(() => el.classList.add('visible'), del)
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(e => {
-          if (!e.isIntersecting) return
-          reveal(e.target as HTMLElement)
-          io.unobserve(e.target)
-        })
-      },
-      { threshold: 0.01, rootMargin: '0px 0px 120px 0px' },
-    )
-    els.forEach(el => io.observe(el))
-
-    const fallback = setTimeout(() => {
-      section.querySelectorAll<HTMLElement>('.reveal:not(.visible)').forEach(reveal)
-    }, 800)
-
-    return () => { io.disconnect(); clearTimeout(fallback) }
-  }, [])
+  useReveal(sectionRef)
 
   // Magnetic buttons — with proper cleanup to prevent listener accumulation
   useEffect(() => {
@@ -184,29 +148,46 @@ export default function Hero({
       className="relative z-10"
       style={{ minHeight: '100dvh', overflow: 'hidden' }}
     >
-      {/* Hero nebula — local asset, next/image for automatic WebP/AVIF + preload */}
+      {/* Hero nebula — pre-optimised AVIF/WebP, native <picture> for explicit format negotiation */}
       <motion.div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
-          // extra height so parallax never exposes the bottom edge
-          height: '115%',
+          height: '115%',   // extra height so parallax never exposes the bottom edge
           y: reduced ? 0 : imageY,
         }}
       >
-        <Image
-          src="/orig1.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          style={{
-            objectFit: 'cover',
-            objectPosition: 'center',
-            animation: reduced ? 'none' : 'hero-drift 32s ease-in-out infinite alternate',
-          }}
-        />
+        <picture style={{ display: 'contents' }}>
+          {/* AVIF: best compression, Chrome 85+, Firefox 93+, Safari 16.4+ */}
+          <source
+            type="image/avif"
+            srcSet="/hero-1920.avif"
+            media="(min-width: 1px)"
+          />
+          {/* WebP: wide support, responsive by breakpoint */}
+          <source
+            type="image/webp"
+            srcSet="/hero-828.webp 828w, /hero-1200.webp 1200w, /hero-1920.webp 1920w"
+            sizes="100vw"
+          />
+          {/* JPEG fallback — only if browser supports neither AVIF nor WebP */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-1920.webp"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              display: 'block',
+              animation: reduced ? 'none' : 'hero-drift 32s ease-in-out infinite alternate',
+            }}
+          />
+        </picture>
       </motion.div>
 
       {/* Scrim — gradient from dark bottom to semi-dark top so text is always readable */}
@@ -220,21 +201,20 @@ export default function Hero({
         }}
       />
 
-      {/* ── Bottom-left content block — SpaceX style ── */}
+      {/* ── Bottom-left content block — SpaceX layout ── */}
       <div
         className="hero-content"
         style={{
           position: 'absolute',
           left: 56,
-          right: 56,
           bottom: 72,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'flex-start',
+          maxWidth: 600,
         }}
       >
 
-      {/* Headline — constrained to left 58% so it never bleeds into the OrbitalWidget */}
       <h1
         aria-label={`${headlineAr} — ${headlineEn}`}
         className="hero-headline"
@@ -243,15 +223,10 @@ export default function Hero({
           display: 'block',
           overflow: 'visible',
           width: '100%',
-          textAlign: 'center',
+          textAlign: 'left',
         }}
       >
-        {/* Wrap only the Arabic span in its own overflow clip so the
-            diacritic marks above the letters are never cut.
-            Extra paddingTop creates headroom inside the clip boundary;
-            the negative marginTop pulls layout back so spacing stays even. */}
-        {/* Arabic clip: paddingTop pushes the clip boundary up so diacritics
-            aren't shaved. marginTop compensates so layout position is unchanged. */}
+        {/* Arabic: diacritic clip wrapper */}
         <span
           style={{
             display: 'block',
@@ -267,12 +242,12 @@ export default function Hero({
             className="h-line h-line-ar"
             style={{
               fontFamily: 'var(--font-arabic)',
-              fontSize: 'clamp(85px, 15vw, 150px)',
+              fontSize: 'clamp(72px, 11vw, 130px)',
               fontWeight: 700,
               color: '#FFFFFF',
               display: 'block',
               direction: 'rtl',
-              textAlign: 'center',
+              textAlign: 'right',
               lineHeight: 1.35,
               paddingTop: '0.2em',
               paddingBottom: '0.15em',
@@ -283,16 +258,17 @@ export default function Hero({
             {headlineAr}
           </span>
         </span>
-        {/* EN subtitle: capped at 18px on mobile via clamp */}
+        {/* EN scramble subtitle */}
         <span style={{ display: 'block', overflow: 'hidden', marginTop: 8 }}>
           <span
             className="h-line h-line-en"
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 'clamp(13px, 2vw, 24px)',
+              fontSize: 'clamp(12px, 1.4vw, 18px)',
               color: '#5FB89A',
               letterSpacing: '.2em',
               display: 'block',
+              textAlign: 'left',
               animationDelay: reduced ? '0s' : '.3s',
               animationPlayState: reduced ? 'paused' : 'running',
             }}
@@ -302,14 +278,14 @@ export default function Hero({
         </span>
       </h1>
 
-      {/* Bilingual subtext — stacked with hairline separator */}
+      {/* Bilingual subtext */}
       <div
         className="hero-grid"
         style={{
-          marginTop: 28,
-          maxWidth: 520,
+          marginTop: 24,
+          maxWidth: 480,
           width: '100%',
-          textAlign: 'center',
+          textAlign: 'left',
           opacity: reduced ? 1 : 0,
           animation: reduced ? 'none' : 'fade-up 1s ease 1s forwards',
         }}
@@ -317,17 +293,16 @@ export default function Hero({
         <p
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 12,
+            fontSize: 11,
             color: 'rgba(255,255,255,.70)',
             lineHeight: 1.85,
             letterSpacing: '.01em',
-            textAlign: 'center',
+            textAlign: 'left',
           }}
         >
           {subtextEn}
         </p>
-        {/* hairline */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '14px 0' }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '12px 0' }} />
         <p
           lang="ar"
           dir="rtl"
@@ -337,7 +312,7 @@ export default function Hero({
             fontSize: 13,
             color: 'rgba(255,255,255,.60)',
             lineHeight: 2.0,
-            textAlign: 'center',
+            textAlign: 'right',
             direction: 'rtl',
           }}
         >
@@ -349,10 +324,10 @@ export default function Hero({
       <div
         className="hero-ctas"
         style={{
-          marginTop: 44,
+          marginTop: 36,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           gap: 16,
           flexWrap: 'wrap',
           width: '100%',
@@ -425,11 +400,18 @@ export default function Hero({
     animation: fade-up 1s ease 1.8s forwards;
   }
   @media (max-width:900px) {
-    .hero-headline { max-width: 100% !important; }
+    .hero-headline { max-width: 100% !important; text-align: center !important; }
+    .h-line-ar { text-align: center !important; }
+    .h-line-en { text-align: center !important; }
+    .hero-grid { text-align: center !important; }
+    .hero-grid p { text-align: center !important; }
+    .hero-grid-ar { text-align: center !important; }
     .bottom-divider { left: 24px !important; right: 24px !important; }
     .hero-content {
       left: 24px !important;
       right: 24px !important;
+      max-width: 100% !important;
+      align-items: center !important;
       bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
     }
     .hero-grid { margin-top: 16px !important; }
@@ -445,6 +427,7 @@ export default function Hero({
       gap: 12px !important;
       width: 100% !important;
       margin-top: 20px !important;
+      justify-content: center !important;
     }
     .hero-ctas a {
       width: 100% !important;
