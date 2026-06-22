@@ -16,17 +16,247 @@ interface ContactProps {
   contactEmail?: string
 }
 
+// Text-only codes — emoji flags render as letter pairs on Windows, which looks broken
+// GCC pinned first, then all countries A-Z
 const COUNTRY_CODES = [
-  { code: '+974', flag: '🇶🇦', label: '🇶🇦 +974' },
-  { code: '+966', flag: '🇸🇦', label: '🇸🇦 +966' },
-  { code: '+971', flag: '🇦🇪', label: '🇦🇪 +971' },
-  { code: '+965', flag: '🇰🇼', label: '🇰🇼 +965' },
-  { code: '+968', flag: '🇴🇲', label: '🇴🇲 +968' },
-  { code: '+973', flag: '🇧🇭', label: '🇧🇭 +973' },
-  { code: '+1',   flag: '🇺🇸', label: '🇺🇸 +1'   },
-  { code: '+44',  flag: '🇬🇧', label: '🇬🇧 +44'  },
-  { code: '+20',  flag: '🇪🇬', label: '🇪🇬 +20'  },
-  { code: '+91',  flag: '🇮🇳', label: '🇮🇳 +91'  },
+  // ── GCC (pinned) ───────────────────────────────────────────
+  { code: '+974', label: 'QA +974' },
+  { code: '+966', label: 'SA +966' },
+  { code: '+971', label: 'AE +971' },
+  { code: '+965', label: 'KW +965' },
+  { code: '+968', label: 'OM +968' },
+  { code: '+973', label: 'BH +973' },
+  // ── Rest of world A–Z ──────────────────────────────────────
+  { code: '+93',  label: 'AF +93'  },
+  { code: '+355', label: 'AL +355' },
+  { code: '+213', label: 'DZ +213' },
+  { code: '+1684',label: 'AS +1684'},
+  { code: '+376', label: 'AD +376' },
+  { code: '+244', label: 'AO +244' },
+  { code: '+1264',label: 'AI +1264'},
+  { code: '+672', label: 'AQ +672' },
+  { code: '+1268',label: 'AG +1268'},
+  { code: '+54',  label: 'AR +54'  },
+  { code: '+374', label: 'AM +374' },
+  { code: '+297', label: 'AW +297' },
+  { code: '+61',  label: 'AU +61'  },
+  { code: '+43',  label: 'AT +43'  },
+  { code: '+994', label: 'AZ +994' },
+  { code: '+1242',label: 'BS +1242'},
+  { code: '+880', label: 'BD +880' },
+  { code: '+1246',label: 'BB +1246'},
+  { code: '+375', label: 'BY +375' },
+  { code: '+32',  label: 'BE +32'  },
+  { code: '+501', label: 'BZ +501' },
+  { code: '+229', label: 'BJ +229' },
+  { code: '+1441',label: 'BM +1441'},
+  { code: '+975', label: 'BT +975' },
+  { code: '+591', label: 'BO +591' },
+  { code: '+387', label: 'BA +387' },
+  { code: '+267', label: 'BW +267' },
+  { code: '+55',  label: 'BR +55'  },
+  { code: '+246', label: 'IO +246' },
+  { code: '+1284',label: 'VG +1284'},
+  { code: '+673', label: 'BN +673' },
+  { code: '+359', label: 'BG +359' },
+  { code: '+226', label: 'BF +226' },
+  { code: '+257', label: 'BI +257' },
+  { code: '+855', label: 'KH +855' },
+  { code: '+237', label: 'CM +237' },
+  { code: '+1',   label: 'CA +1'   },
+  { code: '+238', label: 'CV +238' },
+  { code: '+1345',label: 'KY +1345'},
+  { code: '+236', label: 'CF +236' },
+  { code: '+235', label: 'TD +235' },
+  { code: '+56',  label: 'CL +56'  },
+  { code: '+86',  label: 'CN +86'  },
+  { code: '+61',  label: 'CX +61'  },
+  { code: '+61',  label: 'CC +61'  },
+  { code: '+57',  label: 'CO +57'  },
+  { code: '+269', label: 'KM +269' },
+  { code: '+682', label: 'CK +682' },
+  { code: '+506', label: 'CR +506' },
+  { code: '+385', label: 'HR +385' },
+  { code: '+53',  label: 'CU +53'  },
+  { code: '+599', label: 'CW +599' },
+  { code: '+357', label: 'CY +357' },
+  { code: '+420', label: 'CZ +420' },
+  { code: '+243', label: 'CD +243' },
+  { code: '+45',  label: 'DK +45'  },
+  { code: '+253', label: 'DJ +253' },
+  { code: '+1767',label: 'DM +1767'},
+  { code: '+1809',label: 'DO +1809'},
+  { code: '+593', label: 'EC +593' },
+  { code: '+20',  label: 'EG +20'  },
+  { code: '+503', label: 'SV +503' },
+  { code: '+240', label: 'GQ +240' },
+  { code: '+291', label: 'ER +291' },
+  { code: '+372', label: 'EE +372' },
+  { code: '+268', label: 'SZ +268' },
+  { code: '+251', label: 'ET +251' },
+  { code: '+500', label: 'FK +500' },
+  { code: '+298', label: 'FO +298' },
+  { code: '+679', label: 'FJ +679' },
+  { code: '+358', label: 'FI +358' },
+  { code: '+33',  label: 'FR +33'  },
+  { code: '+594', label: 'GF +594' },
+  { code: '+689', label: 'PF +689' },
+  { code: '+241', label: 'GA +241' },
+  { code: '+220', label: 'GM +220' },
+  { code: '+995', label: 'GE +995' },
+  { code: '+49',  label: 'DE +49'  },
+  { code: '+233', label: 'GH +233' },
+  { code: '+350', label: 'GI +350' },
+  { code: '+30',  label: 'GR +30'  },
+  { code: '+299', label: 'GL +299' },
+  { code: '+1473',label: 'GD +1473'},
+  { code: '+590', label: 'GP +590' },
+  { code: '+1671',label: 'GU +1671'},
+  { code: '+502', label: 'GT +502' },
+  { code: '+44',  label: 'GG +44'  },
+  { code: '+224', label: 'GN +224' },
+  { code: '+245', label: 'GW +245' },
+  { code: '+592', label: 'GY +592' },
+  { code: '+509', label: 'HT +509' },
+  { code: '+504', label: 'HN +504' },
+  { code: '+852', label: 'HK +852' },
+  { code: '+36',  label: 'HU +36'  },
+  { code: '+354', label: 'IS +354' },
+  { code: '+91',  label: 'IN +91'  },
+  { code: '+62',  label: 'ID +62'  },
+  { code: '+98',  label: 'IR +98'  },
+  { code: '+964', label: 'IQ +964' },
+  { code: '+353', label: 'IE +353' },
+  { code: '+44',  label: 'IM +44'  },
+  { code: '+972', label: 'IL +972' },
+  { code: '+39',  label: 'IT +39'  },
+  { code: '+225', label: 'CI +225' },
+  { code: '+1876',label: 'JM +1876'},
+  { code: '+81',  label: 'JP +81'  },
+  { code: '+44',  label: 'JE +44'  },
+  { code: '+962', label: 'JO +962' },
+  { code: '+7',   label: 'KZ +7'   },
+  { code: '+254', label: 'KE +254' },
+  { code: '+686', label: 'KI +686' },
+  { code: '+383', label: 'XK +383' },
+  { code: '+850', label: 'KP +850' },
+  { code: '+82',  label: 'KR +82'  },
+  { code: '+996', label: 'KG +996' },
+  { code: '+856', label: 'LA +856' },
+  { code: '+371', label: 'LV +371' },
+  { code: '+961', label: 'LB +961' },
+  { code: '+266', label: 'LS +266' },
+  { code: '+231', label: 'LR +231' },
+  { code: '+218', label: 'LY +218' },
+  { code: '+423', label: 'LI +423' },
+  { code: '+370', label: 'LT +370' },
+  { code: '+352', label: 'LU +352' },
+  { code: '+853', label: 'MO +853' },
+  { code: '+261', label: 'MG +261' },
+  { code: '+265', label: 'MW +265' },
+  { code: '+60',  label: 'MY +60'  },
+  { code: '+960', label: 'MV +960' },
+  { code: '+223', label: 'ML +223' },
+  { code: '+356', label: 'MT +356' },
+  { code: '+692', label: 'MH +692' },
+  { code: '+596', label: 'MQ +596' },
+  { code: '+222', label: 'MR +222' },
+  { code: '+230', label: 'MU +230' },
+  { code: '+262', label: 'YT +262' },
+  { code: '+52',  label: 'MX +52'  },
+  { code: '+691', label: 'FM +691' },
+  { code: '+373', label: 'MD +373' },
+  { code: '+377', label: 'MC +377' },
+  { code: '+976', label: 'MN +976' },
+  { code: '+382', label: 'ME +382' },
+  { code: '+1664',label: 'MS +1664'},
+  { code: '+212', label: 'MA +212' },
+  { code: '+258', label: 'MZ +258' },
+  { code: '+95',  label: 'MM +95'  },
+  { code: '+264', label: 'NA +264' },
+  { code: '+674', label: 'NR +674' },
+  { code: '+977', label: 'NP +977' },
+  { code: '+31',  label: 'NL +31'  },
+  { code: '+687', label: 'NC +687' },
+  { code: '+64',  label: 'NZ +64'  },
+  { code: '+505', label: 'NI +505' },
+  { code: '+227', label: 'NE +227' },
+  { code: '+234', label: 'NG +234' },
+  { code: '+683', label: 'NU +683' },
+  { code: '+672', label: 'NF +672' },
+  { code: '+389', label: 'MK +389' },
+  { code: '+1670',label: 'MP +1670'},
+  { code: '+47',  label: 'NO +47'  },
+  { code: '+92',  label: 'PK +92'  },
+  { code: '+680', label: 'PW +680' },
+  { code: '+970', label: 'PS +970' },
+  { code: '+507', label: 'PA +507' },
+  { code: '+675', label: 'PG +675' },
+  { code: '+595', label: 'PY +595' },
+  { code: '+51',  label: 'PE +51'  },
+  { code: '+63',  label: 'PH +63'  },
+  { code: '+48',  label: 'PL +48'  },
+  { code: '+351', label: 'PT +351' },
+  { code: '+1787',label: 'PR +1787'},
+  { code: '+40',  label: 'RO +40'  },
+  { code: '+7',   label: 'RU +7'   },
+  { code: '+250', label: 'RW +250' },
+  { code: '+290', label: 'SH +290' },
+  { code: '+1869',label: 'KN +1869'},
+  { code: '+1758',label: 'LC +1758'},
+  { code: '+508', label: 'PM +508' },
+  { code: '+1784',label: 'VC +1784'},
+  { code: '+685', label: 'WS +685' },
+  { code: '+378', label: 'SM +378' },
+  { code: '+239', label: 'ST +239' },
+  { code: '+221', label: 'SN +221' },
+  { code: '+381', label: 'RS +381' },
+  { code: '+248', label: 'SC +248' },
+  { code: '+232', label: 'SL +232' },
+  { code: '+65',  label: 'SG +65'  },
+  { code: '+1721',label: 'SX +1721'},
+  { code: '+421', label: 'SK +421' },
+  { code: '+386', label: 'SI +386' },
+  { code: '+677', label: 'SB +677' },
+  { code: '+252', label: 'SO +252' },
+  { code: '+27',  label: 'ZA +27'  },
+  { code: '+211', label: 'SS +211' },
+  { code: '+34',  label: 'ES +34'  },
+  { code: '+94',  label: 'LK +94'  },
+  { code: '+249', label: 'SD +249' },
+  { code: '+597', label: 'SR +597' },
+  { code: '+46',  label: 'SE +46'  },
+  { code: '+41',  label: 'CH +41'  },
+  { code: '+963', label: 'SY +963' },
+  { code: '+886', label: 'TW +886' },
+  { code: '+992', label: 'TJ +992' },
+  { code: '+255', label: 'TZ +255' },
+  { code: '+66',  label: 'TH +66'  },
+  { code: '+670', label: 'TL +670' },
+  { code: '+228', label: 'TG +228' },
+  { code: '+690', label: 'TK +690' },
+  { code: '+676', label: 'TO +676' },
+  { code: '+1868',label: 'TT +1868'},
+  { code: '+216', label: 'TN +216' },
+  { code: '+90',  label: 'TR +90'  },
+  { code: '+993', label: 'TM +993' },
+  { code: '+1649',label: 'TC +1649'},
+  { code: '+688', label: 'TV +688' },
+  { code: '+1340',label: 'VI +1340'},
+  { code: '+256', label: 'UG +256' },
+  { code: '+380', label: 'UA +380' },
+  { code: '+44',  label: 'GB +44'  },
+  { code: '+1',   label: 'US +1'   },
+  { code: '+598', label: 'UY +598' },
+  { code: '+998', label: 'UZ +998' },
+  { code: '+678', label: 'VU +678' },
+  { code: '+379', label: 'VA +379' },
+  { code: '+58',  label: 'VE +58'  },
+  { code: '+84',  label: 'VN +84'  },
+  { code: '+681', label: 'WF +681' },
+  { code: '+967', label: 'YE +967' },
+  { code: '+260', label: 'ZM +260' },
+  { code: '+263', label: 'ZW +263' },
 ]
 
 export default function Contact({ services, contactEmail = 'hello@nous.qa' }: ContactProps) {
@@ -134,7 +364,7 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
       track('contact_form_submitted', { services: Array.from(selectedSvc) })
       setSubmitted(true)
     } catch {
-      setError('Something went wrong. Please email us directly.')
+      setError(`Something went wrong. Email us directly at ${contactEmail}.`)
     } finally {
       setSubmitting(false)
     }
@@ -171,6 +401,7 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
   return (
     <section
       id="contact"
+      aria-label="Contact — Start a project"
       ref={sectionRef}
       className="relative z-10"
       style={{ borderTop: '1px solid var(--border)' }}
@@ -361,22 +592,24 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
             {/* Step 1: Name */}
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(0) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>01</span>
-                <label style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>01</span>
+                <label htmlFor="contact-name" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
                   What&apos;s your name?
                 </label>
-                {/* Animated "start here" nudge — only shows when step is active */}
                 {!hasName && (
-                  <span className="start-nudge" style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--accent)', letterSpacing: '.14em', opacity: .7 }}>
+                  <span className="start-nudge" aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--accent)', letterSpacing: '.14em', opacity: .7 }}>
                     ← Start here
                   </span>
                 )}
               </div>
               <input
+                id="contact-name"
                 ref={nameInputRef}
                 type="text"
                 autoComplete="name"
                 placeholder="Type your name…"
+                aria-required="true"
+                aria-label="Your full name"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 style={inputStyle}
@@ -387,13 +620,16 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
             {/* Step 2: Email */}
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(1) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>02</span>
-                <label style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Your email address?</label>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>02</span>
+                <label htmlFor="contact-email" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Your email address?</label>
               </div>
               <input
+                id="contact-email"
                 type="email"
                 autoComplete="email"
                 placeholder="hello@company.qa"
+                aria-required="true"
+                aria-label="Your email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 style={inputStyle}
@@ -404,14 +640,15 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
             {/* Step 2b: Phone */}
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(1) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>02b</span>
-                <label style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>02b</span>
+                <label htmlFor="contact-phone" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
                   Phone number? <span style={{ opacity: .45 }}>(Optional)</span>
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ position: 'relative', flexShrink: 0, marginRight: 16 }}>
                   <select
+                    aria-label="Country code"
                     value={countryCode}
                     onChange={e => setCountryCode(e.target.value)}
                     style={{ fontFamily: 'var(--font-mono)', fontSize: 'clamp(14px,1.8vw,20px)', fontWeight: 400, color: 'var(--accent)', background: 'none', border: 'none', outline: 'none', appearance: 'none', paddingRight: 18, cursor: 'pointer', letterSpacing: '.04em' }}
@@ -426,9 +663,11 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
                 </div>
                 <div style={{ width: 1, height: 32, background: 'var(--border)', marginRight: 16, flexShrink: 0 }} />
                 <input
+                  id="contact-phone"
                   type="tel"
                   autoComplete="tel"
                   placeholder="5X XXX XXXX"
+                  aria-label="Phone number"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   style={{ ...inputStyle, flex: 1, letterSpacing: '-.01em' }}
@@ -440,18 +679,19 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(2) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>03</span>
-                  <label style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>What do you need?</label>
+                  <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>03</span>
+                  <span role="group" aria-label="What services do you need? Select all that apply" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>What do you need?</span>
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--muted)', letterSpacing: '.12em', opacity: .65 }}>Select all that apply</span>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--muted)', letterSpacing: '.12em', opacity: .65 }}>Select all that apply</span>
               </div>
-              <div id="svc-pills-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <div id="svc-pills-grid" role="group" aria-label="Service options" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {services.map(s => {
                   const isSelected = selectedSvc.has(s.name)
                   return (
                     <button
                       key={s.id}
                       type="button"
+                      aria-pressed={isSelected}
                       className={`svc-card${isSelected ? ' selected' : ''}`}
                       onClick={() => toggleService(s.name)}
                       style={{
@@ -483,6 +723,7 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
                 {/* Not sure */}
                 <button
                   type="button"
+                  aria-pressed={selectedSvc.has('Not Sure Yet')}
                   className={`svc-card svc-card-wide${selectedSvc.has('Not Sure Yet') ? ' selected' : ''}`}
                   onClick={() => toggleService('Not Sure Yet')}
                   style={{
@@ -520,12 +761,14 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
             {/* Step 4: Vision */}
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(3) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>04</span>
-                <label style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Describe your vision</label>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>04</span>
+                <label htmlFor="contact-message" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Describe your vision</label>
               </div>
               <textarea
+                id="contact-message"
                 rows={3}
                 placeholder="Tell us what you're building…"
+                aria-label="Describe your vision or project"
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 style={{ ...inputStyle, resize: 'none', lineHeight: 1.7, fontSize: 'clamp(18px,2.2vw,26px)', letterSpacing: '-.01em' }}
@@ -540,6 +783,9 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
               type="button"
               id="submit-btn"
               data-magnetic-btn="true"
+              aria-disabled={!isReady || submitting}
+              aria-busy={submitting}
+              aria-label={submitting ? 'Sending your brief, please wait' : 'Submit your brief'}
               className={`init-btn${isReady ? ' ready' : ''}`}
               onClick={handleSubmit}
               disabled={submitting}
@@ -566,9 +812,14 @@ export default function Contact({ services, contactEmail = 'hello@nous.qa' }: Co
             </div>
           </div>
 
-          {error && (
-            <p style={{ marginTop: 16, fontFamily: 'var(--font-mono)', fontSize: 8, color: '#c0392b', letterSpacing: '.08em' }}>{error}</p>
-          )}
+          {/* aria-live: error announced immediately to screen readers */}
+          <p
+            role="alert"
+            aria-live="assertive"
+            style={{ marginTop: 16, fontFamily: 'var(--font-mono)', fontSize: 8, color: '#c0392b', letterSpacing: '.08em', minHeight: '1em' }}
+          >
+            {error}
+          </p>
         </div>
 
       </div>

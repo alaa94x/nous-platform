@@ -6,7 +6,7 @@ import { useReducedMotion } from 'motion/react'
 type CursorState = 'default' | 'magnetic' | 'project'
 
 export default function Cursor() {
-  const reduced = useReducedMotion()
+  const reduced = !!useReducedMotion()
 
   const dotRef   = useRef<HTMLDivElement>(null)
   const wrapRef  = useRef<HTMLDivElement>(null)
@@ -99,6 +99,12 @@ export default function Cursor() {
     s.isMouse = window.matchMedia('(hover:hover) and (pointer:fine)').matches
     if (!s.isMouse) return
 
+    // Hide system cursor now that the custom cursor is ready
+    document.body.style.cursor = 'none'
+    document.querySelectorAll<HTMLElement>('a, button').forEach(el => {
+      el.style.cursor = 'none'
+    })
+
     s.cx = s.tx = s.ox = s.otx = window.innerWidth  / 2
     s.cy = s.ty = s.oy = s.oty = window.innerHeight / 2
 
@@ -130,6 +136,7 @@ export default function Cursor() {
     return () => {
       document.removeEventListener('mousemove', onMove)
       cancelAnimationFrame(s.rafId)
+      document.body.style.cursor = 'auto'
     }
   }, [reduced, tick])
 
@@ -137,9 +144,10 @@ export default function Cursor() {
 
   return (
     <>
-      {/* Custom cursor dot */}
+      {/* Custom cursor dot — decorative, fully hidden from assistive tech */}
       <div
         ref={dotRef}
+        aria-hidden="true"
         className="fixed top-0 left-0 pointer-events-none z-[9999]"
         style={{
           width: 4, height: 4,

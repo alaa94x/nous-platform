@@ -166,7 +166,7 @@ export default async function AnalyticsPage() {
           </span>
         </div>
         <a
-          href="http://localhost:3000"
+          href={process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3002'}
           target="_blank"
           rel="noopener noreferrer"
           style={{ fontSize: 8, color: 'var(--accent)', letterSpacing: '.14em', textTransform: 'uppercase', border: '1px solid rgba(46,204,113,.2)', padding: '5px 12px', borderRadius: 3, textDecoration: 'none', flexShrink: 0 }}

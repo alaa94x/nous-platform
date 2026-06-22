@@ -1,14 +1,17 @@
-import Nav          from '@/components/nav/Nav'
-import Cursor       from '@/components/cursor/Cursor'
-import Noise        from '@/components/noise/Noise'
-import Hero         from '@/sections/hero/Hero'
-import Capabilities from '@/sections/capabilities/Capabilities'
-import Works        from '@/sections/works/Works'
-import Contact      from '@/sections/contact/Contact'
-import Footer       from '@/sections/footer/Footer'
+import Nav                from '@/components/nav/Nav'
+import Cursor             from '@/components/cursor/Cursor'
+import Noise              from '@/components/noise/Noise'
+import Hero               from '@/sections/hero/Hero'
+import Capabilities       from '@/sections/capabilities/Capabilities'
+import Works              from '@/sections/works/Works'
+import Contact            from '@/sections/contact/Contact'
+import Footer, { DEFAULT_CONTACT_ITEMS, DEFAULT_SOCIAL_ITEMS } from '@/sections/footer/Footer'
+import type { ContactItem, SocialItem } from '@/sections/footer/Footer'
+import { SectionBoundary } from '@/components/SectionBoundary'
 
-// Always render fresh — admin changes reflect immediately on next request
-export const dynamic = 'force-dynamic'
+// ISR: cache for 60s — admin changes reflect on next revalidation.
+// Call revalidatePath('/') in admin API routes after content changes.
+export const revalidate = 60
 
 // ── Seed defaults ─────────────────────────────────────────────────────────────
 
@@ -85,30 +88,46 @@ async function getPageData() {
 export default async function HomePage() {
   const { settings: s, services, projects } = await getPageData()
 
+  // Parse footer JSON config with fallback to defaults
+  let contactItems: ContactItem[] = DEFAULT_CONTACT_ITEMS
+  let socialItems:  SocialItem[]  = DEFAULT_SOCIAL_ITEMS
+  try {
+    if (s['footer_contact_items']) contactItems = JSON.parse(s['footer_contact_items'])
+    if (s['footer_social_items'])  socialItems  = JSON.parse(s['footer_social_items'])
+  } catch { /* use defaults */ }
+
   return (
     <>
       <Cursor />
       <Noise />
       <Nav siteName={s['site_name']} />
-      <main>
-        <Hero
-          headlineEn     = {s['hero_headline_en']}
-          headlineAr     = {s['hero_headline_ar']}
-          subtextEn      = {s['hero_subtext_en']}
-          subtextAr      = {s['hero_subtext_ar']}
-          location       = {s['hero_location']}
-          ctaPrimary     = {s['hero_cta_primary']}
-          ctaSecondary   = {s['hero_cta_secondary']}
-        />
-        <Capabilities services={services} />
-        <Works projects={projects} />
-        <Contact services={services} contactEmail={s['contact_email']} />
+      <main id="main-content">
+        <SectionBoundary name="hero">
+          <Hero
+            headlineEn     = {s['hero_headline_en']}
+            headlineAr     = {s['hero_headline_ar']}
+            subtextEn      = {s['hero_subtext_en']}
+            subtextAr      = {s['hero_subtext_ar']}
+            location       = {s['hero_location']}
+            ctaPrimary     = {s['hero_cta_primary']}
+            ctaSecondary   = {s['hero_cta_secondary']}
+          />
+        </SectionBoundary>
+        <SectionBoundary name="capabilities">
+          <Capabilities services={services} />
+        </SectionBoundary>
+        <SectionBoundary name="works">
+          <Works projects={projects} />
+        </SectionBoundary>
+        <SectionBoundary name="contact">
+          <Contact services={services} contactEmail={s['contact_email']} />
+        </SectionBoundary>
       </main>
       <Footer
-        siteName  = {s['site_name']}
-        location  = {s['footer_location']}
-        copyright = {s['footer_copyright']}
-        badgeText = {s['footer_badge']}
+        siteName      = {s['site_name']}
+        companyName   = {s['company_name'] ?? 'Nous'}
+        contactItems  = {contactItems}
+        socialItems   = {socialItems}
       />
     </>
   )

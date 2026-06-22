@@ -75,6 +75,30 @@ export default function ContactsPage() {
 
   useEffect(() => { void fetchContacts() }, [fetchContacts])
 
+  // Realtime: new contacts arrive without page refresh
+  useEffect(() => {
+    const channel = supabase
+      .channel('contacts-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contacts' }, payload => {
+        const newContact = payload.new as Contact
+        setContacts(prev => {
+          // Only prepend if it passes the current status filter
+          if (filter !== 'all' && newContact.status !== filter) return prev
+          return [newContact, ...prev]
+        })
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'contacts' }, payload => {
+        const updated = payload.new as Contact
+        setContacts(prev => prev.map(c => c.id === updated.id ? updated : c))
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'contacts' }, payload => {
+        setContacts(prev => prev.filter(c => c.id !== (payload.old as Contact).id))
+      })
+      .subscribe()
+
+    return () => { void supabase.removeChannel(channel) }
+  }, [filter])
+
   const displayed = useMemo(() => {
     if (!search.trim()) return contacts
     const q = search.toLowerCase()
@@ -287,6 +311,21 @@ export default function ContactsPage() {
                           >
                             Reply by email
                           </a>
+                          {c.phone && (() => {
+                            const digits = c.phone.replace(/[^\d+]/g, '')
+                            const msg = encodeURIComponent(`Hi ${c.name.split(' ')[0]}, thanks for reaching out to Nous. We’d love to discuss your project.`)
+                            return (
+                              <a
+                                href={`https://wa.me/${digits}?text=${msg}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="adm-action-btn"
+                                style={{ padding: '8px 16px', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace', border: '1px solid rgba(37,211,102,.35)', background: 'rgba(37,211,102,.06)', color: '#25D366', borderRadius: 4, textDecoration: 'none', minHeight: 36, display: 'inline-flex', alignItems: 'center' }}
+                              >
+                                WhatsApp
+                              </a>
+                            )
+                          })()}
                           <button
                             onClick={() => void deleteContact(c.id)}
                             className="adm-action-btn"

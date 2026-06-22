@@ -26,6 +26,7 @@ export default function Noise() {
   return (
     <div
       ref={elRef}
+      aria-hidden="true"
       className="fixed inset-0 pointer-events-none z-[500]"
       style={{
         opacity: .025,

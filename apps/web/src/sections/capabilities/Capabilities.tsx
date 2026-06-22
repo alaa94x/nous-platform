@@ -17,7 +17,7 @@ interface CapabilitiesProps {
 }
 
 export default function Capabilities({ services }: CapabilitiesProps) {
-  const reduced   = useReducedMotion()
+  const reduced   = !!useReducedMotion()
   const vpRef     = useRef<HTMLDivElement>(null)  // service list (for querying .svc-item)
   const orbitRef  = useRef<HTMLDivElement>(null)  // orbit circle (for pill insertion)
   const lblRef    = useRef<HTMLDivElement>(null)
@@ -44,13 +44,23 @@ export default function Capabilities({ services }: CapabilitiesProps) {
       if (activeRaf) { cancelAnimationFrame(activeRaf); activeRaf = 0 }
     }
 
+    const makeLine = (mt: string) => {
+      const d = document.createElement('div')
+      d.style.cssText = `width:24px;height:1px;background:rgba(10,92,71,.3);margin:${mt};`
+      return d
+    }
+
     const resetLabel = () => {
-      if (lbl) lbl.innerHTML =
-        '<div style="width:24px;height:1px;background:rgba(10,92,71,.3);margin:0 auto 10px;"></div>' +
-        '<span style="font-family:var(--font-fraunces);font-size:22px;font-weight:300;font-style:italic;' +
-        'color:rgba(10,92,71,.7);letter-spacing:-.01em;line-height:1.45;display:block;text-align:center;">' +
-        'Hover a<br>capability</span>' +
-        '<div style="width:24px;height:1px;background:rgba(10,92,71,.3);margin:10px auto 0;"></div>'
+      if (!lbl) return
+      lbl.textContent = ''
+      const top = makeLine('0 auto 10px')
+      const span = document.createElement('span')
+      span.style.cssText =
+        'font-family:var(--font-fraunces);font-size:22px;font-weight:300;font-style:italic;' +
+        'color:rgba(10,92,71,.7);letter-spacing:-.01em;line-height:1.45;display:block;text-align:center;'
+      span.textContent = 'Hover a capability'
+      const bot = makeLine('10px auto 0')
+      lbl.append(top, span, bot)
     }
     resetLabel()
 
@@ -61,17 +71,22 @@ export default function Capabilities({ services }: CapabilitiesProps) {
       const svcName = item.dataset['svcName'] ?? ''
       const titleEl = item.querySelector<HTMLElement>('.svc-name')
 
+      const makeSvcLabel = (text: string) => {
+        const s = document.createElement('span')
+        s.style.cssText =
+          'font-family:var(--font-fraunces);font-size:clamp(18px,2.2vw,26px);' +
+          'font-weight:300;font-style:italic;color:#0A5C47;letter-spacing:-.015em;' +
+          'line-height:1.3;text-align:center;display:block;max-width:220px;word-wrap:break-word;hyphens:auto;'
+        s.textContent = text
+        return s
+      }
+
       const showOrbit = () => {
         if (titleEl) { titleEl.style.color = '#0A5C47'; titleEl.style.fontStyle = 'italic' }
         item.style.paddingLeft = '14px'
         clearSats()
 
-        const baseLabelHtml =
-          `<span style="font-family:var(--font-fraunces);font-size:clamp(18px,2.2vw,26px);` +
-          `font-weight:300;font-style:italic;color:#0A5C47;letter-spacing:-.015em;` +
-          `line-height:1.3;text-align:center;display:block;max-width:220px;word-wrap:break-word;hyphens:auto;">` +
-          `${svcName}</span>`
-        if (lbl) lbl.innerHTML = baseLabelHtml
+        if (lbl) { lbl.textContent = ''; lbl.appendChild(makeSvcLabel(svcName)) }
 
         const RADII = getR()
         type SatDatum = {
@@ -105,19 +120,28 @@ export default function Capabilities({ services }: CapabilitiesProps) {
             el.style.background    = 'rgba(10,92,71,.12)'
             el.style.borderColor   = 'rgba(10,92,71,.55)'
             el.style.boxShadow     = '0 0 12px rgba(10,92,71,.18)'
-            if (lbl) lbl.innerHTML =
-              `<span style="font-family:var(--font-mono);font-size:7.5px;color:rgba(10,92,71,.5);` +
-              `letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:8px;">STACK</span>` +
-              `<span style="font-family:var(--font-fraunces);font-size:clamp(14px,1.6vw,20px);` +
-              `font-weight:300;font-style:italic;color:#0A5C47;letter-spacing:-.01em;` +
-              `line-height:1.4;text-align:center;display:block;">${tech}</span>`
+            if (lbl) {
+              lbl.textContent = ''
+              const tag = document.createElement('span')
+              tag.style.cssText =
+                'font-family:var(--font-mono);font-size:7.5px;color:rgba(10,92,71,.5);' +
+                'letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:8px;'
+              tag.textContent = 'STACK'
+              const name = document.createElement('span')
+              name.style.cssText =
+                'font-family:var(--font-fraunces);font-size:clamp(14px,1.6vw,20px);' +
+                'font-weight:300;font-style:italic;color:#0A5C47;letter-spacing:-.01em;' +
+                'line-height:1.4;text-align:center;display:block;'
+              name.textContent = tech
+              lbl.append(tag, name)
+            }
           })
           el.addEventListener('mouseleave', () => {
             hoveredSats.delete(el)
             el.style.background    = 'rgba(255,255,255,.82)'
             el.style.borderColor   = 'rgba(10,92,71,.22)'
             el.style.boxShadow     = ''
-            if (lbl) lbl.innerHTML = baseLabelHtml
+            if (lbl) { lbl.textContent = ''; lbl.appendChild(makeSvcLabel(svcName)) }
           })
 
           return { el, ring, speed, startAngle, hw: 0, hh: 0 }
@@ -229,16 +253,27 @@ export default function Capabilities({ services }: CapabilitiesProps) {
     window.addEventListener('touchstart', onScrollStart, { passive: true })
     window.addEventListener('scroll', onScroll, { passive: true })
 
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        if (activeRaf) { cancelAnimationFrame(activeRaf); activeRaf = 0 }
+      } else if (activeRaf === 0 && satEls.length) {
+        // RAF will be restarted next time the user hovers
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
     return () => {
       clearSats()
       window.removeEventListener('touchstart', onScrollStart)
       window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [services, reduced])
 
   return (
     <section
       id="capabilities"
+      aria-label="Capabilities"
       className="relative z-10"
       style={{ padding: '40px 56px' }}
     >
@@ -475,7 +510,7 @@ export default function Capabilities({ services }: CapabilitiesProps) {
               opacity: .45,
             }}
           >
-            — Tech Stack Orbits —
+            / Tech Stack Orbits /
           </span>
         </div>
       </div>

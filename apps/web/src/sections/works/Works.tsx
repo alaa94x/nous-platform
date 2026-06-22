@@ -18,7 +18,7 @@ interface WorksProps {
   projects: Project[]
 }
 
-function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; reduced: boolean | null }) {
+function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index: number; reduced: boolean | null; priority?: boolean }) {
   const cardRef    = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const lineRef    = useRef<HTMLDivElement>(null)
@@ -59,6 +59,7 @@ function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; r
 
     const onEnter = () => {
       hovering = true
+      if (card)    card.style.willChange  = 'transform'
       if (content) content.style.transform = 'translateZ(80px)'
       if (line)    line.style.transform    = 'scaleX(1)'
       if (!raf)    raf = requestAnimationFrame(tick)
@@ -74,6 +75,8 @@ function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; r
       if (content) content.style.transform = 'translateZ(0)'
       if (line)    line.style.transform    = 'scaleX(0)'
       if (!raf)    raf = requestAnimationFrame(tick)
+      // Remove will-change after animation settles to free GPU memory
+      setTimeout(() => { if (card) card.style.willChange = 'auto' }, 800)
     }
 
     card.addEventListener('mouseenter', onEnter)
@@ -131,6 +134,7 @@ function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; r
           src={proj.image_url}
           alt={proj.name}
           fill
+          priority={priority}
           style={{ objectFit: 'cover', zIndex: 1, opacity: .7 }}
           sizes="(max-width:768px) 100vw, 33vw"
         />
@@ -215,7 +219,7 @@ function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; r
         <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(17px, 2.1vw, 28px)', fontWeight: 300, color: 'var(--text)', letterSpacing: '-.01em', lineHeight: 1.18, marginBottom: 8, display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
           {proj.name}
           {proj.name_ar && (
-            <span style={{ fontFamily: 'var(--font-arabic)', fontSize: '0.65em', color: 'var(--muted)', opacity: 0.7, direction: 'rtl' }}>{proj.name_ar}</span>
+            <span lang="ar" dir="rtl" style={{ fontFamily: 'var(--font-arabic)', fontSize: '0.65em', color: 'var(--muted)', opacity: 0.7, direction: 'rtl' }}>{proj.name_ar}</span>
           )}
         </h3>
         <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.03em', lineHeight: 1.85, marginBottom: 16 }}>
@@ -239,31 +243,19 @@ function ProjectCard({ proj, index, reduced }: { proj: Project; index: number; r
 }
 
 export default function Works({ projects }: WorksProps) {
-  const reduced = useReducedMotion()
+  const reduced = !!useReducedMotion()
 
   return (
     <section
       id="works"
+      aria-label="Selected Works"
       className="relative z-10"
       style={{
-        padding: '40px 56px',
+        padding: '80px 56px 64px',
         borderTop: '1px solid var(--border)',
       }}
     >
       <div style={{ marginBottom: 64 }} className="reveal">
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 8,
-            color: 'var(--accent)',
-            letterSpacing: '.24em',
-            textTransform: 'uppercase',
-            display: 'block',
-            marginBottom: 14,
-          }}
-        >
-          [ 003 — SELECTED WORKS ]
-        </span>
         <h2
           style={{
             fontFamily: 'var(--font-fraunces)',
@@ -278,19 +270,53 @@ export default function Works({ projects }: WorksProps) {
         </h2>
       </div>
 
-      <div
-        id="works-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 24,
-          perspective: 1500,
-        }}
-      >
-        {projects.map((proj, i) => (
-          <ProjectCard key={proj.id} proj={proj} index={i} reduced={reduced} />
-        ))}
-      </div>
+      {projects.length === 0 ? (
+        /* Empty state */
+        <div
+          className="reveal"
+          style={{
+            border: '1px dashed var(--border)',
+            padding: '80px 40px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+          }}
+        >
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            border: '1px dashed rgba(10,92,71,.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 16, color: 'var(--accent)', opacity: .5 }}>+</span>
+          </div>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.14em', textTransform: 'uppercase' }}>
+            Projects coming soon
+          </p>
+          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', opacity: .5, letterSpacing: '.06em', maxWidth: '32ch', lineHeight: 1.8 }}>
+            Add projects via the admin dashboard to display them here.
+          </p>
+        </div>
+      ) : (
+        <div
+          id="works-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: projects.length === 1 ? '1fr' : projects.length === 2 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+            gap: 24,
+            perspective: 1500,
+          }}
+        >
+          {projects.map((proj, i) => (
+            <ProjectCard key={proj.id} proj={proj} index={i} reduced={reduced} priority={i === 0} />
+          ))}
+        </div>
+      )}
 
       <style>{`
         @media (max-width:900px) {

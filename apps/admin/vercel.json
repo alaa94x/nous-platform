@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@nous/admin",
+  "outputDirectory": ".next",
+  "installCommand": "pnpm install --frozen-lockfile"
+}

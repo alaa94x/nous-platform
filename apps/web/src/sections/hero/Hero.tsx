@@ -42,7 +42,8 @@ export default function Hero({
   ctaPrimary = 'Initialize Project',
   ctaSecondary = 'WhatsApp Us',
 }: HeroProps) {
-  const reduced = useReducedMotion()
+  const reducedRaw = useReducedMotion()
+  const reduced = !!reducedRaw // null on server → false, matches client initial value
   const nameRef = useRef<HTMLSpanElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
   const idxRef = useRef(0)
@@ -138,7 +139,7 @@ export default function Hero({
     // Fallback: force all reveals visible after 2s to handle edge cases
     const fallback = setTimeout(() => {
       document.querySelectorAll<HTMLElement>('.reveal:not(.visible)').forEach(reveal)
-    }, 2000)
+    }, 800)
 
     return () => { io.disconnect(); clearTimeout(fallback) }
   }, [])
@@ -173,8 +174,9 @@ export default function Hero({
       className="relative z-10 flex flex-col"
       style={{ minHeight: '100dvh', padding: '140px 56px 80px' }}
     >
-      {/* System initialized tag — single flex row, no wrap */}
+      {/* System initialized tag — decorative, hidden from screen readers */}
       <div
+        aria-hidden="true"
         className="hero-status-bar"
         style={{
           marginBottom: 24,
@@ -225,12 +227,15 @@ export default function Hero({
         </span>
       </div>
 
-      {/* Headline */}
+      {/* Headline — constrained to left 58% so it never bleeds into the OrbitalWidget */}
       <h1
+        aria-label={`${headlineAr} — ${headlineEn}`}
+        className="hero-headline"
         style={{
           marginBottom: 0,
           display: 'block',
           overflow: 'visible',
+          maxWidth: '58%',
         }}
       >
         {/* Wrap only the Arabic span in its own overflow clip so the
@@ -248,6 +253,7 @@ export default function Hero({
           }}
         >
           <span
+            lang="ar"
             className="h-line h-line-ar"
             style={{
               fontFamily: 'var(--font-arabic)',
@@ -294,27 +300,29 @@ export default function Hero({
           gridTemplateColumns: '1fr 1fr',
           gap: 44,
           maxWidth: 840,
-          opacity: 0,
+          opacity: reduced ? 1 : 0,
           animation: reduced ? 'none' : 'fade-up 1s ease 1s forwards',
         }}
       >
         <p
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: '#3D5753',
-            lineHeight: 1.95,
-            letterSpacing: '.015em',
+            fontSize: 12.5,
+            color: 'var(--muted)',
+            lineHeight: 1.9,
+            letterSpacing: '.01em',
           }}
         >
           {subtextEn}
         </p>
         <p
+          lang="ar"
+          dir="rtl"
           className="hero-grid-ar"
           style={{
             fontFamily: 'var(--font-arabic)',
             fontSize: 14,
-            color: '#3D5753',
+            color: 'var(--muted)',
             lineHeight: 2.1,
             textAlign: 'right',
             direction: 'rtl',
@@ -333,7 +341,7 @@ export default function Hero({
           alignItems: 'center',
           gap: 16,
           flexWrap: 'wrap',
-          opacity: 0,
+          opacity: reduced ? 1 : 0,
           animation: reduced ? 'none' : 'fade-up 1s ease 1.3s forwards',
         }}
       >
@@ -378,12 +386,13 @@ export default function Hero({
         </a>
       </div>
 
-      {/* Corner orbital logo widget — desktop only, right half of hero */}
+      {/* Corner orbital logo widget — aria-hidden applied inside the component */}
       <OrbitalWidget />
 
-      {/* Scroll indicator — absolute bottom-right on desktop, horizontal inline on mobile */}
+      {/* Scroll indicator — decorative, hidden from screen readers */}
       <div
-        className="scroll-indicator"
+        aria-hidden="true"
+        className={`scroll-indicator${reduced ? ' scroll-indicator--reduced' : ''}`}
         style={{
           position: 'absolute',
           bottom: 44,
@@ -392,8 +401,6 @@ export default function Hero({
           flexDirection: 'column',
           alignItems: 'center',
           gap: 14,
-          opacity: 0,
-          animation: reduced ? 'none' : 'fade-up 1s ease 1.8s forwards',
         }}
       >
         {/* Track + dual scanner beams */}
@@ -402,7 +409,7 @@ export default function Hero({
           style={{
             width: 2,
             height: 88,
-            background: 'rgba(10,92,71,.12)',
+            background: 'rgba(10,92,71,.32)',
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -436,21 +443,19 @@ export default function Hero({
           )}
         </div>
 
+        {/* SCROLL label */}
         <span
-          className="scroll-label"
           style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: 9,
+            fontSize: 7,
             color: 'var(--accent)',
-            fontWeight: 1000,
-            letterSpacing: '.3em',
+            letterSpacing: '.22em',
             textTransform: 'uppercase',
-            writingMode: 'vertical-lr',
-            opacity: .6,
-            animation: reduced ? 'none' : 'tap-luxury 3s ease-in-out 2.5s infinite',
+            writingMode: 'vertical-rl',
+            userSelect: 'none',
           }}
         >
-          Scroll
+          SCROLL
         </span>
       </div>
 
@@ -470,22 +475,61 @@ export default function Hero({
       />
 
       <style>{`
+  /* Desktop: fade in after delay */
+  .scroll-indicator {
+    opacity: 0;
+    animation: fade-up 1s ease 1.8s forwards;
+  }
+  .scroll-indicator--reduced {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
   @media (max-width:900px) {
-    /* ── Layout ── */
-    #hero { padding: 100px 24px 80px !important; min-height: 100dvh !important; }
+    /* On mobile: centered horizontally, always visible, no animation delay */
+    .scroll-indicator {
+      position: absolute !important;
+      bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+      left: 50% !important;
+      right: auto !important;
+      transform: translateX(-50%) !important;
+      opacity: 1 !important;
+      animation: none !important;
+    }
+    .scroll-track { height: 52px !important; }
+
+    /* Headline fills full width on mobile — no widget to avoid */
+    .hero-headline { max-width: 100% !important; }
+
+    /* ── Layout — top clears floating logo (6px top + 76px logo + 20px gap) ── */
+    #hero {
+      padding: 112px 24px calc(80px + 56px + env(safe-area-inset-bottom, 0px)) !important;
+      min-height: 100dvh !important;
+    }
     .bottom-divider { left: 24px !important; right: 24px !important; }
 
-    /* ── Status bar: scale down text so it fits without clipping ── */
+    /* ── Status bar ── */
     .hero-status-bar { font-size: 9.5px !important; gap: 8px !important; }
     .hero-status-bar span { font-size: 9.5px !important; letter-spacing: .04em !important; }
 
-    /* ── Bilingual grid: stack, tighten ── */
+    /* ── Bilingual grid: show only EN column, but show 1 line of Arabic below it ── */
     .hero-grid {
       grid-template-columns: 1fr !important;
-      gap: 20px !important;
+      gap: 12px !important;
       margin-top: 32px !important;
     }
-    .hero-grid-ar { display: none !important; }
+    /* Show condensed Arabic — 1 line summary, not full paragraph */
+    .hero-grid-ar {
+      display: block !important;
+      font-size: 12px !important;
+      line-height: 1.7 !important;
+      opacity: .65 !important;
+      /* Truncate to 2 lines — feels like a teaser, not hidden entirely */
+      display: -webkit-box !important;
+      -webkit-line-clamp: 2 !important;
+      -webkit-box-orient: vertical !important;
+      overflow: hidden !important;
+    }
 
     /* ── CTAs: full-width column ── */
     .hero-ctas {
@@ -501,39 +545,23 @@ export default function Hero({
       box-sizing: border-box !important;
     }
 
-    /* ── Scroll indicator: pull out of absolute, sit below CTAs in normal flow ──
-       Keep it vertical (column) so it matches the page's scroll direction.        */
-    .scroll-indicator {
-      position: relative !important;
-      bottom: auto !important;
-      right: auto !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      gap: 10px !important;
-      margin-top: 36px !important;
-      align-self: center !important;
-    }
-    /* Shrink the track a bit on mobile */
-    .scroll-track {
-      width: 2px !important;
-      height: 52px !important;
-    }
-    /* Label stays vertical */
-    .scroll-label {
-      writing-mode: vertical-lr !important;
-      letter-spacing: .28em !important;
-    }
+  }
+
+  /* Hide scroll indicator on very short phones to avoid overflow */
+  @media (max-width:900px) and (max-height:700px) {
+    .scroll-indicator { display: none !important; }
   }
 
   @media (max-width:480px) {
-    #hero { padding: 90px 16px 80px !important; }
+    #hero { padding: 90px 16px calc(72px + 56px + env(safe-area-inset-bottom, 0px)) !important; }
     .h-line-ar { font-size: clamp(68px, 19vw, 110px) !important; }
     .h-line-en { font-size: 14px !important; }
     .hero-grid { margin-top: 24px !important; }
     .hero-ctas { margin-top: 24px !important; }
   }
-    html { scroll-behavior: smooth; }
-  
+
+  html { scroll-behavior: smooth; }
+
   @keyframes pulse-opacity {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
