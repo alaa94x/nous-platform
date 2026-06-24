@@ -7,8 +7,22 @@ import ContactPage from '@/sections/contact/ContactPage'
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title:       'Start a Project — Nous',
-  description: 'Tell us what you\'re building. We\'ll reply within 24 hours.',
+  title:       'Start a Project',
+  description: 'Tell us what you are building. We reply to all inquiries within 24 hours. AI, web, mobile, and e-commerce development in Doha, Qatar.',
+  alternates:  { canonical: 'https://nous.qa/contact' },
+  openGraph: {
+    title:       'Start a Project — Nous',
+    description: 'Tell us what you are building. We reply within 24 hours.',
+    url:         'https://nous.qa/contact',
+    siteName:    'Nous',
+    locale:      'en_US',
+    type:        'website',
+  },
+  twitter: {
+    card:        'summary_large_image',
+    title:       'Start a Project — Nous',
+    description: 'Tell us what you are building. We reply within 24 hours.',
+  },
 }
 
 // ── Seed defaults (mirrors page.tsx) ──────────────────────────────────────────

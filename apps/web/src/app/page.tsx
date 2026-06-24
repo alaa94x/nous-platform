@@ -4,6 +4,9 @@ import Noise              from '@/components/noise/Noise'
 import Hero               from '@/sections/hero/Hero'
 import Capabilities       from '@/sections/capabilities/Capabilities'
 import Works              from '@/sections/works/Works'
+import About              from '@/sections/about/About'
+import Testimonials       from '@/sections/testimonials/Testimonials'
+import HowWeWork          from '@/sections/howwework/HowWeWork'
 import ContactCTA         from '@/sections/contact/ContactCTA'
 import Footer, { DEFAULT_CONTACT_ITEMS, DEFAULT_SOCIAL_ITEMS } from '@/sections/footer/Footer'
 import type { ContactItem, SocialItem } from '@/sections/footer/Footer'
@@ -114,6 +117,15 @@ export default async function HomePage() {
         </SectionBoundary>
         <SectionBoundary name="works">
           <Works projects={projects} />
+        </SectionBoundary>
+        <SectionBoundary name="about">
+          <About />
+        </SectionBoundary>
+        <SectionBoundary name="testimonials">
+          <Testimonials />
+        </SectionBoundary>
+        <SectionBoundary name="how-we-work">
+          <HowWeWork />
         </SectionBoundary>
         <SectionBoundary name="contact">
           <ContactCTA />
