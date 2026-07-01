@@ -37,7 +37,7 @@ export default function HowWeWork() {
   return (
     <section
       id="how-we-work"
-      aria-label="How We Work"
+      aria-label="How We Proof"
       style={{
         padding: '80px 56px',
         borderTop: '1px solid rgba(255,255,255,.08)',

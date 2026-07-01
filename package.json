@@ -9,7 +9,10 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
-    "clean": "turbo clean && find . -name 'node_modules' -type d -maxdepth 3 -exec rm -rf {} + 2>/dev/null; true"
+    "clean": "turbo clean && find . -name 'node_modules' -type d -maxdepth 3 -exec rm -rf {} + 2>/dev/null; true",
+    "copy:audit": "node packages/db/scripts/copy-audit.mjs",
+    "copy:push": "node packages/db/scripts/copy-audit.mjs --push",
+    "copy:dry": "node packages/db/scripts/copy-audit.mjs --push --dry-run"
   },
   "devDependencies": {
     "turbo": "^2.9.18"

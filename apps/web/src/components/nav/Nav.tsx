@@ -10,7 +10,7 @@ interface NavProps {
 
 const NAV_LINKS = [
   { href: '#capabilities', label: 'Capabilities', section: 'capabilities' },
-  { href: '#works',        label: 'Work',         section: 'works'        },
+  { href: '#works',        label: 'Proof',         section: 'works'        },
   { href: '/contact',      label: 'Contact',      section: 'contact'      },
 ] as const
 
@@ -68,18 +68,18 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
 
     const setActive = (sectionId: string) => {
       linkEls.forEach(el => {
-        const isActive  = el.dataset['section'] === sectionId
-        const isContact = el.dataset['section'] === 'contact'
-        el.style.color      = isActive ? '#60B89A' : 'rgba(240,237,234,.55)'
-        el.style.background = isContact && isActive ? 'rgba(96,184,154,.08)' : 'transparent'
+        const isActive = el.dataset['section'] === sectionId
+        // Active: pure white label. Inactive: 70% for clear hierarchy without total dimming.
+        el.style.color      = isActive ? '#FFFFFF' : 'rgba(240,237,234,.70)'
+        el.style.background = 'transparent'
         el.setAttribute('aria-current', isActive ? 'page' : '')
 
-        const bar = el.querySelector<HTMLSpanElement>('[data-bar]')
-        const dot = el.querySelector<HTMLSpanElement>('[data-dot]')
+        const bar = el.querySelector<HTMLElement>('[data-bar]')
+        const dot = el.querySelector<HTMLElement>('[data-dot]')
         if (bar) bar.style.transform = isActive ? 'scaleX(1)' : 'scaleX(0)'
         if (dot) {
-          dot.style.background = isActive ? '#60B89A' : 'rgba(240,237,234,.2)'
-          dot.style.transform  = isActive ? 'scale(1.5)' : 'scale(1)'
+          // CSS class drives all active styles — works on both SVG and HTML elements
+          dot.classList.toggle('dot-active', isActive)
         }
       })
     }
@@ -227,7 +227,7 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
               transition: 'border-color .25s, color .25s, background .25s',
             }}
           >
-            Contact →
+            {NAV_LINKS[2].label}
           </a>
         </div>
       </nav>
@@ -276,13 +276,18 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
           right: 0,
           zIndex: 300,
           display: 'none',
-          background: 'rgba(17,29,26,.95)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255,255,255,.08)',
+          /* Heavy frosted glass — background image visible through the bar */
+          background: 'rgba(5, 18, 15, 0.40)',
+          backdropFilter: 'blur(28px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(28px) saturate(160%)',
+          borderTop: '1px solid rgba(255,255,255,.12)',
+          /* Inner highlight edge to sell the glass material */
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
+        {/* Total touch-target height: 56px rail + safe-area. Each item gets paddingBlock
+            so the tappable region meets the 48px minimum even on small phones. */}
         <div ref={railRef} style={{ display: 'flex', alignItems: 'stretch', height: 56 }}>
           {NAV_LINKS.map((link, i) => (
             <a
@@ -295,51 +300,90 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                /* py-4 equivalent split across top/bottom for explicit touch padding */
+                paddingBlock: '14px',
                 gap: 6,
                 fontFamily: 'var(--font-mono)',
                 fontSize: 8,
                 letterSpacing: '.18em',
                 textTransform: 'uppercase',
-                color: 'rgba(240,237,234,.55)',
+                /* Inactive: 70% opacity for clear hierarchy without harsh dimming */
+                color: 'rgba(240,237,234,.70)',
                 textDecoration: 'none',
                 position: 'relative',
-                transition: 'color .25s',
+                transition: reduced ? 'none' : 'color .25s',
                 background: 'transparent',
-                borderLeft: i > 0 ? '1px solid rgba(255,255,255,.06)' : 'none',
+                borderLeft: i > 0 ? '1px solid rgba(255,255,255,.08)' : 'none',
                 minWidth: 44,
               }}
             >
-              {/* Active top bar */}
+              {/* Active top-edge bar — slides in from center */}
               <span
                 data-bar="true"
                 aria-hidden="true"
                 style={{
                   position: 'absolute',
                   top: 0,
-                  left: '30%',
-                  right: '30%',
+                  left: '25%',
+                  right: '25%',
                   height: 1,
-                  background: '#60B89A',
+                  background: '#FFFFFF',
                   borderRadius: '0 0 2px 2px',
                   transformOrigin: 'center',
                   transform: 'scaleX(0)',
                   transition: reduced ? 'none' : 'transform .35s cubic-bezier(.16,1,.3,1)',
                 }}
               />
-              {/* Dot indicator */}
+              {/* Fixed 12×12 container keeps all three items on the same baseline */}
               <span
-                data-dot="true"
-                aria-hidden="true"
                 style={{
-                  width: 4,
-                  height: 4,
-                  borderRadius: '50%',
-                  background: 'rgba(240,237,234,.2)',
-                  transition: reduced ? 'none' : 'background .25s, transform .3s cubic-bezier(.16,1,.3,1)',
-                  transform: 'scale(1)',
+                  width: 12,
+                  height: 12,
                   flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
-              />
+              >
+                {link.section === 'contact' ? (
+                  /* ↗ SVG arrow — stroke-based so weight is controllable */
+                  <svg
+                    data-dot="true"
+                    aria-hidden="true"
+                    viewBox="0 0 10 10"
+                    width="10"
+                    height="10"
+                    fill="none"
+                    style={{
+                      display: 'block',
+                      strokeWidth: 2,
+                      strokeLinecap: 'round',
+                      strokeLinejoin: 'round',
+                    }}
+                  >
+                    {/* Diagonal shaft */}
+                    <line x1="2" y1="8" x2="8" y2="2" />
+                    {/* Arrowhead: top and right legs */}
+                    <polyline points="4,2 8,2 8,6" />
+                  </svg>
+                ) : (
+                  <span
+                    data-dot="true"
+                    aria-hidden="true"
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: '50%',
+                      background: 'rgba(240,237,234,.22)',
+                      transition: reduced
+                        ? 'none'
+                        : 'background .25s, transform .3s cubic-bezier(.16,1,.3,1), box-shadow .25s',
+                      transform: 'scale(1)',
+                      display: 'block',
+                    }}
+                  />
+                )}
+              </span>
               <span style={{ lineHeight: 1 }}>{link.label}</span>
             </a>
           ))}
@@ -361,7 +405,44 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
           .mobile-logo-strip { display: none !important; }
         }
         .mobile-rail a { -webkit-tap-highlight-color: rgba(10,92,71,.08); }
-        .mobile-rail a:active { background: rgba(10,92,71,.06) !important; }
+        .mobile-rail a:active { background: rgba(10,92,71,.05) !important; }
+
+        /* Circle dot — inactive */
+        span[data-dot] {
+          transition: background .25s, transform .3s cubic-bezier(.16,1,.3,1), box-shadow .25s;
+        }
+        /* Circle dot — active */
+        span[data-dot].dot-active {
+          background: #60B89A !important;
+          transform: scale(1.6) !important;
+          box-shadow: 0 0 6px 2px rgba(96,184,154,.55) !important;
+        }
+
+        /* SVG arrow — inactive */
+        svg[data-dot] {
+          stroke: rgba(240,237,234,.28);
+          transition: stroke .25s, filter .25s, transform .3s cubic-bezier(.16,1,.3,1);
+        }
+        /* SVG arrow — active: teal stroke + double-layer glow */
+        svg[data-dot].dot-active {
+          stroke: #60B89A !important;
+          transform: scale(1.15) !important;
+          filter: drop-shadow(0 0 3px rgba(96,184,154,.95)) drop-shadow(0 0 7px rgba(96,184,154,.55)) !important;
+        }
+
+        /* Browsers without backdrop-filter: solid opaque fallback */
+        @supports not (backdrop-filter: blur(1px)) {
+          .mobile-rail { background: rgba(5, 18, 15, 0.96) !important; }
+        }
+
+        /* Respect system "reduce transparency" setting */
+        @media (prefers-reduced-transparency: reduce) {
+          .mobile-rail {
+            background: rgba(5, 18, 15, 0.96) !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+          }
+        }
       `}</style>
     </>
   )
