@@ -352,7 +352,7 @@ The footer currently has three elements: wordmark (left), rotating badge (center
 **6.1.A No navigation links**
 The footer has zero links except the implied logo click. Users who reach the footer and want to jump to Capabilities or Contact have no quick path. At minimum add:
 ```
-Capabilities  ·  Work  ·  Contact
+Capabilities  ·  Proof  ·  Contact
 ```
 as a single horizontal row in small mono type above the wordmark row.
 
@@ -377,7 +377,7 @@ Proposed mobile footer layout:
 ```
 [ Nous logo ]        nouslab@icould.com
 ─────────────────────────────────
-Capabilities · Work · Contact
+Capabilities · Proof · Contact
 ─────────────────────────────────
 © 2025 Nous. All Rights Reserved.  [ rotating badge, smaller, floated right ]
 ```
