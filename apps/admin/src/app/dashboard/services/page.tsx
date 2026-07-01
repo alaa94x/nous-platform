@@ -10,22 +10,77 @@ type Service = {
   idx: string | null
   name: string
   name_ar: string | null
+  name_tech: string | null
+  name_tech_ar: string | null
   category: string | null
+  // Legacy orbit fields (kept for backward compat)
   tech_pills: string[] | null
+  business_pills: string[] | null
+  // New semantic fields
+  business_tags: string[] | null
+  engineering_tags: string[] | null
+  business_outcomes: string[] | null
+  engineering_stack: string[] | null
+  business_subtext: string | null
   sort_order: number | null
   active: boolean | null
 }
 
-const EMPTY_SERVICE: Omit<Service, 'id'> = {
-  idx: '', name: '', name_ar: '', category: '', tech_pills: [], sort_order: 99, active: true,
+const EMPTY: Omit<Service, 'id'> = {
+  idx: '', name: '', name_ar: '', name_tech: '', name_tech_ar: '',
+  category: '',
+  tech_pills: [], business_pills: [],
+  business_tags: [], engineering_tags: [],
+  business_outcomes: [], engineering_stack: [],
+  business_subtext: '',
+  sort_order: 99, active: true,
 }
 
-// ── Category chip input ────────────────────────────────────────────────────────
+// ── Shared sub-components ──────────────────────────────────────────────────────
+
+function PillInput({
+  pills, onChange, placeholder,
+  color = 'var(--accent)', bg = 'rgba(46,204,113,.08)', border = 'rgba(46,204,113,.22)',
+}: {
+  pills: string[]
+  onChange: (p: string[]) => void
+  placeholder?: string
+  color?: string; bg?: string; border?: string
+}) {
+  const [draft, setDraft] = useState('')
+  const ref = useRef<HTMLInputElement>(null)
+
+  const commit = (raw: string) => {
+    const parts = raw.replace(/,+$/, '').split(',').map(p => p.trim()).filter(Boolean)
+    if (!parts.length) return
+    const next = [...pills]
+    for (const p of parts) if (!next.includes(p)) next.push(p)
+    onChange(next)
+    setDraft('')
+  }
+  const remove = (i: number) => onChange(pills.filter((_, j) => j !== i))
+  const onKey  = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commit(draft) }
+    else if (e.key === 'Backspace' && draft === '' && pills.length > 0) remove(pills.length - 1)
+  }
+
+  return (
+    <div onClick={() => ref.current?.focus()} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--surface)', cursor: 'text', minHeight: 44, alignItems: 'center' }}>
+      {pills.map((pill, i) => (
+        <span key={`${pill}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'ui-monospace,monospace', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color, background: bg, border: `1px solid ${border}`, padding: '3px 6px 3px 10px', borderRadius: 50 }}>
+          {pill}
+          <button type="button" onClick={e => { e.stopPropagation(); remove(i) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color, padding: '2px 4px', fontSize: 13, lineHeight: 1, opacity: .6, display: 'flex', alignItems: 'center', minWidth: 22, minHeight: 22 }}>×</button>
+        </span>
+      ))}
+      <input ref={ref} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={onKey} onBlur={() => commit(draft)} placeholder={pills.length === 0 ? (placeholder ?? 'Type, then Enter...') : 'Add more...'} style={{ flex: 1, minWidth: 120, background: 'none', border: 'none', padding: '2px 4px', fontSize: 10, color: 'var(--text)', outline: 'none', fontFamily: 'ui-monospace,monospace' }} />
+    </div>
+  )
+}
 
 function CategoryInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const parts    = value ? value.split(' · ').filter(Boolean) : []
+  const parts = value ? value.split(' · ').filter(Boolean) : []
   const [draft, setDraft] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const ref = useRef<HTMLInputElement>(null)
 
   const commit = (raw: string) => {
     const t = raw.trim()
@@ -33,95 +88,49 @@ function CategoryInput({ value, onChange }: { value: string; onChange: (v: strin
     onChange([...parts, t].join(' · '))
     setDraft('')
   }
-  const removePart = (idx: number) => onChange(parts.filter((_, i) => i !== idx).join(' · '))
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === '·') { e.preventDefault(); commit(draft) }
-    else if (e.key === 'Backspace' && draft === '' && parts.length > 0) removePart(parts.length - 1)
-  }
+  const remove = (i: number) => onChange(parts.filter((_, j) => j !== i).join(' · '))
 
   return (
-    <div>
-      <div
-        onClick={() => inputRef.current?.focus()}
-        style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', padding: '7px 10px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--surface)', cursor: 'text', minHeight: 44, transition: 'border-color .2s' }}
-      >
-        {parts.map((part, i) => (
-          <span key={`${part}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            {i > 0 && <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'var(--muted)', opacity: .5 }}>·</span>}
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'ui-monospace, monospace', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(46,204,113,.75)', background: 'rgba(46,204,113,.06)', border: '1px solid rgba(46,204,113,.18)', padding: '2px 6px 2px 9px', borderRadius: 4 }}>
-              {part}
-              <button
-                type="button"
-                onClick={e => { e.stopPropagation(); removePart(i) }}
-                className="adm-icon-btn"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(46,204,113,.6)', padding: '2px 4px', fontSize: 12, lineHeight: 1, display: 'flex', alignItems: 'center', minWidth: 24, minHeight: 24, justifyContent: 'center' }}
-              >
-                ×
-              </button>
-            </span>
+    <div onClick={() => ref.current?.focus()} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '7px 10px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--surface)', cursor: 'text', minHeight: 44, alignItems: 'center' }}>
+      {parts.map((p, i) => (
+        <span key={`${p}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          {i > 0 && <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 10, color: 'var(--muted)', opacity: .4 }}>·</span>}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'ui-monospace,monospace', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(46,204,113,.75)', background: 'rgba(46,204,113,.06)', border: '1px solid rgba(46,204,113,.18)', padding: '2px 6px 2px 9px', borderRadius: 4 }}>
+            {p}
+            <button type="button" onClick={e => { e.stopPropagation(); remove(i) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(46,204,113,.6)', padding: '2px 4px', fontSize: 12, lineHeight: 1, minWidth: 22, minHeight: 22 }}>×</button>
           </span>
-        ))}
-        <input ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={handleKeyDown} onBlur={() => commit(draft)} placeholder={parts.length === 0 ? 'e.g. ML then Enter...' : 'Add more...'} style={{ flex: 1, minWidth: 100, background: 'none', border: 'none', padding: '2px 4px', fontSize: 10, color: 'var(--text)', outline: 'none', fontFamily: 'ui-monospace, monospace' }} />
-      </div>
-      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'var(--muted)', marginTop: 5, letterSpacing: '.06em', opacity: .7 }}>
-        Press Enter after each part — joined as {parts.length > 0 ? parts.join(' · ') : 'ML · AI'}
-      </p>
-    </div>
-  )
-}
-
-// ── Pill chip input ────────────────────────────────────────────────────────────
-
-function PillInput({ pills, onChange }: { pills: string[]; onChange: (pills: string[]) => void }) {
-  const [draft, setDraft] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const commit = (raw: string) => {
-    const trimmed = raw.replace(/,+$/, '').trim()
-    if (!trimmed) return
-    const incoming = trimmed.split(',').map(p => p.trim()).filter(Boolean)
-    const next = [...pills]
-    for (const p of incoming) { if (!next.includes(p)) next.push(p) }
-    onChange(next)
-    setDraft('')
-  }
-  const remove = (idx: number) => onChange(pills.filter((_, i) => i !== idx))
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commit(draft) }
-    else if (e.key === 'Backspace' && draft === '' && pills.length > 0) remove(pills.length - 1)
-  }
-
-  return (
-    <div
-      onClick={() => inputRef.current?.focus()}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--surface)', cursor: 'text', minHeight: 44, alignItems: 'center', transition: 'border-color .2s' }}
-    >
-      {pills.map((pill, i) => (
-        <span key={`${pill}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: 'ui-monospace, monospace', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(46,204,113,.08)', border: '1px solid rgba(46,204,113,.22)', padding: '3px 6px 3px 10px', borderRadius: 50, userSelect: 'none' }}>
-          {pill}
-          <button
-            type="button"
-            onClick={e => { e.stopPropagation(); remove(i) }}
-            className="adm-icon-btn"
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', padding: '2px 4px', fontSize: 13, lineHeight: 1, opacity: .6, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 24, minHeight: 24 }}
-            title={`Remove ${pill}`}
-          >
-            ×
-          </button>
         </span>
       ))}
-      <input ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={handleKeyDown} placeholder={pills.length === 0 ? 'Type tech, press Enter to add...' : 'Add more...'} style={{ flex: 1, minWidth: 130, background: 'none', border: 'none', padding: '2px 4px', fontSize: 10, color: 'var(--text)', outline: 'none', fontFamily: 'ui-monospace, monospace' }} />
+      <input ref={ref} value={draft} onChange={e => setDraft(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') { e.preventDefault(); commit(draft) }
+          else if (e.key === 'Backspace' && draft === '' && parts.length > 0) remove(parts.length - 1)
+        }}
+        onBlur={() => commit(draft)}
+        placeholder={parts.length === 0 ? 'ML · AI · then Enter' : 'Add part...'}
+        style={{ flex: 1, minWidth: 100, background: 'none', border: 'none', padding: '2px 4px', fontSize: 10, color: 'var(--text)', outline: 'none', fontFamily: 'ui-monospace,monospace' }}
+      />
     </div>
   )
 }
 
-// ── Service form ───────────────────────────────────────────────────────────────
+// ── Section divider ────────────────────────────────────────────────────────────
 
-function ServiceForm({
-  buf, onChange, onSave, onCancel, saving, isNew,
-}: {
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '6px 0 2px' }}>
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 8, color: 'var(--muted)', letterSpacing: '.2em', textTransform: 'uppercase', opacity: .6, whiteSpace: 'nowrap' }}>{children}</span>
+      <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+    </div>
+  )
+}
+
+// ── Service Form ───────────────────────────────────────────────────────────────
+
+function ServiceForm({ buf, onChange, onSave, onCancel, saving, isNew }: {
   buf: Partial<Service>
-  onChange: (patch: Partial<Service>) => void
+  onChange: (p: Partial<Service>) => void
   onSave: () => void
   onCancel: () => void
   saving: boolean
@@ -129,51 +138,84 @@ function ServiceForm({
 }) {
   return (
     <div style={{ padding: 'var(--panel-pad-y) var(--panel-pad-x)', display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {isNew && (
-        <div style={{ fontSize: 9, color: 'var(--accent)', letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: -4 }}>
-          New Service
-        </div>
-      )}
+      {isNew && <div style={{ fontSize: 9, color: 'var(--accent)', letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: -4 }}>New Service</div>}
 
-      {/* Index + Name (EN) + Name (AR) */}
+      {/* ── Names ── */}
+      <SectionLabel>Names</SectionLabel>
+
       <div className="svc-form-grid">
         <div>
-          <label style={labelStyle}>Index</label>
-          <input value={buf.idx ?? ''} onChange={e => onChange({ idx: e.target.value })} placeholder="AI" />
+          <label style={L}>Index</label>
+          <input value={buf.idx ?? ''} onChange={e => onChange({ idx: e.target.value })} placeholder="01" />
         </div>
         <div>
-          <label style={labelStyle}>Name (EN)</label>
-          <input value={buf.name ?? ''} onChange={e => onChange({ name: e.target.value })} placeholder="Artificial Intelligence" />
+          <label style={L}><span style={{ color: '#60B89A' }}>Business</span> Name (EN)</label>
+          <input value={buf.name ?? ''} onChange={e => onChange({ name: e.target.value })} placeholder="AI & Automation" />
         </div>
         <div>
-          <label style={labelStyle}>Name (AR)</label>
-          <input value={buf.name_ar ?? ''} onChange={e => onChange({ name_ar: e.target.value })} placeholder="أنظمة تُفكّر" dir="rtl" style={{ textAlign: 'right', fontFamily: 'system-ui, sans-serif', fontSize: 13 }} />
+          <label style={L}><span style={{ color: '#60B89A' }}>Business</span> Name (AR)</label>
+          <input value={buf.name_ar ?? ''} onChange={e => onChange({ name_ar: e.target.value })} placeholder="أتمتة ذكية" dir="rtl" style={{ textAlign: 'right', fontFamily: 'system-ui,sans-serif', fontSize: 13 }} />
         </div>
       </div>
 
-      {/* Category */}
+      <div className="svc-form-grid">
+        <div />
+        <div>
+          <label style={L}><span style={{ color: 'var(--accent)' }}>Engineering</span> Name (EN)</label>
+          <input value={buf.name_tech ?? ''} onChange={e => onChange({ name_tech: e.target.value })} placeholder="Artificial Intelligence" />
+        </div>
+        <div>
+          <label style={L}><span style={{ color: 'var(--accent)' }}>Engineering</span> Name (AR)</label>
+          <input value={buf.name_tech_ar ?? ''} onChange={e => onChange({ name_tech_ar: e.target.value })} placeholder="الذكاء الاصطناعي" dir="rtl" style={{ textAlign: 'right', fontFamily: 'system-ui,sans-serif', fontSize: 13 }} />
+        </div>
+      </div>
+
+      {/* ── Tags (right-side labels) ── */}
+      <SectionLabel>View Tags — shown on list rows</SectionLabel>
+
+      <div className="svc-pills-grid">
+        <div>
+          <label style={{ ...L, marginBottom: 7 }}><span style={{ color: '#60B89A' }}>Business</span> Tags <span style={hint}>e.g. Experience · Automation</span></label>
+          <PillInput pills={buf.business_tags ?? []} onChange={p => onChange({ business_tags: p })} placeholder="e.g. Experience" color="rgba(96,184,154,.85)" bg="rgba(96,184,154,.08)" border="rgba(96,184,154,.22)" />
+        </div>
+        <div>
+          <label style={{ ...L, marginBottom: 7 }}><span style={{ color: 'var(--accent)' }}>Engineering</span> Tags <span style={hint}>e.g. ML · AI</span></label>
+          <PillInput pills={buf.engineering_tags ?? []} onChange={p => onChange({ engineering_tags: p })} placeholder="e.g. ML" />
+        </div>
+      </div>
+
+      {/* ── Category ── */}
       <div>
-        <label style={labelStyle}>Category</label>
+        <label style={L}>Category <span style={hint}>(joined with · for fallback display)</span></label>
         <CategoryInput value={buf.category ?? ''} onChange={cat => onChange({ category: cat })} />
       </div>
 
-      {/* Tech pills */}
-      <div>
-        <label style={{ ...labelStyle, marginBottom: 7 }}>
-          Tech Pills
-          <span style={{ marginLeft: 8, opacity: .5, textTransform: 'none', letterSpacing: '.04em' }}>
-            — press Enter or comma to add
-          </span>
-        </label>
-        <PillInput pills={buf.tech_pills ?? []} onChange={pills => onChange({ tech_pills: pills })} />
+      {/* ── Orbits ── */}
+      <SectionLabel>Orbit Pills — shown in visualizer</SectionLabel>
+
+      <div className="svc-pills-grid">
+        <div>
+          <label style={{ ...L, marginBottom: 7 }}><span style={{ color: '#60B89A' }}>Business</span> Outcomes <span style={hint}>Business View orbits</span></label>
+          <PillInput pills={buf.business_outcomes ?? []} onChange={p => onChange({ business_outcomes: p })} placeholder="e.g. Zero Downtime" color="rgba(96,184,154,.85)" bg="rgba(96,184,154,.08)" border="rgba(96,184,154,.22)" />
+        </div>
+        <div>
+          <label style={{ ...L, marginBottom: 7 }}><span style={{ color: 'var(--accent)' }}>Engineering</span> Stack <span style={hint}>Engineering View orbits</span></label>
+          <PillInput pills={buf.engineering_stack ?? []} onChange={p => onChange({ engineering_stack: p })} placeholder="e.g. React, Next.js" />
+        </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-        <button onClick={onSave} disabled={saving} className="adm-action-btn" style={btnStyle('var(--accent)', '#0E1210')}>
-          {saving ? 'Saving...' : isNew ? 'Create Service' : 'Save'}
+      {/* ── Optional subtext override ── */}
+      <div>
+        <label style={L}>Business Subtext Override <span style={hint}>optional — overrides default header subtext in Business View</span></label>
+        <input value={buf.business_subtext ?? ''} onChange={e => onChange({ business_subtext: e.target.value })} placeholder="Leave blank to use default subtext" style={{ width: '100%', boxSizing: 'border-box' }} />
+      </div>
+
+      {/* ── Actions ── */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+        <button onClick={onSave} disabled={saving} className="adm-action-btn" style={btn('var(--accent)', '#0E1210')}>
+          {saving ? 'Saving...' : isNew ? 'Create Service' : 'Save Changes'}
         </button>
-        <button onClick={onCancel} className="adm-action-btn" style={btnStyle('transparent', 'var(--muted)', 'var(--border)')}>Cancel</button>
+        <button onClick={onCancel} className="adm-action-btn" style={btn('transparent', 'var(--muted)', 'var(--border)')}>Cancel</button>
       </div>
     </div>
   )
@@ -187,35 +229,44 @@ export default function ServicesPage() {
   const [editing,  setEditing]  = useState<string | null>(null)
   const [editBuf,  setEditBuf]  = useState<Partial<Service>>({})
   const [adding,   setAdding]   = useState(false)
-  const [newBuf,   setNewBuf]   = useState<Partial<Service>>({ ...EMPTY_SERVICE })
+  const [newBuf,   setNewBuf]   = useState<Partial<Service>>({ ...EMPTY })
   const [saving,   setSaving]   = useState(false)
 
-  const fetchServices = useCallback(async () => {
+  const fetch = useCallback(async () => {
     setLoading(true)
     const { data } = await supabase.from('services').select('*').order('sort_order')
     setServices((data as Service[]) ?? [])
     setLoading(false)
   }, [])
 
-  useEffect(() => { void fetchServices() }, [fetchServices])
+  useEffect(() => { void fetch() }, [fetch])
 
   const startEdit  = (s: Service) => { setEditing(s.id); setEditBuf({ ...s }) }
   const cancelEdit = () => { setEditing(null); setEditBuf({}) }
 
+  const buildPayload = (b: Partial<Service>) => ({
+    idx:               b.idx,
+    name:              b.name,
+    name_ar:           b.name_ar || null,
+    name_tech:         b.name_tech || null,
+    name_tech_ar:      b.name_tech_ar || null,
+    category:          b.category || null,
+    // Legacy — keep in sync so old code still works
+    tech_pills:        b.engineering_stack ?? b.tech_pills ?? [],
+    business_pills:    b.business_outcomes ?? b.business_pills ?? [],
+    // New fields
+    business_tags:     b.business_tags ?? [],
+    engineering_tags:  b.engineering_tags ?? [],
+    business_outcomes: b.business_outcomes ?? [],
+    engineering_stack: b.engineering_stack ?? [],
+    business_subtext:  b.business_subtext || null,
+  })
+
   const saveEdit = async () => {
     if (!editing) return
     setSaving(true)
-    await supabase
-      .from('services')
-      .update({
-        idx:        editBuf.idx,
-        name:       editBuf.name,
-        name_ar:    editBuf.name_ar,
-        category:   editBuf.category,
-        tech_pills: editBuf.tech_pills ?? [],
-      })
-      .eq('id', editing)
-    await fetchServices()
+    await supabase.from('services').update(buildPayload(editBuf)).eq('id', editing)
+    await fetch()
     setSaving(false)
     cancelEdit()
   }
@@ -223,19 +274,11 @@ export default function ServicesPage() {
   const saveNew = async () => {
     if (!newBuf.name?.trim()) return
     setSaving(true)
-    await supabase.from('services').insert({
-      idx:        newBuf.idx || null,
-      name:       newBuf.name,
-      name_ar:    newBuf.name_ar || null,
-      category:   newBuf.category || null,
-      tech_pills: newBuf.tech_pills ?? [],
-      active:     true,
-      sort_order: services.length + 1,
-    })
-    await fetchServices()
+    await supabase.from('services').insert({ ...buildPayload(newBuf), active: true, sort_order: services.length + 1 })
+    await fetch()
     setSaving(false)
     setAdding(false)
-    setNewBuf({ ...EMPTY_SERVICE })
+    setNewBuf({ ...EMPTY })
   }
 
   const toggleActive = async (id: string, current: boolean | null) => {
@@ -243,31 +286,24 @@ export default function ServicesPage() {
     setServices(prev => prev.map(s => s.id === id ? { ...s, active: !current } : s))
   }
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} style={{ height: 60, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, animation: `pulse 1.6s ease-in-out ${i * 0.08}s infinite` }} />
-        ))}
-        <style>{`@keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:.65} }`}</style>
-      </div>
-    )
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {[1,2,3,4,5,6].map(i => (
+        <div key={i} style={{ height: 60, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, animation: `pulse 1.6s ease-in-out ${i * 0.08}s infinite` }} />
+      ))}
+      <style>{`@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.65}}`}</style>
+    </div>
+  )
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-      {/* Page header */}
+      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: 'var(--muted)', letterSpacing: '.08em' }}>
-          {services.length} service{services.length !== 1 ? 's' : ''} — edits apply live on next page request
+        <p style={{ fontFamily: 'ui-monospace,monospace', fontSize: 9, color: 'var(--muted)', letterSpacing: '.08em' }}>
+          {services.length} service{services.length !== 1 ? 's' : ''} — edits apply on next page request
         </p>
-        <button
-          onClick={() => { setAdding(true); setEditing(null) }}
-          disabled={adding}
-          className="adm-action-btn"
-          style={btnStyle('var(--accent)', '#0E1210')}
-        >
+        <button onClick={() => { setAdding(true); setEditing(null) }} disabled={adding} className="adm-action-btn" style={btn('var(--accent)', '#0E1210')}>
           + Add service
         </button>
       </div>
@@ -275,79 +311,56 @@ export default function ServicesPage() {
       {/* New service form */}
       {adding && (
         <div style={{ background: 'var(--surface)', border: '1px solid rgba(46,204,113,.4)', borderRadius: 8, overflow: 'hidden' }}>
-          <ServiceForm
-            buf={newBuf}
-            onChange={patch => setNewBuf(b => ({ ...b, ...patch }))}
-            onSave={saveNew}
-            onCancel={() => { setAdding(false); setNewBuf({ ...EMPTY_SERVICE }) }}
-            saving={saving}
-            isNew
-          />
+          <ServiceForm buf={newBuf} onChange={p => setNewBuf(b => ({ ...b, ...p }))} onSave={saveNew} onCancel={() => { setAdding(false); setNewBuf({ ...EMPTY }) }} saving={saving} isNew />
         </div>
       )}
 
       {/* Service list */}
       {services.map(s => (
-        <div
-          key={s.id}
-          style={{ background: 'var(--surface)', border: `1px solid ${editing === s.id ? 'rgba(46,204,113,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}
-        >
+        <div key={s.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === s.id ? 'rgba(46,204,113,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
           {editing === s.id ? (
-            <ServiceForm
-              buf={editBuf}
-              onChange={patch => setEditBuf(b => ({ ...b, ...patch }))}
-              onSave={saveEdit}
-              onCancel={cancelEdit}
-              saving={saving}
-            />
+            <ServiceForm buf={editBuf} onChange={p => setEditBuf(b => ({ ...b, ...p }))} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
           ) : (
             <div style={{ padding: '14px var(--panel-pad-x)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-                <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 10, color: 'var(--accent)', letterSpacing: '.12em', width: 24, flexShrink: 0, paddingTop: 2 }}>
-                  {s.idx}
-                </span>
+                <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 10, color: 'var(--accent)', letterSpacing: '.12em', width: 24, flexShrink: 0, paddingTop: 2 }}>{s.idx}</span>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, color: 'var(--text)' }}>
-                      {s.name}
-                    </span>
-                    {s.name_ar && (
-                      <span style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'system-ui, sans-serif', direction: 'rtl' }}>
-                        {s.name_ar}
-                      </span>
-                    )}
-                    {s.category && (
-                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: 'var(--muted)', letterSpacing: '.08em', opacity: .65 }}>
-                        {s.category}
-                      </span>
-                    )}
+                  {/* Business row */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 2 }}>
+                    <Badge color="rgba(96,184,154,.5)">BIZ</Badge>
+                    <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 12, color: 'var(--text)' }}>{s.name}</span>
+                    {s.name_ar && <span style={{ fontSize: 12, color: 'var(--muted)', direction: 'rtl', fontFamily: 'system-ui,sans-serif' }}>{s.name_ar}</span>}
                   </div>
-                  {(s.tech_pills ?? []).length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                      {(s.tech_pills ?? []).map(pill => (
-                        <span key={pill} style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(46,204,113,.06)', border: '1px solid rgba(46,204,113,.18)', padding: '2px 8px', borderRadius: 50 }}>
-                          {pill}
-                        </span>
-                      ))}
+
+                  {/* Engineering row */}
+                  {(s.name_tech || s.name_tech_ar) && (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+                      <Badge color="rgba(46,204,113,.5)">ENG</Badge>
+                      {s.name_tech && <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 11, color: 'var(--muted)' }}>{s.name_tech}</span>}
+                      {s.name_tech_ar && <span style={{ fontSize: 11, color: 'var(--muted)', direction: 'rtl', opacity: .7, fontFamily: 'system-ui,sans-serif' }}>{s.name_tech_ar}</span>}
                     </div>
                   )}
+
+                  {/* Tags preview */}
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 5 }}>
+                    <PillRow label="BIZ TAGS" pills={s.business_tags} color="rgba(96,184,154,.7)" bg="rgba(96,184,154,.07)" border="rgba(96,184,154,.18)" />
+                    <PillRow label="ENG TAGS" pills={s.engineering_tags} color="rgba(46,204,113,.7)" bg="rgba(46,204,113,.07)" border="rgba(46,204,113,.18)" />
+                  </div>
+
+                  {/* Outcomes + Stack preview */}
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                    <PillRow label="OUTCOMES" pills={s.business_outcomes} color="rgba(96,184,154,.6)" bg="rgba(96,184,154,.05)" border="rgba(96,184,154,.14)" />
+                    <PillRow label="STACK" pills={s.engineering_stack} color="rgba(46,204,113,.6)" bg="rgba(46,204,113,.05)" border="rgba(46,204,113,.14)" />
+                  </div>
                 </div>
 
-                {/* Actions — proper touch targets */}
+                {/* Actions */}
                 <div className="svc-actions">
-                  <button
-                    onClick={() => toggleActive(s.id, s.active)}
-                    className="adm-action-btn"
-                    style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', padding: '8px 12px', border: '1px solid var(--border)', background: 'none', color: s.active !== false ? 'var(--accent)' : 'var(--muted)', borderRadius: 4, cursor: 'pointer', minHeight: 36 }}
-                  >
+                  <button onClick={() => toggleActive(s.id, s.active)} className="adm-action-btn" style={{ fontFamily: 'ui-monospace,monospace', fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', padding: '8px 12px', border: '1px solid var(--border)', background: 'none', color: s.active !== false ? 'var(--accent)' : 'var(--muted)', borderRadius: 4, cursor: 'pointer', minHeight: 36 }}>
                     {s.active !== false ? 'Live' : 'Hidden'}
                   </button>
-                  <button
-                    onClick={() => startEdit(s)}
-                    className="adm-action-btn"
-                    style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: 'var(--muted)', background: 'none', border: 'none', letterSpacing: '.08em', cursor: 'pointer', padding: '8px 10px', minHeight: 36, minWidth: 44 }}
-                  >
+                  <button onClick={() => startEdit(s)} className="adm-action-btn" style={{ fontFamily: 'ui-monospace,monospace', fontSize: 9, color: 'var(--muted)', background: 'none', border: 'none', letterSpacing: '.08em', cursor: 'pointer', padding: '8px 10px', minHeight: 36, minWidth: 44 }}>
                     Edit
                   </button>
                 </div>
@@ -358,57 +371,51 @@ export default function ServicesPage() {
       ))}
 
       <style>{`
-        /* Form grid: Index · Name EN · Name AR */
-        .svc-form-grid {
-          display: grid;
-          grid-template-columns: 80px 1fr 1fr;
-          gap: 12px;
-        }
-        @media (max-width: 600px) {
+        .svc-form-grid { display: grid; grid-template-columns: 80px 1fr 1fr; gap: 12px; }
+        .svc-pills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .svc-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        @media (max-width:700px) {
           .svc-form-grid { grid-template-columns: 1fr 1fr; }
           .svc-form-grid > div:first-child { grid-column: 1 / -1; }
-        }
-
-        /* Service row action cluster */
-        .svc-actions {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          flex-shrink: 0;
-        }
-        @media (max-width: 400px) {
+          .svc-pills-grid { grid-template-columns: 1fr; }
           .svc-actions { flex-direction: column; align-items: flex-end; }
         }
-
-        @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:.65} }
+        @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.65}}
       `}</style>
     </div>
   )
 }
 
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontFamily: 'ui-monospace, monospace',
-  fontSize: 9,
-  color: 'var(--muted)',
-  letterSpacing: '.18em',
-  textTransform: 'uppercase',
-  marginBottom: 5,
+// ── Micro helpers ──────────────────────────────────────────────────────────────
+
+function Badge({ children, color }: { children: React.ReactNode; color: string }) {
+  return (
+    <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 7, color, letterSpacing: '.18em', textTransform: 'uppercase', alignSelf: 'center', flexShrink: 0 }}>
+      {children}
+    </span>
+  )
 }
 
-function btnStyle(bg: string, color: string, border?: string): React.CSSProperties {
-  return {
-    padding: '9px 20px',
-    fontFamily: 'ui-monospace, monospace',
-    fontSize: 9,
-    letterSpacing: '.14em',
-    textTransform: 'uppercase',
-    background: bg,
-    color,
-    border: `1px solid ${border ?? bg}`,
-    borderRadius: 4,
-    cursor: 'pointer',
-    transition: 'opacity .15s',
-    minHeight: 36,
-  }
+function PillRow({ label, pills, color, bg, border }: { label: string; pills: string[] | null; color: string; bg: string; border: string }) {
+  const list = pills ?? []
+  if (list.length === 0) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+      <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 7, color: 'var(--muted)', letterSpacing: '.14em', textTransform: 'uppercase', opacity: .5 }}>{label}</span>
+      {list.map(p => (
+        <span key={p} style={{ fontFamily: 'ui-monospace,monospace', fontSize: 8, letterSpacing: '.08em', textTransform: 'uppercase', color, background: bg, border: `1px solid ${border}`, padding: '2px 8px', borderRadius: 50 }}>{p}</span>
+      ))}
+    </div>
+  )
+}
+
+const L: React.CSSProperties = {
+  display: 'block', fontFamily: 'ui-monospace,monospace', fontSize: 9,
+  color: 'var(--muted)', letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: 5,
+}
+const hint: React.CSSProperties = {
+  marginLeft: 6, opacity: .45, textTransform: 'none', letterSpacing: '.04em', fontSize: 8,
+}
+function btn(bg: string, color: string, border?: string): React.CSSProperties {
+  return { padding: '9px 20px', fontFamily: 'ui-monospace,monospace', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', background: bg, color, border: `1px solid ${border ?? bg}`, borderRadius: 4, cursor: 'pointer', transition: 'opacity .15s', minHeight: 36 }
 }

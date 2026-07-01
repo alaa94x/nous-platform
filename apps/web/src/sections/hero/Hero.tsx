@@ -24,10 +24,9 @@ export default function Hero({
   headlineAr = 'أنظمة تُفكّر',
   subtextEn = (
     <>
-      Transforming complex visions into{' '}
+      Where{' '}
       <strong style={{ color: '#FFFFFF', fontWeight: 700 }}>intelligent systems</strong>{' '}
-      and{' '}
-      <em style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', color: '#5FB89A' }}>quiet luxury interfaces</em>. We design and develop websites and apps that deliver true value, dedicating ourselves to excellence and embodying mastery in every detail.
+      meet luxury and genuine excellence.
     </>
   ),
   subtextAr = (
@@ -37,8 +36,8 @@ export default function Hero({
       و<strong style={{ color: '#5FB89A', fontWeight: 700 }}>واجهات فاخرة</strong>. نصمم ونطور مواقع وتطبيقات تقدم قيمة حقيقية، ونكرس جهودنا لنمنحك التميز، مجسدين معاني الإتقان والإحسان في كل تفصيل.
     </>
   ),
-  ctaPrimary = 'Initialize Project',
-  ctaSecondary = 'WhatsApp Us',
+  ctaPrimary = 'INITIALIZE PROJECT',
+  ctaSecondary = 'WHATSAPP US',
 }: HeroProps) {
   const reducedRaw = useReducedMotion()
   const reduced = !!reducedRaw
@@ -118,7 +117,7 @@ export default function Hero({
     const cleanups: (() => void)[] = []
 
     section.querySelectorAll<HTMLElement>('[data-magnetic-btn]').forEach(el => {
-      const str = el.classList.contains('init-btn') ? 0.34 : 0.2
+      const str = el.classList.contains('init-btn-ghost') ? 0.34 : 0.2
       const onMove = (e: MouseEvent) => {
         const r = el.getBoundingClientRect()
         const dx = e.clientX - (r.left + r.width / 2)
@@ -154,24 +153,21 @@ export default function Hero({
         style={{
           position: 'absolute',
           inset: 0,
-          height: '115%',   // extra height so parallax never exposes the bottom edge
+          height: '115%',
           y: reduced ? 0 : imageY,
         }}
       >
         <picture style={{ display: 'contents' }}>
-          {/* AVIF: best compression, Chrome 85+, Firefox 93+, Safari 16.4+ */}
           <source
             type="image/avif"
             srcSet="/hero-1920.avif"
             media="(min-width: 1px)"
           />
-          {/* WebP: wide support, responsive by breakpoint */}
           <source
             type="image/webp"
             srcSet="/hero-828.webp 828w, /hero-1200.webp 1200w, /hero-1920.webp 1920w"
             sizes="100vw"
           />
-          {/* JPEG fallback — only if browser supports neither AVIF nor WebP */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/hero-1920.webp"
@@ -190,192 +186,219 @@ export default function Hero({
         </picture>
       </motion.div>
 
-      {/* Scrim — gradient from dark bottom to semi-dark top so text is always readable */}
+      {/* Global scrim — gentle vignette, does NOT block the background starburst */}
       <div
         aria-hidden="true"
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to top, rgba(5,18,15,.85) 0%, rgba(5,18,15,.40) 45%, rgba(5,18,15,.55) 100%)',
+          background: 'linear-gradient(to top, rgba(5,18,15,.80) 0%, rgba(5,18,15,.20) 50%, rgba(5,18,15,.40) 100%)',
           pointerEvents: 'none',
         }}
       />
 
-      {/* ── Bottom-left content block — SpaceX layout ── */}
+      {/* ── Text cluster — left-aligned desktop, centered mobile ── */}
+      {/*   Uses CSS logical properties throughout for bilingual future-proofing  */}
       <div
         className="hero-content"
         style={{
           position: 'absolute',
-          left: 56,
-          bottom: 72,
+          /* Logical: inline-start = left in LTR, right in RTL */
+          insetInlineStart: 56,
+          insetBlockEnd: 72,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
-          maxWidth: 600,
+          maxInlineSize: 620,
         }}
       >
 
-      <h1
-        aria-label={`${headlineAr} — ${headlineEn}`}
-        className="hero-headline"
-        style={{
-          marginBottom: 0,
-          display: 'block',
-          overflow: 'visible',
-          width: '100%',
-          textAlign: 'left',
-        }}
-      >
-        {/* Arabic: diacritic clip wrapper */}
-        <span
+        {/*
+          ── Glassmorphism text-protection card ──
+          Isolates contrast fix to just the text cluster area; the starburst
+          behind the right half of the image remains fully visible.
+        */}
+        <div
+          className="hero-glass-card"
           style={{
-            display: 'block',
-            overflow: 'hidden',
-            paddingTop: '0.45em',
-            marginTop: '-0.45em',
-            paddingBottom: '0.3em',
-            marginBottom: '-0.3em',
+            position: 'relative',
+            paddingBlock: '32px',
+            paddingInline: '36px',
+            marginInlineStart: '-36px',
+            borderRadius: 4,
+            /* Dark frosted fill — low opacity so nebula still reads through */
+            background: 'rgba(3, 12, 10, 0.46)',
+            backdropFilter: 'blur(18px) saturate(130%)',
+            WebkitBackdropFilter: 'blur(18px) saturate(130%)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.32)',
           }}
         >
-          <span
-            lang="ar"
-            className="h-line h-line-ar"
+
+          <h1
+            aria-label={`${headlineAr} — ${headlineEn}`}
+            className="hero-headline"
             style={{
-              fontFamily: 'var(--font-arabic)',
-              fontSize: 'clamp(72px, 11vw, 130px)',
-              fontWeight: 700,
-              color: '#FFFFFF',
+              marginBlockEnd: 0,
               display: 'block',
-              direction: 'rtl',
-              textAlign: 'right',
-              lineHeight: 1.35,
-              paddingTop: '0.2em',
-              paddingBottom: '0.15em',
-              animationDelay: reduced ? '0s' : '.25s',
-              animationPlayState: reduced ? 'paused' : 'running',
+              overflow: 'visible',
+              inlineSize: '100%',
+              textAlign: 'start',
             }}
           >
-            {headlineAr}
-          </span>
-        </span>
-        {/* EN scramble subtitle */}
-        <span style={{ display: 'block', overflow: 'hidden', marginTop: 8 }}>
-          <span
-            className="h-line h-line-en"
+            {/* Arabic display headline — diacritic clip wrapper */}
+            <span
+              style={{
+                display: 'block',
+                overflow: 'hidden',
+                paddingBlockStart: '0.45em',
+                marginBlockStart: '-0.45em',
+                paddingBlockEnd: '0.3em',
+                marginBlockEnd: '-0.3em',
+              }}
+            >
+              <span
+                lang="ar"
+                className="h-line h-line-ar"
+                style={{
+                  fontFamily: 'var(--font-arabic)',
+                  fontSize: 'clamp(72px, 11vw, 130px)',
+                  fontWeight: 700,
+                  color: '#FFFFFF',
+                  display: 'block',
+                  direction: 'rtl',
+                  textAlign: 'end',
+                  lineHeight: 1.3,
+                  paddingBlockStart: '0.2em',
+                  paddingBlockEnd: '0.15em',
+                  animationDelay: reduced ? '0s' : '.25s',
+                  animationPlayState: reduced ? 'paused' : 'running',
+                }}
+              >
+                {headlineAr}
+              </span>
+            </span>
+
+            {/* EN scramble sub-label */}
+            <span style={{ display: 'block', overflow: 'hidden', marginBlockStart: 8 }}>
+              <span
+                className="h-line h-line-en"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 'clamp(12px, 1.4vw, 18px)',
+                  color: '#5FB89A',
+                  letterSpacing: '.2em',
+                  display: 'block',
+                  textAlign: 'start',
+                  animationDelay: reduced ? '0s' : '.3s',
+                  animationPlayState: reduced ? 'paused' : 'running',
+                }}
+              >
+                <span ref={scrambleRef}>{headlineEn}</span>
+              </span>
+            </span>
+          </h1>
+
+          {/* Bilingual subtext */}
+          <div
+            className="hero-grid"
             style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 'clamp(12px, 1.4vw, 18px)',
-              color: '#5FB89A',
-              letterSpacing: '.2em',
-              display: 'block',
-              textAlign: 'left',
-              animationDelay: reduced ? '0s' : '.3s',
-              animationPlayState: reduced ? 'paused' : 'running',
+              marginBlockStart: 24,
+              maxInlineSize: 480,
+              inlineSize: '100%',
+              textAlign: 'start',
+              opacity: reduced ? 1 : 0,
+              animation: reduced ? 'none' : 'fade-up 1s ease 1s forwards',
             }}
           >
-            <span ref={scrambleRef}>{headlineEn}</span>
-          </span>
-        </span>
-      </h1>
+            <p
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 11,
+                color: 'rgba(255,255,255,.78)',
+                lineHeight: 1.85,
+                letterSpacing: '.01em',
+                textAlign: 'start',
+              }}
+            >
+              {subtextEn}
+            </p>
+            <div style={{ blockSize: 1, background: 'rgba(255,255,255,.12)', marginBlock: '12px 0' }} />
+            <p
+              lang="ar"
+              dir="rtl"
+              className="hero-grid-ar"
+              style={{
+                fontFamily: 'var(--font-arabic)',
+                fontSize: 13,
+                color: 'rgba(255,255,255,.65)',
+                lineHeight: 2.0,
+                textAlign: 'end',
+                direction: 'rtl',
+              }}
+            >
+              {subtextAr}
+            </p>
+          </div>
 
-      {/* Bilingual subtext */}
-      <div
-        className="hero-grid"
-        style={{
-          marginTop: 24,
-          maxWidth: 480,
-          width: '100%',
-          textAlign: 'left',
-          opacity: reduced ? 1 : 0,
-          animation: reduced ? 'none' : 'fade-up 1s ease 1s forwards',
-        }}
-      >
-        <p
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 11,
-            color: 'rgba(255,255,255,.70)',
-            lineHeight: 1.85,
-            letterSpacing: '.01em',
-            textAlign: 'left',
-          }}
-        >
-          {subtextEn}
-        </p>
-        <div style={{ height: 1, background: 'rgba(255,255,255,.12)', margin: '12px 0' }} />
-        <p
-          lang="ar"
-          dir="rtl"
-          className="hero-grid-ar"
-          style={{
-            fontFamily: 'var(--font-arabic)',
-            fontSize: 13,
-            color: 'rgba(255,255,255,.60)',
-            lineHeight: 2.0,
-            textAlign: 'right',
-            direction: 'rtl',
-          }}
-        >
-          {subtextAr}
-        </p>
-      </div>
+          {/* CTAs */}
+          <div
+            className="hero-ctas"
+            style={{
+              marginBlockStart: 36,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: 16,
+              flexWrap: 'wrap',
+              inlineSize: '100%',
+              opacity: reduced ? 1 : 0,
+              animation: reduced ? 'none' : 'fade-up 1s ease 1.3s forwards',
+            }}
+          >
+            {/* Primary CTA — frosted ghost, matches the glassmorphism card aesthetic */}
+            <a
+              href="/contact"
+              data-magnetic-btn="true"
+              className="init-btn-ghost"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: '.2em',
+                textTransform: 'uppercase',
+                paddingBlock: '15px',
+                paddingInline: '42px',
+                display: 'inline-block',
+              }}
+            >
+              <span className="btn-txt">{ctaPrimary}</span>
+            </a>
 
-      {/* CTAs */}
-      <div
-        className="hero-ctas"
-        style={{
-          marginTop: 36,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          gap: 16,
-          flexWrap: 'wrap',
-          width: '100%',
-          opacity: reduced ? 1 : 0,
-          animation: reduced ? 'none' : 'fade-up 1s ease 1.3s forwards',
-        }}
-      >
-        <a
-          href="/contact"
-          data-mag="true"
-          data-magnetic-btn="true"
-          className="init-btn"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 9,
-            fontWeight: 700,
-            color: '#0D1614',
-            letterSpacing: '.2em',
-            textTransform: 'uppercase',
-            background: '#FFFFFF',
-            padding: '15px 42px',
-            display: 'inline-block',
-          }}
-        >
-          <span className="btn-txt">{ctaPrimary}</span>
-        </a>
-        <a
-          href="https://wa.me/97477484004"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-mag="true"
-          data-magnetic-btn="true"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: 9,
-            color: 'rgba(255,255,255,.9)',
-            letterSpacing: '.15em',
-            textTransform: 'uppercase',
-            border: '1px solid rgba(255,255,255,.35)',
-            padding: '15px 30px',
-            display: 'inline-block',
-            transition: 'border-color .25s',
-          }}
-        >
-          {ctaSecondary}
-        </a>
-      </div>
+            {/* Secondary CTA — existing ghost border style */}
+            <a
+              href="https://wa.me/97477484004"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-magnetic-btn="true"
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 9,
+                color: 'rgba(255,255,255,.9)',
+                letterSpacing: '.15em',
+                textTransform: 'uppercase',
+                border: '1px solid rgba(255,255,255,.35)',
+                paddingBlock: '15px',
+                paddingInline: '30px',
+                display: 'inline-block',
+                transition: 'border-color .25s',
+              }}
+            >
+              {ctaSecondary}
+            </a>
+          </div>
 
+        </div>{/* end hero-glass-card */}
       </div>{/* end hero-content */}
 
       {/* Bottom divider */}
@@ -383,10 +406,10 @@ export default function Hero({
         className="bottom-divider"
         style={{
           position: 'absolute',
-          bottom: 0,
-          left: 56,
-          right: 56,
-          height: 1,
+          insetBlockEnd: 0,
+          insetInlineStart: 56,
+          insetInlineEnd: 56,
+          blockSize: 1,
           background: 'rgba(255,255,255,.18)',
           transformOrigin: 'left',
           animation: reduced ? 'none' : 'line-grow 1.2s cubic-bezier(.16,1,.3,1) 1.6s both',
@@ -394,27 +417,31 @@ export default function Hero({
       />
 
       <style>{`
-  /* Desktop: fade in after delay */
-  .scroll-indicator {
-    opacity: 0;
-    animation: fade-up 1s ease 1.8s forwards;
-  }
   @media (max-width:900px) {
-    .hero-headline { max-width: 100% !important; text-align: center !important; }
+    .hero-headline { max-inline-size: 100% !important; text-align: center !important; }
     .h-line-ar { text-align: center !important; }
     .h-line-en { text-align: center !important; }
     .hero-grid { text-align: center !important; }
     .hero-grid p { text-align: center !important; }
     .hero-grid-ar { text-align: center !important; }
-    .bottom-divider { left: 24px !important; right: 24px !important; }
+    .bottom-divider { inset-inline-start: 24px !important; inset-inline-end: 24px !important; }
     .hero-content {
-      left: 24px !important;
-      right: 24px !important;
-      max-width: 100% !important;
+      inset-inline-start: 24px !important;
+      inset-inline-end: 24px !important;
+      max-inline-size: 100% !important;
       align-items: center !important;
-      bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+      inset-block-end: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
     }
-    .hero-grid { margin-top: 16px !important; }
+    .hero-glass-card {
+      padding-inline: 24px !important;
+      padding-block: 24px !important;
+      margin-inline-start: 0 !important;
+      align-items: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      width: 100% !important;
+    }
+    .hero-grid { margin-block-start: 16px !important; }
     .hero-grid-ar {
       display: -webkit-box !important;
       -webkit-line-clamp: 2 !important;
@@ -425,26 +452,28 @@ export default function Hero({
       flex-direction: column !important;
       align-items: stretch !important;
       gap: 12px !important;
-      width: 100% !important;
-      margin-top: 20px !important;
+      inline-size: 100% !important;
+      margin-block-start: 20px !important;
       justify-content: center !important;
     }
     .hero-ctas a {
-      width: 100% !important;
+      inline-size: 100% !important;
       text-align: center !important;
       box-sizing: border-box !important;
+    }
+    .init-btn-ghost {
+      inline-size: 100% !important;
+      text-align: center !important;
     }
   }
 
   @media (max-width:480px) {
-    .hero-content { left: 16px !important; right: 16px !important; }
-    .h-line-ar { font-size: clamp(68px, 19vw, 110px) !important; }
+    .hero-content { inset-inline-start: 16px !important; inset-inline-end: 16px !important; }
+    .h-line-ar { font-size: clamp(68px, 19vw, 110px) !important; line-height: 1.35 !important; padding-block-end: 0.15em !important; text-align: center !important; }
     .h-line-en { font-size: 14px !important; }
-    .h-line-ar { line-height: 1.35 !important; padding-bottom: 0.15em !important; text-align: center !important; }
   }
 
-  /* Zoom + drift — alternates so no jump at loop point.
-     translate moves the crop window across the image revealing different regions. */
+  /* Zoom + drift — alternates so no jump at loop point */
   @keyframes hero-drift {
     0%   { transform: scale(1.08) translate(0%,    0%);    }
     25%  { transform: scale(1.13) translate(-1.5%, -0.8%); }
@@ -461,6 +490,30 @@ export default function Hero({
   @keyframes scroll-scan {
     0% { transform: translateY(-100%); }
     100% { transform: translateY(250%); }
+  }
+
+  /* Solid fallback for browsers without backdrop-filter support */
+  @supports not (backdrop-filter: blur(1px)) {
+    .hero-glass-card {
+      background: rgba(3, 12, 10, 0.82) !important;
+    }
+    .init-btn-ghost {
+      background: rgba(3, 12, 10, 0.85) !important;
+    }
+  }
+
+  /* Respect reduced transparency system preference */
+  @media (prefers-reduced-transparency: reduce) {
+    .hero-glass-card {
+      background: rgba(3, 12, 10, 0.88) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    .init-btn-ghost {
+      background: rgba(3, 12, 10, 0.90) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
   }
 `}</style>
     </section>

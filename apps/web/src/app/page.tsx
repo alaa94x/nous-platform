@@ -34,12 +34,12 @@ const SEED_SETTINGS: Record<string, string> = {
 }
 
 const SEED_SERVICES = [
-  { id: '1', idx: '01', name: 'Artificial Intelligence', category: 'ML · AI',        tech_pills: ['LLMs', 'RAG', 'TensorFlow', 'PyTorch', 'NLP', 'Agents'] },
-  { id: '2', idx: '02', name: 'Full-Stack Engineering',  category: 'Web · API',      tech_pills: ['React', 'Next.js', 'Node.js', 'Go', 'Python', 'PostgreSQL'] },
-  { id: '3', idx: '03', name: 'Mobile Development',      category: 'iOS · Android',  tech_pills: ['React Native', 'Swift', 'Flutter', 'Kotlin', 'PWA'] },
-  { id: '4', idx: '04', name: 'E-Commerce Solutions',    category: 'Retail · SaaS',  tech_pills: ['Shopify', 'Headless', 'Stripe', 'WooCommerce', 'CRM'] },
-  { id: '5', idx: '05', name: 'Cloud Infrastructure',    category: 'DevOps · Scale', tech_pills: ['AWS', 'GCP', 'Docker', 'K8s', 'Terraform', 'CI/CD'] },
-  { id: '6', idx: '06', name: 'Design & Motion',         category: 'UX · Visual',    tech_pills: ['Figma', 'Framer', 'GSAP', 'Three.js', 'Motion Design'] },
+  { id: '1', idx: '01', name: 'AI & Automation',          name_tech: 'Artificial Intelligence', category: 'ML · AI',        business_tags: ['Experience', 'Automation'], engineering_tags: ['ML', 'AI'],        business_outcomes: ['Smarter Decisions', 'Automation', 'Predictive Insight', 'Cost Reduction'], engineering_stack: ['LLMs', 'RAG', 'TensorFlow', 'PyTorch', 'NLP', 'Agents'] },
+  { id: '2', idx: '02', name: 'Custom Digital Platforms', name_tech: 'Full-Stack Engineering',  category: 'Web · API',      business_tags: ['Growth', 'Conversion'],      engineering_tags: ['Web', 'API'],      business_outcomes: ['Custom Portals', 'Fast Delivery', 'Zero Downtime', 'High Conversion'],    engineering_stack: ['React', 'Next.js', 'Node.js', 'Go', 'Python', 'PostgreSQL'] },
+  { id: '3', idx: '03', name: 'Mobile Apps',              name_tech: 'Mobile Development',      category: 'iOS · Android',  business_tags: ['Reach', 'Engagement'],       engineering_tags: ['iOS', 'Android'],  business_outcomes: ['Reach More Users', 'Native Speed', 'Offline-Ready', 'App Store Ready'],     engineering_stack: ['React Native', 'Swift', 'Flutter', 'Kotlin', 'PWA'] },
+  { id: '4', idx: '04', name: 'Online Commerce',          name_tech: 'E-Commerce Solutions',    category: 'Retail · SaaS',  business_tags: ['Revenue', 'Loyalty'],        engineering_tags: ['Retail', 'SaaS'],  business_outcomes: ['More Revenue', 'Loyal Customers', 'Seamless Checkout', 'Global Scale'],     engineering_stack: ['Shopify', 'Headless', 'Stripe', 'WooCommerce', 'CRM'] },
+  { id: '5', idx: '05', name: 'Cloud & Scale',            name_tech: 'Cloud Infrastructure',    category: 'DevOps · Scale', business_tags: ['Reliability', 'Scale'],      engineering_tags: ['DevOps', 'Cloud'], business_outcomes: ['Always On', 'Instant Scale', 'Secure by Design', 'Lower Costs'],           engineering_stack: ['AWS', 'GCP', 'Docker', 'K8s', 'Terraform', 'CI/CD'] },
+  { id: '6', idx: '06', name: 'Design & Brand',           name_tech: 'Design & Motion',         category: 'UX · Visual',    business_tags: ['Brand', 'Identity'],         engineering_tags: ['UX', 'Visual'],    business_outcomes: ['Memorable Brand', 'Clear Communication', 'Delight Users', 'Stand Out'],     engineering_stack: ['Figma', 'Framer', 'GSAP', 'Three.js', 'Motion Design'] },
 ]
 
 // Real data lives in Supabase — run migration 006_seed_real_projects.sql
@@ -63,7 +63,7 @@ async function getPageData() {
 
     const [{ data: rawSettings }, { data: services }, { data: projects }] = await Promise.all([
       supabase.from('site_settings').select('key, value'),
-      supabase.from('services').select('id, idx, name, name_ar, category, tech_pills').eq('active', true).order('sort_order'),
+      supabase.from('services').select('id, idx, name, name_ar, name_tech, name_tech_ar, category, tech_pills, business_pills, business_tags, engineering_tags, business_outcomes, engineering_stack, business_subtext').eq('active', true).order('sort_order'),
       supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url, url').eq('active', true).order('sort_order'),
     ])
 

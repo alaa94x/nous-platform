@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, ChangeEvent } from 'react'
 import { track } from '@/lib/analytics'
 
 // ── Exit guard modal ─────────────────────────────────────────────────────────
@@ -385,6 +385,8 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
   const successRef    = useRef<HTMLDivElement>(null)
 
   const hasName    = name.trim().length > 0
+  // Phone is optional — counts as "done" always once name exists (user can skip)
+  const hasPhone   = true
   const hasEmail   = email.trim().length > 3
   const hasSvc     = selectedSvc.size > 0
   const hasMsg     = message.trim().length > 0
@@ -453,6 +455,7 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
 
   const briefName        = hasName ? `Hello,\n${name.split(' ')[0]}.` : 'Hello,\nWorld.'
   const briefNameCompact = hasName ? `Hello, ${name.split(' ')[0]!}.` : 'Hello, World.'
+  // Status follows new order: Name → Phone (optional) → Email → Service → Vision
   const briefStatus = hasName
     ? (hasEmail ? (hasSvc ? (hasMsg ? 'Brief complete' : 'Almost there') : 'Choose a service') : 'Add your email')
     : 'Start with your name'
@@ -540,20 +543,25 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
     padding: 0,
   } as const
 
-  const stepActive = (stepIdx: number) => {
-    const checks = [hasName, hasEmail, hasSvc, hasMsg]
-    return !checks[stepIdx] && (stepIdx === 0 || !!checks[stepIdx - 1])
-  }
-  const stepDone = (stepIdx: number) => {
-    const checks = [hasName, hasEmail, hasSvc, hasMsg]
-    return !!checks[stepIdx]
-  }
-  // Inactive steps: still visible but clearly dimmed. Active/done: full opacity.
-  const stepStyle = (stepIdx: number) => ({
-    opacity: stepDone(stepIdx) ? 1 : stepActive(stepIdx) ? 1 : 0.38,
+  // Step order: 0=name, 1=phone(optional/always-done), 2=email, 3=service, 4=vision
+  const stepChecks = [hasName, hasPhone, hasEmail, hasSvc, hasMsg]
+  const stepActive = (stepIdx: number) =>
+    !stepChecks[stepIdx] && (stepIdx === 0 || !!stepChecks[stepIdx - 1])
+  const stepDone   = (stepIdx: number) => !!stepChecks[stepIdx]
+  const stepStyle  = (stepIdx: number) => ({
+    opacity: stepDone(stepIdx) || stepActive(stepIdx) ? 1 : 0.38,
     transition: 'opacity .5s cubic-bezier(.16,1,.3,1)',
-    pointerEvents: (stepActive(stepIdx) || stepDone(stepIdx) || stepIdx === 0) ? 'auto' as const : 'auto' as const,
+    pointerEvents: 'auto' as const,
   })
+
+  // Textarea auto-resize — grows with content, never needs internal scroll
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const autoResize  = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value)
+    const el = e.target
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [])
 
   return (
     <section
@@ -776,30 +784,10 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
               <div style={{ position: 'absolute', bottom: -1, left: 0, width: hasName ? '100%' : 0, height: 1.5, background: 'var(--accent)', transition: 'width .5s cubic-bezier(.16,1,.3,1)' }} />
             </div>
 
-            {/* Step 2: Email */}
+            {/* Step 2: Phone (optional — unlocks after name) */}
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(1) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                 <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>02</span>
-                <label htmlFor="contact-email" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Your email address?</label>
-              </div>
-              <input
-                id="contact-email"
-                type="email"
-                autoComplete="email"
-                placeholder="hello@company.qa"
-                aria-required="true"
-                aria-label="Your email address"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                style={inputStyle}
-              />
-              <div style={{ position: 'absolute', bottom: -1, left: 0, width: hasEmail ? '100%' : 0, height: 1.5, background: 'var(--accent)', transition: 'width .5s cubic-bezier(.16,1,.3,1)' }} />
-            </div>
-
-            {/* Step 2b: Phone */}
-            <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(1) }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>02b</span>
                 <label htmlFor="contact-phone" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
                   Phone number? <span style={{ opacity: .45 }}>(Optional)</span>
                 </label>
@@ -834,11 +822,31 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
               </div>
             </div>
 
-            {/* Step 3: Service selector */}
+            {/* Step 3: Email */}
             <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(2) }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>03</span>
+                <label htmlFor="contact-email" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Your email address?</label>
+              </div>
+              <input
+                id="contact-email"
+                type="email"
+                autoComplete="email"
+                placeholder="hello@company.qa"
+                aria-required="true"
+                aria-label="Your email address"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                style={inputStyle}
+              />
+              <div style={{ position: 'absolute', bottom: -1, left: 0, width: hasEmail ? '100%' : 0, height: 1.5, background: 'var(--accent)', transition: 'width .5s cubic-bezier(.16,1,.3,1)' }} />
+            </div>
+
+            {/* Step 4: Service selector */}
+            <div style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(3) }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>03</span>
+                  <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>04</span>
                   <span role="group" aria-label="What services do you need? Select all that apply" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>What do you need?</span>
                 </div>
                 <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--muted)', letterSpacing: '.12em', opacity: .65 }}>Select all that apply</span>
@@ -857,7 +865,7 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
                         display: 'flex',
                         alignItems: 'center',
                         gap: 12,
-                        padding: '14px 16px',
+                        padding: '18px 16px',
                         border: isSelected ? '1px solid var(--accent)' : '1px solid var(--border)',
                         background: isSelected ? 'rgba(10,92,71,.07)' : 'none',
                         textAlign: 'left',
@@ -865,10 +873,10 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
                         cursor: 'pointer',
                       }}
                     >
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: isSelected ? 'var(--accent)' : 'var(--muted)', flexShrink: 0, transition: 'color .2s' }}>{s.idx}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: isSelected ? 'var(--accent)' : 'var(--muted)', flexShrink: 0, transition: 'color .2s' }}>{s.idx}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSelected ? 'var(--accent)' : 'var(--text)', letterSpacing: '.1em', textTransform: 'uppercase', transition: 'color .2s' }}>{s.name}</div>
-                        <div style={{ fontFamily: 'var(--font-fraunces)', fontSize: 11, color: isSelected ? 'var(--accent)' : 'var(--muted)', fontStyle: 'italic', marginTop: 2, opacity: isSelected ? .8 : .6, transition: 'color .2s, opacity .2s' }}>{s.category}</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: isSelected ? 'var(--accent)' : 'var(--text)', letterSpacing: '.06em', textTransform: 'uppercase', transition: 'color .2s' }}>{s.name}</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: isSelected ? 'var(--accent)' : 'var(--muted)', marginTop: 3, opacity: isSelected ? .85 : .65, transition: 'color .2s, opacity .2s' }}>{s.category}</div>
                       </div>
                       {/* Checkmark circle */}
                       <div style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${isSelected ? 'var(--accent)' : 'rgba(18,28,26,.2)'}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isSelected ? 'var(--accent)' : 'none', transition: 'border-color .2s, background .2s' }}>
@@ -890,7 +898,7 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
                     display: 'flex',
                     alignItems: 'center',
                     gap: 12,
-                    padding: '14px 16px',
+                    padding: '18px 16px',
                     border: selectedSvc.has('Not Sure Yet') ? '1px solid var(--accent)' : '1px dashed rgba(18,28,26,.18)',
                     background: selectedSvc.has('Not Sure Yet') ? 'rgba(10,92,71,.07)' : 'none',
                     textAlign: 'left',
@@ -898,10 +906,10 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
                     transition: 'border-color .2s, background .2s',
                   }}
                 >
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: selectedSvc.has('Not Sure Yet') ? 'var(--accent)' : 'var(--muted)', flexShrink: 0, transition: 'color .2s' }}>?</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: selectedSvc.has('Not Sure Yet') ? 'var(--accent)' : 'var(--muted)', flexShrink: 0, transition: 'color .2s' }}>?</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: selectedSvc.has('Not Sure Yet') ? 'var(--accent)' : 'var(--muted)', letterSpacing: '.1em', textTransform: 'uppercase', transition: 'color .2s' }}>Not sure yet — let&apos;s figure it out</div>
-                    <div style={{ fontFamily: 'var(--font-fraunces)', fontSize: 10, color: 'var(--muted)', fontStyle: 'italic', marginTop: 2, opacity: .7 }}>Tell us your goals in the vision field below</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 500, color: selectedSvc.has('Not Sure Yet') ? 'var(--accent)' : 'var(--muted)', letterSpacing: '.06em', textTransform: 'uppercase', transition: 'color .2s' }}>Not sure yet — let&apos;s figure it out</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', marginTop: 3, opacity: .7 }}>Tell us your goals in the vision field below</div>
                   </div>
                   <div style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${selectedSvc.has('Not Sure Yet') ? 'var(--accent)' : 'rgba(18,28,26,.2)'}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: selectedSvc.has('Not Sure Yet') ? 'var(--accent)' : 'none', transition: 'border-color .2s, background .2s' }}>
                     <svg width="8" height="6" viewBox="0 0 8 6" fill="none" style={{ opacity: selectedSvc.has('Not Sure Yet') ? 1 : 0, transition: 'opacity .2s' }}>
@@ -917,20 +925,29 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
               )}
             </div>
 
-            {/* Step 4: Vision — always visible on mobile regardless of prior steps */}
-            <div className="step-vision" style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(3) }}>
+            {/* Step 5: Vision — auto-resize textarea, keyboard-safe on mobile */}
+            <div className="step-vision" style={{ padding: '32px 0', borderBottom: '1px solid var(--border)', position: 'relative', ...stepStyle(4) }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>04</span>
+                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.12em' }}>05</span>
                 <label htmlFor="contact-message" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)', letterSpacing: '.18em', textTransform: 'uppercase' }}>Describe your vision</label>
               </div>
               <textarea
+                ref={textareaRef}
                 id="contact-message"
                 rows={3}
                 placeholder="Tell us what you're building…"
                 aria-label="Describe your vision or project"
                 value={message}
-                onChange={e => setMessage(e.target.value)}
-                style={{ ...inputStyle, resize: 'none', lineHeight: 1.7, fontSize: 'clamp(18px,2.2vw,26px)', letterSpacing: '-.01em' }}
+                onChange={autoResize}
+                style={{
+                  ...inputStyle,
+                  resize: 'none',
+                  overflow: 'hidden',
+                  lineHeight: 1.7,
+                  fontSize: 'clamp(18px,2.2vw,26px)',
+                  letterSpacing: '-.01em',
+                  scrollMarginTop: '8rem',
+                }}
               />
               <div style={{ position: 'absolute', bottom: -1, left: 0, width: hasMsg ? '100%' : 0, height: 1.5, background: 'var(--accent)', transition: 'width .5s cubic-bezier(.16,1,.3,1)' }} />
             </div>
@@ -988,7 +1005,8 @@ export default function Contact({ services, contactEmail = 'nouslab@icould.com' 
           #mob-brief-bar { display: block !important; }
           #contact-cols { grid-template-columns: 1fr !important; min-height: auto !important; }
           #brief-preview { display: none !important; }
-          #form-side { padding: 28px 20px 72px !important; min-height: auto !important; justify-content: flex-start !important; }
+          /* pb-40 equivalent: gives the virtual keyboard room to open without obscuring the textarea */
+          #form-side { padding: 28px 20px calc(160px + env(safe-area-inset-bottom, 0px)) !important; min-height: auto !important; justify-content: flex-start !important; }
           /* Vision textarea always fully visible on mobile — user can fill any order */
           .step-vision { opacity: 1 !important; pointer-events: auto !important; }
         }

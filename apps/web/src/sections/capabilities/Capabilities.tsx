@@ -1,296 +1,257 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { useReducedMotion } from 'motion/react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useReveal } from '@/components/useReveal'
+import OrbitalVisualizer from './OrbitalVisualizer'
+
+// ── Scramble hook — drives DOM directly, no React re-renders ──────────────────
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$*'
+
+function useScramble(text: string, reduced: boolean) {
+  const elRef     = useRef<HTMLSpanElement>(null)
+  const rafRef    = useRef<ReturnType<typeof setInterval> | null>(null)
+  const activeRef = useRef(false)
+
+  const scramble = useCallback(() => {
+    if (reduced) return
+    activeRef.current = true
+    const el = elRef.current
+    if (!el) return
+    let iter = 0
+    if (rafRef.current) clearInterval(rafRef.current)
+    rafRef.current = setInterval(() => {
+      el.textContent = text
+        .split('')
+        .map((ch, i) => {
+          if (!activeRef.current) return ch
+          if (i < iter || ch === ' ' || ch === '&') return ch
+          return CHARS[Math.floor(Math.random() * CHARS.length)]
+        })
+        .join('')
+      iter += 1 / 1.8
+      if (iter >= text.length) {
+        clearInterval(rafRef.current!)
+        el.textContent = text
+        activeRef.current = false
+      }
+    }, 28)
+  }, [text, reduced])
+
+  const reset = useCallback(() => {
+    activeRef.current = false
+    if (rafRef.current) { clearInterval(rafRef.current); rafRef.current = null }
+    if (elRef.current) elRef.current.textContent = text
+  }, [text])
+
+  useEffect(() => () => {
+    if (rafRef.current) clearInterval(rafRef.current)
+  }, [])
+
+  return { elRef, scramble, reset }
+}
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+type ViewMode = 'business' | 'engineering'
 
 interface Service {
   id: string
   idx: string | null
   name: string
   name_ar?: string | null
+  name_tech?: string | null
+  name_tech_ar?: string | null
   category: string | null
-  tech_pills: string[] | null
+  // Legacy (kept for compatibility fallback)
+  tech_pills?: string[] | null
+  business_pills?: string[] | null
+  // New semantic fields
+  business_tags?: string[] | null
+  engineering_tags?: string[] | null
+  business_outcomes?: string[] | null
+  engineering_stack?: string[] | null
+  business_subtext?: string | null
 }
 
 interface CapabilitiesProps {
   services: Service[]
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function getDisplayName(svc: Service, view: ViewMode) {
+  return view === 'engineering' ? (svc.name_tech || svc.name) : svc.name
+}
+
+
+function getOutcomes(svc: Service, view: ViewMode): string[] {
+  if (view === 'engineering') {
+    return svc.engineering_stack ?? svc.tech_pills ?? []
+  }
+  return svc.business_outcomes ?? svc.business_pills ?? []
+}
+
+function getTags(svc: Service, view: ViewMode): string[] {
+  if (view === 'engineering') {
+    // Fall back to category parts if engineering_tags not seeded yet
+    return (svc.engineering_tags && svc.engineering_tags.length > 0)
+      ? svc.engineering_tags
+      : (svc.category?.split(' · ') ?? [])
+  }
+  return (svc.business_tags && svc.business_tags.length > 0)
+    ? svc.business_tags
+    : []
+}
+
+const SUBTEXT = {
+  business:    'Translating complex engineering into elegant, high-conversion business solutions.',
+  engineering: 'Precision-crafted codebases designed for absolute zero-downtime scalability.',
+}
+
+// ── Service row — isolated so useScramble hook can run per row ────────────────
+
+function ServiceRow({
+  svc, view, isActive, isOpen, reduced,
+  onMouseEnter, onMouseLeave, onToggleAccordion,
+}: {
+  svc: Service
+  view: ViewMode
+  isActive: boolean
+  isOpen: boolean
+  reduced: boolean
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+  onToggleAccordion: () => void
+}) {
+  const name     = getDisplayName(svc, view)
+  const tags     = getTags(svc, view)
+  const outcomes = getOutcomes(svc, view)
+  const { elRef, scramble, reset } = useScramble(name, reduced)
+
+  const handleEnter = () => { scramble(); onMouseEnter() }
+  const handleLeave = () => { reset();    onMouseLeave() }
+
+  return (
+    <div
+      className="svc-item reveal"
+      style={{ borderBottom: '1px solid var(--border)' }}
+    >
+      <div
+        className="svc-row"
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        onClick={onToggleAccordion}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isOpen}
+        style={{ padding: '18px 0', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}
+      >
+        {/* Left: index + name — min-w-0 allows truncation when space is tight */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, flex: '1 1 0' }}>
+          {/* Index */}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.1em', minWidth: 18, flexShrink: 0, opacity: 0.5 }}>
+            {svc.idx}
+          </span>
+
+          {/* Name — truncates with ellipsis before tags ever overlap */}
+          <span
+            ref={elRef}
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: 'clamp(13px, 1.4vw, 18px)',
+              fontWeight: 400,
+              color: isActive ? '#7ECFB3' : 'var(--text)',
+              letterSpacing: isActive ? '.04em' : '.01em',
+              textTransform: 'uppercase',
+              transition: 'color .25s, letter-spacing .25s',
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {name}
+          </span>
+        </div>
+
+        {/* Right: tags + mobile chevron — shrink-0 + nowrap locks width, never wraps */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, whiteSpace: 'nowrap' }}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`tags-${svc.id}-${view}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              style={{ display: 'flex', gap: 6, alignItems: 'center' }}
+            >
+              {tags.map((tag, ti) => (
+                <span key={tag} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  {ti > 0 && <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', opacity: .35 }}>·</span>}
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: isActive ? 'rgba(96,184,154,.7)' : 'var(--muted)', letterSpacing: '.12em', textTransform: 'uppercase', transition: 'color .3s' }}>
+                    {tag}
+                  </span>
+                </span>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+
+          <svg className="acc-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"
+            style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform .25s ease', flexShrink: 0 }}
+          >
+            <path d="M2 4.5L6 8L10 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Mobile accordion */}
+      <div
+        className="acc-body"
+        style={{ maxHeight: isOpen ? 200 : 0, overflow: 'hidden', transition: reduced ? 'none' : 'max-height .38s cubic-bezier(.16,1,.3,1)' }}
+      >
+        <div style={{ paddingBottom: 18, paddingLeft: 34 }}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`acc-${svc.id}-${view}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}
+            >
+              {outcomes.map(pill => (
+                <span key={pill} style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#60B89A', border: '1px solid rgba(96,184,154,.25)', background: 'rgba(26,43,39,.85)', padding: '5px 12px', letterSpacing: '.09em', textTransform: 'uppercase', borderRadius: 50 }}>
+                  {pill}
+                </span>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Component ──────────────────────────────────────────────────────────────────
+
 export default function Capabilities({ services }: CapabilitiesProps) {
-  const reduced     = !!useReducedMotion()
-  const sectionRef  = useRef<HTMLElement>(null)
-  const vpRef       = useRef<HTMLDivElement>(null)  // service list (for querying .svc-item)
-  const orbitRef    = useRef<HTMLDivElement>(null)  // orbit circle (for pill insertion)
-  const lblRef      = useRef<HTMLDivElement>(null)
+  const reduced    = !!useReducedMotion()
+  const sectionRef = useRef<HTMLElement>(null)
+
+  // Default: no active service — orbit shows idle "hover" state
+  const [view,            setView]            = useState<ViewMode>('business')
+  const [activeServiceId, setActiveServiceId] = useState<string | null>(null)
+  const [openAccordionId, setOpenAccordionId] = useState<string | null>(null)
 
   useReveal(sectionRef)
 
-  // Orbital visualization — RAF trig, matches prototype exactly
-  useEffect(() => {
-    const isMouse  = window.matchMedia('(hover:hover) and (pointer:fine)').matches
-    const vp       = vpRef.current     // service list
-    const orbitVp  = orbitRef.current  // the circle that pills orbit inside
-    const lbl      = lblRef.current
-    if (!vp || !orbitVp) return
-
-    const getC  = () => (orbitVp.offsetWidth  || 460) / 2
-    const getR  = () => { const c = getC(); return [c * .38, c * .57, c * .78] }
-
-    let activeRaf = 0
-    let satEls: HTMLElement[] = []
-    const hoveredSats = new Set<HTMLElement>()
-
-    const clearSats = () => {
-      satEls.forEach(el => el.parentElement?.removeChild(el))
-      satEls = []
-      hoveredSats.clear()
-      if (activeRaf) { cancelAnimationFrame(activeRaf); activeRaf = 0 }
-    }
-
-    const makeLine = (mt: string) => {
-      const d = document.createElement('div')
-      d.style.cssText = `width:24px;height:1px;background:rgba(10,92,71,.3);margin:${mt};`
-      return d
-    }
-
-    const resetLabel = () => {
-      if (!lbl) return
-      lbl.textContent = ''
-      const top = makeLine('0 auto 10px')
-      const span = document.createElement('span')
-      span.style.cssText =
-        'font-family:var(--font-fraunces);font-size:22px;font-weight:300;font-style:italic;' +
-        'color:rgba(10,92,71,.7);letter-spacing:-.01em;line-height:1.45;display:block;text-align:center;'
-      span.textContent = 'Hover a capability'
-      const bot = makeLine('10px auto 0')
-      lbl.append(top, span, bot)
-    }
-    resetLabel()
-
-    const mode = isMouse ? 'hover' : (window.innerWidth >= 900 ? 'click' : 'none')
-
-    vp.querySelectorAll<HTMLElement>('.svc-item').forEach(item => {
-      const techs   = (item.dataset['techs'] ?? '').split(',').map(t => t.trim()).filter(Boolean)
-      const svcName = item.dataset['svcName'] ?? ''
-      const titleEl = item.querySelector<HTMLElement>('.svc-name')
-
-      const makeSvcLabel = (text: string) => {
-        const s = document.createElement('span')
-        s.style.cssText =
-          'font-family:var(--font-fraunces);font-size:clamp(18px,2.2vw,26px);' +
-          'font-weight:300;font-style:italic;color:#60B89A;letter-spacing:-.015em;' +
-          'line-height:1.3;text-align:center;display:block;max-width:220px;word-wrap:break-word;hyphens:auto;'
-        s.textContent = text
-        return s
-      }
-
-      const showOrbit = () => {
-        if (titleEl) { titleEl.style.color = '#60B89A'; titleEl.style.fontStyle = 'italic' }
-        item.style.paddingLeft = '14px'
-        clearSats()
-
-        if (lbl) { lbl.textContent = ''; lbl.appendChild(makeSvcLabel(svcName)) }
-
-        const RADII = getR()
-        type SatDatum = {
-          el: HTMLElement; ring: number; speed: number
-          startAngle: number; hw: number; hh: number
-        }
-        const satData: SatDatum[] = techs.map((tech, i) => {
-          const ring  = RADII[i % RADII.length]!
-          const dir   = (Math.floor(i / RADII.length) % 2 === 0) ? 1 : -1
-          const speed = dir * (0.00022 + i * 0.000025)
-          const sameRingCount = Math.ceil(techs.length / RADII.length)
-          const posInRing     = Math.floor(i / RADII.length)
-          const startAngle    = (posInRing / sameRingCount) * Math.PI * 2 + (ring * 0.01)
-
-          const el = document.createElement('div')
-          el.textContent = tech
-          el.style.cssText =
-            'position:absolute;top:0;left:0;will-change:transform;cursor:default;' +
-            'font-family:var(--font-mono);font-size:9px;' +
-            'color:#60B89A;letter-spacing:.09em;text-transform:uppercase;' +
-            'border-radius:50px;' +
-            'background:rgba(26,43,39,.85);border:1px solid rgba(96,184,154,.25);' +
-            'padding:5px 11px;pointer-events:auto;white-space:nowrap;z-index:3;' +
-            `opacity:0;` +
-            `transition:opacity .35s ease ${i * 0.055}s,background .18s,border-color .18s,box-shadow .18s;`
-          orbitVp.appendChild(el)
-          requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = '1' }))
-
-          el.addEventListener('mouseenter', () => {
-            hoveredSats.add(el)
-            el.style.background    = 'rgba(96,184,154,.15)'
-            el.style.borderColor   = 'rgba(96,184,154,.6)'
-            el.style.boxShadow     = '0 0 12px rgba(96,184,154,.2)'
-            if (lbl) {
-              lbl.textContent = ''
-              const tag = document.createElement('span')
-              tag.style.cssText =
-                'font-family:var(--font-mono);font-size:7.5px;color:rgba(96,184,154,.5);' +
-                'letter-spacing:.2em;text-transform:uppercase;display:block;margin-bottom:8px;'
-              tag.textContent = 'STACK'
-              const name = document.createElement('span')
-              name.style.cssText =
-                'font-family:var(--font-fraunces);font-size:clamp(14px,1.6vw,20px);' +
-                'font-weight:300;font-style:italic;color:#60B89A;letter-spacing:-.01em;' +
-                'line-height:1.4;text-align:center;display:block;'
-              name.textContent = tech
-              lbl.append(tag, name)
-            }
-          })
-          el.addEventListener('mouseleave', () => {
-            hoveredSats.delete(el)
-            el.style.background    = 'rgba(26,43,39,.85)'
-            el.style.borderColor   = 'rgba(96,184,154,.25)'
-            el.style.boxShadow     = ''
-            if (lbl) { lbl.textContent = ''; lbl.appendChild(makeSvcLabel(svcName)) }
-          })
-
-          return { el, ring, speed, startAngle, hw: 0, hh: 0 }
-        })
-
-        satEls = satData.map(s => s.el)
-
-        const tick = (ts: number) => {
-          const cx = getC()
-          satData.forEach(sat => {
-            if (!sat.hw) {
-              sat.hw = sat.el.offsetWidth  / 2 || 30
-              sat.hh = sat.el.offsetHeight / 2 || 11
-            }
-            const angle = sat.startAngle + ts * sat.speed
-            const x = cx + sat.ring * Math.cos(angle) - sat.hw
-            const y = cx + sat.ring * Math.sin(angle) - sat.hh
-            const sc = hoveredSats.has(sat.el) ? 1.15 : 1
-            sat.el.style.transform = `translate(${x}px,${y}px) scale(${sc})`
-          })
-          activeRaf = requestAnimationFrame(tick)
-        }
-        activeRaf = requestAnimationFrame(tick)
-      }
-
-      const hideOrbit = () => {
-        if (titleEl) { titleEl.style.color = ''; titleEl.style.fontStyle = '' }
-        item.style.paddingLeft = '0'
-        clearSats()
-        resetLabel()
-      }
-
-      if (mode === 'hover') {
-        item.addEventListener('mouseenter', showOrbit)
-        item.addEventListener('mouseleave', hideOrbit)
-      } else if (mode === 'click') {
-        item.addEventListener('click', () => {
-          const isActive = item.classList.contains('orb-active')
-          vp.querySelectorAll<HTMLElement>('.svc-item.orb-active').forEach(o => {
-            o.classList.remove('orb-active')
-            const ot = o.querySelector<HTMLElement>('.svc-name')
-            if (ot) { ot.style.color = ''; ot.style.fontStyle = '' }
-            o.style.paddingLeft = '0'
-          })
-          clearSats(); resetLabel()
-          if (!isActive) { item.classList.add('orb-active'); showOrbit() }
-        })
-      } else {
-        // Mobile accordion
-        const pills = item.querySelector<HTMLElement>('.mob-pills')
-        if (!pills) return
-        pills.style.display = 'flex'
-
-        // Freeze hover visual state via class — CSS .mob-acc-item rules beat iOS sticky-hover
-        item.classList.add('mob-acc-item')
-
-        const hint = item.querySelector<HTMLElement>('.tap-hint')
-        if (hint) hint.style.display = 'flex'
-
-        // Bug 2 fix: track touch start Y so we can distinguish a tap from a scroll gesture
-        let tapStartY = 0
-
-        item.addEventListener('touchstart', e => {
-          tapStartY = e.touches[0]!.clientY
-        }, { passive: true })
-
-        item.addEventListener('touchend', e => {
-          // If finger moved more than 8px vertically the user was scrolling — ignore
-          if (Math.abs(e.changedTouches[0]!.clientY - tapStartY) > 8) return
-
-          const open = item.classList.contains('acc-open')
-
-          // Bug 1 fix: close ALL open items; active visuals are now tied to .acc-open class
-          // via CSS (.mob-acc-item.acc-open rules), so removing the class is sufficient
-          vp.querySelectorAll<HTMLElement>('.svc-item.acc-open').forEach(o => {
-            o.classList.remove('acc-open')
-            const p = o.querySelector<HTMLElement>('.mob-pills')
-            if (p) p.classList.remove('open')
-            const n = o.querySelector<HTMLElement>('.svc-name')
-            if (n) n.style.color = ''
-          })
-
-          if (!open) {
-            item.classList.add('acc-open')
-            pills.classList.add('open')
-            const n = item.querySelector<HTMLElement>('.svc-name')
-            if (n) n.style.color = '#60B89A'
-          }
-        }, { passive: true })
-      }
-    })
-
-    // Auto-close accordion after 120px of scroll
-    const closeAll = () => {
-      vp.querySelectorAll<HTMLElement>('.svc-item.acc-open').forEach(o => {
-        o.classList.remove('acc-open')
-        const p = o.querySelector<HTMLElement>('.mob-pills')
-        if (p) p.classList.remove('open')
-        const n = o.querySelector<HTMLElement>('.svc-name')
-        if (n) n.style.color = ''
-      })
-    }
-
-    let scrollStart = 0
-    const onScrollStart = () => { scrollStart = window.scrollY }
-    const onScroll = () => {
-      if (Math.abs(window.scrollY - scrollStart) > 120) closeAll()
-    }
-    window.addEventListener('touchstart', onScrollStart, { passive: true })
-    window.addEventListener('scroll', onScroll, { passive: true })
-
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        if (activeRaf) { cancelAnimationFrame(activeRaf); activeRaf = 0 }
-      }
-      // RAF restarts on next hover — no action needed when becoming visible
-    }
-    document.addEventListener('visibilitychange', onVisibilityChange)
-
-    // Gate RAF on viewport visibility — pause when section is off-screen
-    let sectionVisible = false
-    const sectionEl = vp.closest('section')
-    const vpObserver = sectionEl
-      ? new IntersectionObserver(
-          (entries) => {
-            sectionVisible = entries[0]!.isIntersecting
-            if (!sectionVisible && activeRaf) {
-              cancelAnimationFrame(activeRaf)
-              activeRaf = 0
-            }
-            // RAF restarts on next hover when section re-enters viewport
-          },
-          { threshold: 0 },
-        )
-      : null
-    if (sectionEl && vpObserver) vpObserver.observe(sectionEl)
-
-    return () => {
-      clearSats()
-      window.removeEventListener('touchstart', onScrollStart)
-      window.removeEventListener('scroll', onScroll)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      vpObserver?.disconnect()
-    }
-  }, [services, reduced])
+  const orbitalServices = services.map(svc => ({
+    id:               svc.id,
+    name:             getDisplayName(svc, view),
+    businessOutcomes: getOutcomes(svc, 'business'),
+    engineeringStack: getOutcomes(svc, 'engineering'),
+  }))
 
   return (
     <section
@@ -298,271 +259,144 @@ export default function Capabilities({ services }: CapabilitiesProps) {
       id="capabilities"
       aria-label="Capabilities"
       className="relative z-10"
-      style={{ padding: '40px 56px' }}
+      style={{ padding: '80px 0 80px 56px' }}
     >
-      {/* Header */}
-      <div
-        className="flex items-start justify-between flex-wrap"
-        style={{ marginBottom: 56, gap: 36 }}
-      >
-        <div className="reveal">
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 8,
-              color: 'var(--accent)',
-              letterSpacing: '.24em',
-              textTransform: 'uppercase',
-              display: 'block',
-              marginBottom: 14,
-            }}
-          >
-            [ 002 — THE CRAFT ]
-          </span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-fraunces)',
-              fontSize: 'clamp(24px, 4vw, 52px)',
-              fontWeight: 300,
-              color: 'var(--text)',
-              lineHeight: 1.08,
-              letterSpacing: '-.025em',
-            }}
-          >
+      {/* ── Two-column root ───────────────────────────────────────────────── */}
+      <div id="cap-grid">
+
+        {/* ── LEFT COLUMN: Header + Toggle + List ─────────────────────────── */}
+        <div id="cap-left">
+
+          {/* Eyebrow */}
+          <div className="reveal" style={{ marginBottom: 20 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', letterSpacing: '.24em', textTransform: 'uppercase' }}>
+              [ 002 — THE PROOF ]
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h2 className="reveal" style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(28px, 4vw, 54px)', fontWeight: 300, color: 'var(--text)', lineHeight: 1.06, letterSpacing: '-.025em', marginBottom: 16 }}>
             Fields of Mastery
           </h2>
-        </div>
-        <div style={{ textAlign: 'right' }} className="reveal caps-hint">
-          <span
-            style={{
-    fontFamily: 'var(--font-mono)',
-    fontSize: 10,
-    color: 'var(--muted)',
-    letterSpacing: '.14em',
-    fontWeight: 'bold', /* Added this line */
-  }}
-          >
-            Hover a service to explore its tech orbit
-          </span>
-        </div>
-      </div>
 
-      {/* Two-column: list + orbit */}
-      <div
-        id="cap-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 460px',
-          gap: 32,
-          alignItems: 'start',
-        }}
-      >
-        {/* Service list */}
-        <div
-          ref={vpRef}
-          id="svc-list"
-          style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}
-        >
-          {services.map(svc => (
-            <div
-              key={svc.id}
-              className="svc-item reveal"
-              data-techs={(svc.tech_pills ?? []).join(',')}
-              data-svc-name={svc.name}
-              style={{
-                padding: '20px 0',
-                borderBottom: '1px solid var(--border)',
-                transition: 'padding-left .4s cubic-bezier(.16,1,.3,1)',
-                cursor: 'default',
-              }}
-            >
-              <div className="flex items-center justify-between" style={{ columnGap: 16 }}>
-                <div className="flex items-center" style={{ gap: 18, minWidth: 0, flex: '1 1 0' }}>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 8,
-                      color: 'var(--muted)',
-                      letterSpacing: '.08em',
-                      minWidth: 18,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {svc.idx}
-                  </span>
-                  <span
-                    className="svc-name"
-                    style={{
-                      fontFamily: 'var(--font-fraunces)',
-                      fontSize: 'clamp(13px, 1.5vw, 20px)',
-                      fontWeight: 300,
-                      color: 'var(--text)',
-                      letterSpacing: '-.01em',
-                      transition: 'color .3s, font-style .3s',
-                      display: 'block',
-                    }}
-                  >
-                    {svc.name}
-                  </span>
-                  {svc.name_ar && (
-                    <span
-                      className="svc-name-ar"
-                      style={{
-                        fontFamily: 'var(--font-arabic)',
-                        fontSize: 'clamp(11px, 1.2vw, 15px)',
-                        fontWeight: 400,
-                        color: 'var(--muted)',
-                        opacity: 0.6,
-                        direction: 'rtl',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {svc.name_ar}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center" style={{ gap: 10, flexShrink: 0 }}>
-                  <span className="svc-cat-dot" />
-                  <span className="svc-cat">{svc.category}</span>
-                </div>
-              </div>
-              {/* Mobile tap hint — positioned directly below name row, hidden when open */}
-              <div className="tap-hint">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <circle cx="6.5" cy="6.5" r="5.5" stroke="#60B89A" strokeWidth="1" strokeDasharray="2 2" />
-                  <path d="M6.5 3.5v3l2 1.5" stroke="#60B89A" strokeWidth="1" strokeLinecap="round" />
-                </svg>
-                Tap to explore
-              </div>
-              {/* Mobile accordion pills */}
-              <div className="mob-pills">
-                {(svc.tech_pills ?? []).map(pill => (
-                  <span
-                    key={pill}
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 8,
-                      color: '#60B89A',
-                      border: '1px solid rgba(96,184,154,.25)',
-                      background: 'rgba(26,43,39,.85)',
-                      padding: '4px 10px',
-                      letterSpacing: '.08em',
-                      textTransform: 'uppercase',
-                      borderRadius: 50,
-                    }}
-                  >
-                    {pill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Orbit viewport */}
-        <div
-          id="orbit-vp-wrap"
-          style={{
-            position: 'sticky',
-            top: 96,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 14,
-          }}
-        >
-          <div
-            ref={orbitRef}
-            id="orbit-vp"
-            style={{
-              width: 460,
-              height: 460,
-              borderRadius: '50%',
-              border: '2px solid rgba(10,92,71,.22)',
-              position: 'relative',
-              overflow: 'hidden',
-              background: 'radial-gradient(circle at 50% 50%, rgba(10,92,71,.07) 0%, transparent 68%)',
-            }}
-          >
-            {/* Outer rotating dashed ring */}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 6,
-                borderRadius: '50%',
-                border: '1.5px dashed rgba(10,92,71,.38)',
-                animation: reduced ? 'none' : 'spin-cw 38s linear infinite',
-                pointerEvents: 'none',
-              }}
-            />
-            {/* Static guide rings */}
-            <svg
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-              viewBox="0 0 460 460"
-            >
-              <circle cx="230" cy="230" r="180" fill="none" stroke="rgba(10,92,71,.12)" strokeWidth="1" strokeDasharray="4 8" />
-              <circle cx="230" cy="230" r="132" fill="none" stroke="rgba(10,92,71,.09)" strokeWidth="1" strokeDasharray="3 10" />
-              <circle cx="230" cy="230" r="88"  fill="none" stroke="rgba(10,92,71,.07)" strokeWidth="1" strokeDasharray="2 12" />
-              <circle cx="230" cy="230" r="3.5" fill="rgba(10,92,71,.25)" />
-            </svg>
-            {/* Center label */}
-            <div
-              ref={lblRef}
-              id="orbit-center-lbl"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
-                zIndex: 4,
-                padding: 40,
-                textAlign: 'center',
-                gap: 10,
-              }}
-            />
+          {/* Dynamic subtext */}
+          <div style={{ position: 'relative', height: 44, marginBottom: 32, overflow: 'hidden' }}>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={view}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, fontFamily: 'var(--font-sans, system-ui)', fontSize: 'clamp(12px, 1.1vw, 14px)', color: 'var(--text)', opacity: 0.55, lineHeight: 1.6, margin: 0 }}
+              >
+                {SUBTEXT[view]}
+              </motion.p>
+            </AnimatePresence>
           </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 7.5,
-              color: 'var(--muted)',
-              letterSpacing: '.18em',
-              textTransform: 'uppercase',
-              opacity: .45,
-            }}
-          >
-            / Tech Stack Orbits /
-          </span>
+
+          {/* ── Segmented Toggle ──────────────────────────────────────────── */}
+          <div className="reveal" style={{ marginBottom: 36 }}>
+            <div
+              role="group"
+              aria-label="View mode"
+              style={{ display: 'inline-flex', background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 6, padding: 3, gap: 2 }}
+            >
+              {(['business', 'engineering'] as ViewMode[]).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  aria-pressed={view === v}
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 8,
+                    letterSpacing: '.18em',
+                    textTransform: 'uppercase',
+                    padding: '7px 16px',
+                    border: 'none',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    transition: 'all .22s ease',
+                    background: view === v ? 'rgba(96,184,154,.14)' : 'transparent',
+                    color: view === v ? '#60B89A' : 'rgba(255,255,255,.32)',
+                    boxShadow: view === v ? 'inset 0 0 0 1px rgba(96,184,154,.3)' : 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {v === 'business' ? 'Business View' : 'Engineering View'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Service list ─────────────────────────────────────────────── */}
+          <div id="svc-list">
+            {services.map(svc => (
+              <ServiceRow
+                key={svc.id}
+                svc={svc}
+                view={view}
+                isActive={activeServiceId === svc.id}
+                isOpen={openAccordionId === svc.id}
+                reduced={reduced}
+                onMouseEnter={() => setActiveServiceId(svc.id)}
+                onMouseLeave={() => setActiveServiceId(null)}
+                onToggleAccordion={() => setOpenAccordionId(openAccordionId === svc.id ? null : svc.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN: Orbital Visualizer ────────────────────────────── */}
+        <div id="cap-right">
+          <OrbitalVisualizer
+            services={orbitalServices}
+            activeServiceId={activeServiceId}
+            view={view}
+          />
         </div>
       </div>
 
       <style>{`
-        @media (min-width:769px) and (max-width:1100px) {
-          #cap-grid { grid-template-columns: 1fr 360px !important; gap: 24px !important; }
-          #orbit-vp { width: 360px !important; height: 360px !important; }
+        #cap-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          align-items: stretch;
         }
-        @media (max-width:900px) {
-          #capabilities { padding: 64px 24px !important; }
+        #cap-left {
+          padding-right: 56px;
+          border-right: 1px solid var(--border);
+        }
+        #cap-right {
+          position: sticky;
+          top: 0;
+          align-self: start;
+          height: 100vh;
+          position: sticky;
+          overflow: visible;
+        }
+        .acc-chevron { display: none; color: var(--muted); }
+        .acc-body    { display: none; }
+
+        /* Tablet */
+        @media (max-width: 1100px) {
+          #cap-grid { grid-template-columns: 1fr 1fr; gap: 0; }
+          #cap-left { padding-right: 36px; }
+          #cap-right { padding-left: 28px; }
+        }
+
+        /* Mobile: hide orbit, show accordion */
+        @media (max-width: 860px) {
+          #capabilities { padding: 64px 24px 64px 24px !important; }
           #cap-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
-          #orbit-vp-wrap { display: none !important; }
-          .caps-hint { display: none !important; }
-          .svc-cat {
-            opacity: 1 !important;
-            color: var(--muted) !important;
-            font-size: 9px !important;
-            letter-spacing: .1em !important;
-            transform: translateX(0) !important;
-          }
-          /* Fix name wrapping — no inline nowrap, allow natural break */
-          .svc-name { white-space: normal !important; word-break: normal !important; }
-          /* Arabic subtitle: visible by default, hidden when accordion opens */
-          .svc-name-ar { display: block !important; transition: opacity .25s; }
-          .acc-open .svc-name-ar { display: none !important; }
+          #cap-left { padding-right: 0 !important; border-right: none !important; }
+          #cap-right { display: none !important; }
+          .acc-chevron { display: block !important; }
+          .acc-body    { display: block !important; }
+          .svc-row     { cursor: pointer !important; }
         }
-        @media (max-width:480px) {
+        @media (max-width: 480px) {
           #capabilities { padding: 56px 20px !important; }
         }
       `}</style>

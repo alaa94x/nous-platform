@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── Self-hosted Arabic font ─────────────────────────────── */
+/* ── Self-hosted Arabic fallback (Amiri — kept for system-font chain) ─── */
 @font-face {
   font-family: 'Amiri';
   font-style: normal;
@@ -31,7 +31,8 @@
   --border2: rgba(255, 255, 255, 0.06);
   --font-display: var(--font-fraunces, 'Georgia', serif);
   --font-mono:    var(--font-space-mono, 'Courier New', monospace);
-  --font-arabic:  'Amiri', 'Arabic Typesetting', 'Traditional Arabic', serif;
+  /* IBM Plex Sans Arabic: geometric, modern, pairs with Space Mono's mechanical rhythm */
+  --font-arabic:  var(--font-ibm-arabic, 'Amiri', sans-serif);
 }
 
 /* ── Tailwind v4 Theme ───────────────────────────────────── */
@@ -50,8 +51,8 @@
 
 /* ── Skip-to-content link ────────────────────────────────── */
 .skip-link {
-  position: absolute;
-  top: -100%;
+  position: fixed;
+  top: -9999px;
   left: 16px;
   z-index: 9999;
   padding: 10px 20px;
@@ -64,8 +65,9 @@
   text-decoration: none;
   white-space: nowrap;
   border: 2px solid var(--accent);
+  outline: none;
 }
-.skip-link:focus {
+.skip-link:focus-visible {
   top: 16px;
 }
 
@@ -196,6 +198,42 @@ button { font-family: inherit; background: none; border: none; }
 .init-btn:disabled::after { display: none; }
 .init-btn:disabled:hover { color: rgba(255,255,255,.3) !important; }
 .init-btn .btn-txt { position: relative; z-index: 1; }
+
+/* ── Ghost primary CTA (hero frosted button) ─────────────── */
+.init-btn-ghost {
+  position: relative !important;
+  overflow: hidden !important;
+  z-index: 0;
+  background: rgba(5, 18, 15, 0.42) !important;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.30) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.28);
+  color: #FFFFFF !important;
+  transition: background .35s, border-color .35s, box-shadow .35s;
+}
+.init-btn-ghost::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateX(-101%);
+  transition: transform .52s cubic-bezier(.16,1,.3,1);
+  z-index: 0;
+}
+.init-btn-ghost:hover {
+  background: rgba(5, 18, 15, 0.60) !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 12px 40px rgba(0, 0, 0, 0.36);
+  animation: none;
+}
+.init-btn-ghost:hover::after { transform: translateX(0); }
+.init-btn-ghost .btn-txt { position: relative; z-index: 1; color: #FFFFFF; }
 
 /* ── Service category label ──────────────────────────────── */
 .svc-cat {

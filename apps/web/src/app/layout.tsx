@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Space_Mono } from 'next/font/google'
+import { Fraunces, Space_Mono, IBM_Plex_Sans_Arabic } from 'next/font/google'
 import './globals.css'
 import AnalyticsInit from '@/components/analytics/AnalyticsInit'
 import WebVitals from '@/components/WebVitals'
@@ -19,6 +19,14 @@ const spaceMono = Space_Mono({
   display: 'swap',
   weight: ['400', '700'],
   style: ['normal', 'italic'],
+})
+
+// Geometric modern Arabic — matches the mechanical precision of Space Mono
+const ibmPlexArabic = IBM_Plex_Sans_Arabic({
+  subsets: ['arabic'],
+  variable: '--font-ibm-arabic',
+  display: 'swap',
+  weight: ['400', '700'],
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://nous.qa'
@@ -175,7 +183,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${spaceMono.variable} ${ibmPlexArabic.variable}`}>
       <head>
         {/* hreflang — tells search engines which language version is canonical for each locale */}
         <link rel="alternate" hrefLang="en" href="https://nous.qa" />
