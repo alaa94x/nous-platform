@@ -49,10 +49,15 @@ const SEED_PROJECTS: { id: string; name: string; name_ar: string; description: s
 
 async function getPageData() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Public homepage read — the anon key is sufficient (see the public_read_*
+  // policies in supabase/migrations/001_rls_policies.sql). The service role
+  // key bypasses RLS entirely and has no business being used for a plain
+  // public content fetch.
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const fallback = { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS }
 
   if (!url || !key || url.includes('your-project')) {
-    return { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS }
+    return fallback
   }
 
   try {
@@ -61,11 +66,18 @@ async function getPageData() {
       auth: { autoRefreshToken: false, persistSession: false },
     })
 
-    const [{ data: rawSettings }, { data: services }, { data: projects }] = await Promise.all([
+    const query = Promise.all([
       supabase.from('site_settings').select('key, value'),
       supabase.from('services').select('id, idx, name, name_ar, name_tech, name_tech_ar, category, tech_pills, business_pills, business_tags, engineering_tags, business_outcomes, engineering_stack, business_subtext').eq('active', true).order('sort_order'),
       supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url, url').eq('active', true).order('sort_order'),
     ])
+    // A slow/hanging connection shouldn't be able to stall the whole page —
+    // give up and serve seed data if Supabase doesn't answer in time.
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase request timed out')), 4000),
+    )
+
+    const [{ data: rawSettings }, { data: services }, { data: projects }] = await Promise.race([query, timeout])
 
     // Merge DB settings over seeds so missing keys still have defaults
     const settings = { ...SEED_SETTINGS }
@@ -79,7 +91,7 @@ async function getPageData() {
       projects: (projects && projects.length > 0) ? projects : SEED_PROJECTS,
     }
   } catch {
-    return { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS }
+    return fallback
   }
 }
 
@@ -128,7 +140,7 @@ export default async function HomePage() {
           <HowWeWork />
         </SectionBoundary>
         <SectionBoundary name="contact">
-          <ContactCTA />
+          <ContactCTA contactEmail={s['contact_email']} />
         </SectionBoundary>
       </main>
       <Footer

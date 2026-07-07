@@ -1,6 +1,10 @@
 import Link from 'next/link'
 
-export default function ContactCTA() {
+interface ContactCTAProps {
+  contactEmail?: string
+}
+
+export default function ContactCTA({ contactEmail = 'nouslab@icould.com' }: ContactCTAProps) {
   return (
     <section
       id="contact"
@@ -68,7 +72,7 @@ export default function ContactCTA() {
           opacity:       .5,
           paddingLeft:   2,
         }}>
-          nouslab@icould.com
+          {contactEmail}
         </span>
       </div>
 

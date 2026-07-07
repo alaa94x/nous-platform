@@ -207,7 +207,7 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
           {proj.name_ar && (
             <span lang="ar" dir="rtl" style={{
               fontFamily: 'var(--font-arabic)',
-              fontSize: '.54em', color: 'rgba(240,237,234,.52)',
+              fontSize: 'max(13px, .54em)', color: 'rgba(240,237,234,.52)',
               marginRight: 9,
             }}> {proj.name_ar}</span>
           )}
@@ -221,6 +221,9 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
 
         <div ref={lineRef} style={{
           height: 1.5, background: '#60B89A',
+          // Stop short of the visit-arrow circle (34px + gap) so the reveal
+          // line doesn't run underneath/through it on hover.
+          width: proj.url ? 'calc(100% - 50px)' : '100%',
           transform: 'scaleX(0)', transformOrigin: 'left',
           transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
         }} />
@@ -267,7 +270,7 @@ export default function Works({ projects }: WorksProps) {
           display: 'block',
           marginBottom: 14,
         }}>
-          [ 003 — THE ART ]
+          [ THE ART ]
         </span>
         <h2 style={{
           fontFamily: 'var(--font-fraunces)',
@@ -318,20 +321,32 @@ export default function Works({ projects }: WorksProps) {
           border-color: rgba(96,184,154,.28) !important;
         }
 
-        /* Mobile: 1 column, tall enough to show the image */
+        /* Mobile: horizontal scroll-snap carousel instead of a vertical stack —
+           swipe between cards, with a peek of the next one as an affordance.
+           overflow-x lives on #works-grid itself so this never leaks into a
+           page-level horizontal scroll. */
         @media (max-width: 900px) {
-          #works { padding: 64px 24px !important; }
+          #works { padding: 64px 0 64px 24px !important; }
           #works-grid {
-            grid-template-columns: 1fr !important;
-            grid-auto-rows: 340px !important;
+            display: flex !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory !important;
+            -webkit-overflow-scrolling: touch !important;
             gap: 12px !important;
+            padding-right: 24px !important;
+            scrollbar-width: none !important;
+          }
+          #works-grid::-webkit-scrollbar { display: none; }
+          #works-grid > * {
+            flex: 0 0 85% !important;
+            scroll-snap-align: start !important;
+            height: 340px !important;
           }
         }
         @media (max-width: 480px) {
-          #works { padding: 56px 20px !important; }
-          #works-grid {
-            grid-auto-rows: 300px !important;
-          }
+          #works { padding: 56px 0 56px 20px !important; }
+          #works-grid { padding-right: 20px !important; }
+          #works-grid > * { flex-basis: 88% !important; height: 300px !important; }
         }
       `}</style>
     </section>

@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: 'Does Nous build bilingual Arabic/English products?',
-    a: 'Yes. We serve clients in both English and Arabic, and we build bilingual products with native RTL support — not an afterthought retrofit.',
+    a: 'Yes. We serve clients in both English and Arabic, and we build bilingual products with native RTL support, not an afterthought retrofit.',
   },
 ]
 
@@ -150,7 +150,8 @@ export default function About() {
                   itemProp="name"
                   style={{
                     fontFamily: 'var(--font-mono)',
-                    fontSize: 10,
+                    fontSize: 12,
+                    fontWeight: 700,
                     color: 'var(--text)',
                     letterSpacing: '.04em',
                     marginBottom: 14,

@@ -4,12 +4,6 @@ import { ReactNode, useEffect, useRef } from 'react'
 import { useReducedMotion, useScroll, useTransform, motion } from 'motion/react'
 import { useReveal } from '@/components/useReveal'
 
-const langData = [
-  { name: 'nous.', label: '— EN', rtl: false },
-  { name: 'نوس.', label: '— AR', rtl: true },
-  { name: 'nous.', label: '— FR', rtl: false },
-]
-
 interface HeroProps {
   headlineEn?: string
   headlineAr?: string
@@ -41,10 +35,7 @@ export default function Hero({
 }: HeroProps) {
   const reducedRaw = useReducedMotion()
   const reduced = !!reducedRaw
-  const nameRef = useRef<HTMLSpanElement>(null)
-  const labelRef = useRef<HTMLSpanElement>(null)
   const scrambleRef = useRef<HTMLSpanElement>(null)
-  const idxRef = useRef(0)
   const sectionRef = useRef<HTMLElement>(null)
 
   // Parallax: image moves at 40% of scroll speed (slower = depth illusion)
@@ -80,28 +71,6 @@ export default function Hero({
 
     return () => clearTimeout(timeout)
   }, [headlineEn, reduced])
-
-  // Lang cycle driven by animationiteration
-  useEffect(() => {
-    const nameEl = nameRef.current
-    const labelEl = labelRef.current
-    if (!nameEl) return
-
-    const set = (i: number) => {
-      const d = langData[i]!
-      nameEl.textContent = d.name
-      nameEl.style.direction = d.rtl ? 'rtl' : 'ltr'
-      if (labelEl) labelEl.textContent = d.label
-    }
-    set(0)
-
-    const onIter = () => {
-      idxRef.current = (idxRef.current + 1) % langData.length
-      set(idxRef.current)
-    }
-    nameEl.addEventListener('animationiteration', onIter)
-    return () => nameEl.removeEventListener('animationiteration', onIter)
-  }, [])
 
   useReveal(sectionRef)
 
@@ -236,7 +205,7 @@ export default function Hero({
         >
 
           <h1
-            aria-label={`${headlineAr} — ${headlineEn}`}
+            aria-label={`${headlineAr}, ${headlineEn}`}
             className="hero-headline"
             style={{
               marginBlockEnd: 0,
@@ -262,7 +231,7 @@ export default function Hero({
                 className="h-line h-line-ar"
                 style={{
                   fontFamily: 'var(--font-arabic)',
-                  fontSize: 'clamp(72px, 11vw, 130px)',
+                  fontSize: 'clamp(58px, 9vw, 104px)',
                   fontWeight: 700,
                   color: '#FFFFFF',
                   display: 'block',
@@ -469,7 +438,7 @@ export default function Hero({
 
   @media (max-width:480px) {
     .hero-content { inset-inline-start: 16px !important; inset-inline-end: 16px !important; }
-    .h-line-ar { font-size: clamp(68px, 19vw, 110px) !important; line-height: 1.35 !important; padding-block-end: 0.15em !important; text-align: center !important; }
+    .h-line-ar { font-size: clamp(54px, 15vw, 88px) !important; line-height: 1.35 !important; padding-block-end: 0.15em !important; text-align: center !important; }
     .h-line-en { font-size: 14px !important; }
   }
 

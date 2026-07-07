@@ -84,6 +84,10 @@ function getDisplayName(svc: Service, view: ViewMode) {
   return view === 'engineering' ? (svc.name_tech || svc.name) : svc.name
 }
 
+function getDisplayNameAr(svc: Service, view: ViewMode) {
+  return view === 'engineering' ? (svc.name_tech_ar || svc.name_ar) : svc.name_ar
+}
+
 
 function getOutcomes(svc: Service, view: ViewMode): string[] {
   if (view === 'engineering') {
@@ -125,6 +129,7 @@ function ServiceRow({
   onToggleAccordion: () => void
 }) {
   const name     = getDisplayName(svc, view)
+  const nameAr   = getDisplayNameAr(svc, view)
   const tags     = getTags(svc, view)
   const outcomes = getOutcomes(svc, view)
   const { elRef, scramble, reset } = useScramble(name, reduced)
@@ -148,38 +153,62 @@ function ServiceRow({
         style={{ padding: '18px 0', cursor: 'default', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}
       >
         {/* Left: index + name — min-w-0 allows truncation when space is tight */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, minWidth: 0, flex: '1 1 0' }}>
-          {/* Index */}
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.1em', minWidth: 18, flexShrink: 0, opacity: 0.5 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, minWidth: 0, flex: '1 1 0' }}>
+          {/* Index — nudged down to align with the first (English) line, not the
+              vertical center of the now-two-line name block */}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.1em', minWidth: 18, flexShrink: 0, opacity: 0.5, marginTop: '.5em' }}>
             {svc.idx}
           </span>
 
-          {/* Name — truncates with ellipsis before tags ever overlap */}
-          <span
-            ref={elRef}
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 'clamp(13px, 1.4vw, 18px)',
-              fontWeight: 400,
-              color: isActive ? '#7ECFB3' : 'var(--text)',
-              letterSpacing: isActive ? '.04em' : '.01em',
-              textTransform: 'uppercase',
-              transition: 'color .25s, letter-spacing .25s',
-              minWidth: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {name}
-          </span>
+          {/* Name column — EN (scrambled) + optional Arabic beneath, each truncates independently */}
+          <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span
+              ref={elRef}
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 'clamp(13px, 1.4vw, 18px)',
+                fontWeight: 400,
+                color: isActive ? '#7ECFB3' : 'var(--text)',
+                letterSpacing: isActive ? '.04em' : '.01em',
+                textTransform: 'uppercase',
+                transition: 'color .25s, letter-spacing .25s',
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {name}
+            </span>
+            {nameAr && (
+              <span
+                lang="ar"
+                dir="rtl"
+                style={{
+                  fontFamily: 'var(--font-arabic)',
+                  fontSize: 12,
+                  color: 'rgba(240,237,234,.42)',
+                  textAlign: 'right',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {nameAr}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Right: tags + mobile chevron — shrink-0 + nowrap locks width, never wraps */}
+        {/* Right: tags + mobile chevron — shrink-0 + nowrap locks width, never wraps.
+            The tags preview is hidden on mobile (see .svc-tags-preview media rule) —
+            at narrow widths it doesn't fit next to the name and was pushing the
+            chevron off-screen with no scroll affordance to reach it. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, whiteSpace: 'nowrap' }}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={`tags-${svc.id}-${view}`}
+              className="svc-tags-preview"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -221,7 +250,7 @@ function ServiceRow({
               style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}
             >
               {outcomes.map(pill => (
-                <span key={pill} style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#60B89A', border: '1px solid rgba(96,184,154,.25)', background: 'rgba(26,43,39,.85)', padding: '5px 12px', letterSpacing: '.09em', textTransform: 'uppercase', borderRadius: 50 }}>
+                <span key={pill} style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: '#60B89A', border: '1px solid rgba(96,184,154,.25)', background: 'rgba(26,43,39,.85)', padding: '5px 12px', letterSpacing: '.09em', textTransform: 'uppercase', borderRadius: 50 }}>
                   {pill}
                 </span>
               ))}
@@ -270,7 +299,7 @@ export default function Capabilities({ services }: CapabilitiesProps) {
           {/* Eyebrow */}
           <div className="reveal" style={{ marginBottom: 20 }}>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', letterSpacing: '.24em', textTransform: 'uppercase' }}>
-              [ 002 — THE PROOF ]
+              [ THE PROOF ]
             </span>
           </div>
 
@@ -395,6 +424,10 @@ export default function Capabilities({ services }: CapabilitiesProps) {
           .acc-chevron { display: block !important; }
           .acc-body    { display: block !important; }
           .svc-row     { cursor: pointer !important; }
+          /* Tags preview doesn't fit next to the name at this width and was
+             pushing the chevron off-screen with no way to scroll to it. The
+             full outcome/stack pills are already available via tap-to-expand. */
+          .svc-tags-preview { display: none !important; }
         }
         @media (max-width: 480px) {
           #capabilities { padding: 56px 20px !important; }
