@@ -170,7 +170,7 @@ export default function CaseStudyPage({ project }: { project: CaseStudyProject }
               letterSpacing: '.14em',
               textTransform: 'uppercase',
             }}>
-              Project image — add via admin
+              Project image, add via admin
             </p>
           </div>
         )}

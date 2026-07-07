@@ -97,7 +97,7 @@ export default function HowWeWork() {
                 display: 'block',
                 marginBottom: 16,
               }}>
-                {String(i + 1).padStart(2, '0')} - {step.label}
+                {step.label}
               </span>
               <h3 style={{
                 fontFamily: 'var(--font-fraunces)',
@@ -153,7 +153,8 @@ export default function HowWeWork() {
               >
                 <h4 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
+                  fontSize: 11,
+                  fontWeight: 700,
                   color: 'var(--text)',
                   letterSpacing: '.06em',
                   marginBottom: 10,

@@ -241,7 +241,8 @@ export default function ServicePage({ service }: { service: ServicePageData }) {
               <div key={i} style={{ background: 'var(--bg)', padding: '28px 24px' }}>
                 <h3 style={{
                   fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
+                  fontSize: 12,
+                  fontWeight: 700,
                   color: 'var(--text)',
                   letterSpacing: '.04em',
                   marginBottom: 12,

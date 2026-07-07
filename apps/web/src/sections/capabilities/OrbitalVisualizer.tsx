@@ -188,7 +188,6 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
               <circle cx="250" cy="250" r="192" fill="none" stroke="rgba(10,92,71,.1)"  strokeWidth="1" strokeDasharray="3 10" />
               <circle cx="250" cy="250" r="136" fill="none" stroke="rgba(10,92,71,.08)" strokeWidth="1" strokeDasharray="2 12" />
               <circle cx="250" cy="250" r="82"  fill="none" stroke="rgba(10,92,71,.06)" strokeWidth="1" strokeDasharray="2 14" />
-              <circle cx="250" cy="250" r="4"   fill="rgba(96,184,154,.3)" />
             </svg>
           </div>
 

@@ -183,9 +183,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
 
   // Brief preview derived strings
   const briefName   = hasName ? name.split(' ')[0] : null
+  // Phone + email render side by side as one step, so the status names both
+  // rather than singling out whichever one happens to be on the right.
   const briefStatus = !hasName
     ? 'Start with your name'
-    : !hasEmail ? 'Add your email'
+    : !hasEmail ? 'Add your contact details'
     : !hasSvc   ? 'Choose a service'
     : !hasMsg   ? 'Almost there'
     : 'Brief complete'
@@ -199,14 +201,20 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
   const stepOpacity = (i: number) =>
     stepDone(i) || stepActive(i) ? 1 : 0.55
 
-  // On success: clear form, auto-dismiss after 5s
-  useEffect(() => {
-    if (!submitted) return
+  // On success: keep form data visible behind the overlay until it actually
+  // closes (timeout or dismiss), so a refresh during the 5s window doesn't
+  // show a blank form.
+  const closeSuccess = useCallback(() => {
+    setSubmitted(false)
     setName(''); setEmail(''); setPhone(''); setMessage('')
     setSelectedSvc(new Set())
-    const t = setTimeout(() => setSubmitted(false), 5000)
+  }, [])
+
+  useEffect(() => {
+    if (!submitted) return
+    const t = setTimeout(closeSuccess, 5000)
     return () => clearTimeout(t)
-  }, [submitted])
+  }, [submitted, closeSuccess])
 
   const toggleService = useCallback((val: string) => {
     setSelectedSvc(prev => {
@@ -271,7 +279,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           role="status"
           aria-live="polite"
           aria-label="Brief received successfully"
-          onClick={() => setSubmitted(false)}
+          onClick={closeSuccess}
           style={{
             position:           'fixed',
             inset:              0,
@@ -326,7 +334,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             </p>
             <div style={{ width: 40, height: 1, background: 'rgba(96,184,154,.2)', marginBottom: 28 }} />
             <button
-              onClick={() => setSubmitted(false)}
+              onClick={closeSuccess}
               style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.18em', textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer', opacity: .5, padding: '4px 0' }}
             >
               Dismiss
@@ -407,7 +415,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                   onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,.06)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = isSel ? 'rgba(96,184,154,.12)' : '#0a1510' }}
                 >
-                  <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>{c.flag}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: isSel ? '#60B89A' : 'rgba(240,237,234,.45)', letterSpacing: '.04em', flexShrink: 0, minWidth: 20 }}>{c.iso}</span>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSel ? '#60B89A' : '#F0EDEA', letterSpacing: '.06em', flex: 1, textAlign: 'left' }}>{c.name}</span>
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSel ? '#60B89A' : 'rgba(240,237,234,.4)', letterSpacing: '.04em', flexShrink: 0 }}>{c.code}</span>
                   {isSel && (
@@ -509,10 +517,10 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
               </span>
             </div>
 
-            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(24px, 2.6vw, 38px)', fontWeight: 700, fontStyle: 'italic', color: 'var(--text)', letterSpacing: '-.03em', lineHeight: 1.05, marginBottom: 6 }}>
+            <h1 className="cp-form-title" style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(24px, 2.6vw, 38px)', fontWeight: 700, fontStyle: 'italic', color: 'var(--text)', letterSpacing: '-.03em', lineHeight: 1.05, marginBottom: 6 }}>
               Start a project.
             </h1>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.55)', letterSpacing: '.12em', lineHeight: 1.8, marginBottom: 20 }}>
+            <p className="cp-form-subtitle" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.55)', letterSpacing: '.12em', lineHeight: 1.8, marginBottom: 20 }}>
               Fill in the brief. We&apos;ll reply within 24 hours.
             </p>
           </div>
@@ -556,7 +564,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             >
               <div className="cp-contact-row">
 
-                {/* ── Phone (left, first) ── */}
+                {/* ── Phone (left, first — optional) ── */}
                 <div className="cp-contact-cell">
                   <label htmlFor="cp-phone" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
                     Phone <span style={{ opacity: .5, fontSize: 7 }}>(Optional)</span>
@@ -579,7 +587,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                         }}
                         className="cp-dial-trigger"
                       >
-                        <span style={{ fontSize: 16, lineHeight: 1 }}>{selectedCountry.flag}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.6)', letterSpacing: '.04em' }}>{selectedCountry.iso}</span>
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent)', letterSpacing: '.03em' }}>{selectedCountry.code}</span>
                         <svg width="8" height="5" viewBox="0 0 8 5" fill="none" style={{ flexShrink: 0, transition: 'transform .2s', transform: dialOpen ? 'rotate(180deg)' : 'none' }}>
                           <path d="M1 1l3 3 3-3" stroke="#60B89A" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -598,7 +606,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       onBlur={() => setPhoneTouched(true)}
-                      style={{ ...inputStyle, flex: 1, fontSize: 'clamp(15px, 1.6vw, 20px)' }}
+                      style={{ ...inputStyle, flex: 1, fontSize: 'clamp(16px, 1.6vw, 20px)' }}
                     />
                   </div>
                   {phoneError && (
@@ -614,7 +622,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                 {/* ── Vertical divider ── */}
                 <div className="cp-contact-divider" />
 
-                {/* ── Email (right) ── */}
+                {/* ── Email (right, second — required) ── */}
                 <div className="cp-contact-cell">
                   <label htmlFor="cp-email" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
                     Email address
@@ -629,7 +637,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     onBlur={() => setEmailTouched(true)}
-                    style={{ ...inputStyle, fontSize: 'clamp(15px, 1.6vw, 20px)' }}
+                    style={{ ...inputStyle, fontSize: 'clamp(16px, 1.6vw, 20px)' }}
                   />
                   {emailError && (
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
@@ -1058,6 +1066,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           }
           .cp-preview { display: none; }
           .cp-mob-progress { display: block; }
+          /* The progress header already carries the greeting — drop the
+             second, static headline so mobile doesn't show two stacked
+             serif headlines back to back. */
+          .cp-form-title { display: none; }
+          .cp-form-subtitle { margin-top: 12px; }
           .cp-form-col {
             height: auto;
             overflow: visible;
@@ -1095,7 +1108,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
         @media (max-width: 640px) {
           .cp-contact-row {
             grid-template-columns: 1fr;
-            gap: 0;
+            gap: 24px 0;
           }
           .cp-contact-divider { display: none; }
         }
@@ -1103,7 +1116,8 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
         /* ── Small mobile: < 480px ── */
         @media (max-width: 480px) {
           .cp-form-header { padding: 20px 20px 0; }
-          .cp-steps-scroll { padding: 0 20px; }
+          /* Left/right only — keep the bottom padding reserved above for the fixed submit bar */
+          .cp-steps-scroll { padding-left: 20px; padding-right: 20px; }
         }
 
         /* ── Success overlay animations ── */
