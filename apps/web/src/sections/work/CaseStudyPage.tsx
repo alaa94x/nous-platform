@@ -149,7 +149,7 @@ export default function CaseStudyPage({ project }: { project: CaseStudyProject }
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={project.imageUrl}
-            alt={`${project.name} — project screenshot`}
+            alt={`${project.name}, project screenshot`}
             style={{ width: '100%', height: 480, objectFit: 'cover', marginBottom: 64, display: 'block' }}
           />
         ) : (

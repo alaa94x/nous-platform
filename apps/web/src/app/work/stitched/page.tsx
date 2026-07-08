@@ -6,22 +6,30 @@ import Footer, { DEFAULT_CONTACT_ITEMS, DEFAULT_SOCIAL_ITEMS } from '@/sections/
 import CaseStudyPage from '@/sections/work/CaseStudyPage'
 
 export const metadata: Metadata = {
-  title: 'Stitched — Case Study',
+  title: 'Stitched, Case Study',
   description:
-    'How Nous designed and developed the Stitched e-commerce platform — a premium fashion brand built on Shopify with a custom headless storefront and integrated CRM.',
+    'How Nous designed and developed the Stitched e-commerce platform, a premium fashion brand built on Shopify with a custom headless storefront and integrated CRM.',
   alternates: { canonical: 'https://nous.qa/work/stitched' },
   openGraph: {
-    title: 'Stitched — Case Study | Nous',
+    title: 'Stitched, Case Study | Nous',
     description: 'Premium fashion e-commerce built by Nous. Shopify headless, custom storefront, CRM integration.',
     url: 'https://nous.qa/work/stitched',
+    alternateLocale: ['ar_QA'],
     type: 'article',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Stitched, Case Study | Nous',
+    description: 'Premium fashion e-commerce built by Nous. Shopify headless, custom storefront, CRM integration.',
+    images: ['/opengraph-image'],
   },
 }
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'CreativeWork',
-  name: 'Stitched — E-Commerce Platform',
+  name: 'Stitched, E-Commerce Platform',
   url: 'https://nous.qa/work/stitched',
   creator: {
     '@type': 'Organization',
@@ -43,7 +51,7 @@ const project = {
   externalUrl: 'https://stitchedqa.com',
   services: ['E-Commerce Solutions', 'Full-Stack Engineering', 'Design & Motion'],
   overview:
-    'Stitched is a Doha-based premium fashion brand serving customers across Qatar. Nous was brought in to design and build their full e-commerce experience — from brand identity and storefront design through to the technical build on Shopify.',
+    'Stitched is a Doha-based premium fashion brand serving customers across Qatar. Nous was brought in to design and build their full e-commerce experience, from brand identity and storefront design through to the technical build on Shopify.',
   challenge:
     'The client needed a bilingual (Arabic/English) storefront that felt premium and editorial, integrated with their existing CRM and inventory systems, and optimized for mobile-first Gulf shoppers who primarily use WhatsApp for post-purchase support.',
   solution:

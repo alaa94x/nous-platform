@@ -26,7 +26,7 @@ export function ContactNotification({
           {/* Header bar */}
           <Section style={{ background: '#0A5C47', padding: '20px 32px', borderRadius: '4px 4px 0 0' }}>
             <Text style={{ margin: 0, fontSize: 9, letterSpacing: '0.22em', color: '#a8d5c4', textTransform: 'uppercase' }}>
-              [ NOUS — NEW BRIEF ]
+              [ NOUS, NEW BRIEF ]
             </Text>
           </Section>
 

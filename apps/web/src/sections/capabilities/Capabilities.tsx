@@ -146,7 +146,15 @@ function ServiceRow({
         className="svc-row"
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
+        onFocus={handleEnter}
+        onBlur={handleLeave}
         onClick={onToggleAccordion}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onToggleAccordion()
+          }
+        }}
         role="button"
         tabIndex={0}
         aria-expanded={isOpen}
@@ -187,7 +195,7 @@ function ServiceRow({
                 style={{
                   fontFamily: 'var(--font-arabic)',
                   fontSize: 12,
-                  color: 'rgba(240,237,234,.42)',
+                  color: 'var(--muted)',
                   textAlign: 'right',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -347,7 +355,7 @@ export default function Capabilities({ services }: CapabilitiesProps) {
                     cursor: 'pointer',
                     transition: 'all .22s ease',
                     background: view === v ? 'rgba(96,184,154,.14)' : 'transparent',
-                    color: view === v ? '#60B89A' : 'rgba(255,255,255,.32)',
+                    color: view === v ? '#60B89A' : 'rgba(255,255,255,.65)',
                     boxShadow: view === v ? 'inset 0 0 0 1px rgba(96,184,154,.3)' : 'none',
                     whiteSpace: 'nowrap',
                   }}

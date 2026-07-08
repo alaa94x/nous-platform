@@ -22,7 +22,7 @@ export async function sendContactNotification(data: ContactNotificationProps): P
     from:    `Nous Notifications <${fromDomain}>`,
     to:      [notifyTo],
     replyTo: data.email,
-    subject: `New Brief from ${data.name} — ${data.services.join(', ')}`,
+    subject: `New Brief from ${data.name}: ${data.services.join(', ')}`,
     html,
   })
 

@@ -4,7 +4,7 @@ import Noise              from '@/components/noise/Noise'
 import Hero               from '@/sections/hero/Hero'
 import Capabilities       from '@/sections/capabilities/Capabilities'
 import Works              from '@/sections/works/Works'
-import About              from '@/sections/about/About'
+import About, { faqs }    from '@/sections/about/About'
 import Testimonials       from '@/sections/testimonials/Testimonials'
 import HowWeWork          from '@/sections/howwework/HowWeWork'
 import ContactCTA         from '@/sections/contact/ContactCTA'
@@ -45,6 +45,31 @@ const SEED_SERVICES = [
 // Real data lives in Supabase — run migration 006_seed_real_projects.sql
 const SEED_PROJECTS: { id: string; name: string; name_ar: string; description: string; year: string; tags: string[]; image_url: string | null; url: string | null }[] = []
 
+// Real data lives in Supabase — run migration 008_testimonials.sql
+const SEED_TESTIMONIALS: { quote: string; author: string; role: string | null; initials: string | null }[] = [
+  {
+    quote:
+      'Nous delivered our Shopify storefront in six weeks, start to finish. The Arabic RTL layout was flawless on day one, and the team communicated clearly throughout. We would not build with anyone else in Qatar.',
+    author: 'Founder',
+    role: 'Stitched',
+    initials: 'S',
+  },
+  {
+    quote:
+      'We needed a platform that felt as premium as our in-store experience. Nous understood that immediately. The result is a site that earns the trust of our customers before they even read the copy.',
+    author: 'Director',
+    role: 'Elite Collections',
+    initials: 'E',
+  },
+  {
+    quote:
+      'The team at Nous built us a custom CMS that our non-technical staff adopted on day one. The site performs beautifully on mobile, which is where 90 percent of our visitors are.',
+    author: 'Creative Lead',
+    role: 'The Seventh Sense',
+    initials: 'T',
+  },
+]
+
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 async function getPageData() {
@@ -54,7 +79,7 @@ async function getPageData() {
   // key bypasses RLS entirely and has no business being used for a plain
   // public content fetch.
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  const fallback = { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS }
+  const fallback = { settings: SEED_SETTINGS, services: SEED_SERVICES, projects: SEED_PROJECTS, testimonials: SEED_TESTIMONIALS }
 
   if (!url || !key || url.includes('your-project')) {
     return fallback
@@ -70,6 +95,7 @@ async function getPageData() {
       supabase.from('site_settings').select('key, value'),
       supabase.from('services').select('id, idx, name, name_ar, name_tech, name_tech_ar, category, tech_pills, business_pills, business_tags, engineering_tags, business_outcomes, engineering_stack, business_subtext').eq('active', true).order('sort_order'),
       supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url, url').eq('active', true).order('sort_order'),
+      supabase.from('testimonials').select('quote, author, role, initials').eq('active', true).order('sort_order'),
     ])
     // A slow/hanging connection shouldn't be able to stall the whole page —
     // give up and serve seed data if Supabase doesn't answer in time.
@@ -77,7 +103,7 @@ async function getPageData() {
       setTimeout(() => reject(new Error('Supabase request timed out')), 4000),
     )
 
-    const [{ data: rawSettings }, { data: services }, { data: projects }] = await Promise.race([query, timeout])
+    const [{ data: rawSettings }, { data: services }, { data: projects }, { data: testimonials }] = await Promise.race([query, timeout])
 
     // Merge DB settings over seeds so missing keys still have defaults
     const settings = { ...SEED_SETTINGS }
@@ -89,16 +115,31 @@ async function getPageData() {
       settings,
       services: (services && services.length > 0) ? services : SEED_SERVICES,
       projects: (projects && projects.length > 0) ? projects : SEED_PROJECTS,
+      testimonials: (testimonials && testimonials.length > 0) ? testimonials : SEED_TESTIMONIALS,
     }
   } catch {
     return fallback
   }
 }
 
+// ── Structured data ───────────────────────────────────────────────────────────
+// Built from the same `faqs` array About.tsx renders, so the JSON-LD can never
+// drift out of sync with the visible "Common Questions" content.
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(({ q, a }) => ({
+    '@type': 'Question',
+    name: q,
+    acceptedAnswer: { '@type': 'Answer', text: a },
+  })),
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function HomePage() {
-  const { settings: s, services, projects } = await getPageData()
+  const { settings: s, services, projects, testimonials } = await getPageData()
 
   // Parse footer JSON config with fallback to defaults
   let contactItems: ContactItem[] = DEFAULT_CONTACT_ITEMS
@@ -110,6 +151,25 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Hero image preloads — homepage-only, hoisted to <head> by Next.js.
+          These used to live in the root layout and preloaded on every route,
+          competing with each page's own critical resources for no benefit. */}
+      <link rel="preload" as="image" href="/hero-1920.avif" type="image/avif" />
+      <link
+        rel="preload"
+        as="image"
+        href="/hero-1920.webp"
+        type="image/webp"
+        // @ts-expect-error — imagesrcset is valid HTML but not in React's type defs yet
+        imagesrcset="/hero-828.webp 828w, /hero-1200.webp 1200w, /hero-1920.webp 1920w"
+        imagesizes="100vw"
+      />
+      {/* FAQPage JSON-LD — only valid here, since the "Common Questions"
+          content it describes is only visible on the homepage (see About.tsx). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <Cursor />
       <Noise />
       <Nav siteName={s['site_name']} />
@@ -134,7 +194,7 @@ export default async function HomePage() {
           <About />
         </SectionBoundary>
         <SectionBoundary name="testimonials">
-          <Testimonials />
+          <Testimonials testimonials={testimonials} />
         </SectionBoundary>
         <SectionBoundary name="how-we-work">
           <HowWeWork />

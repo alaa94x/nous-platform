@@ -8,13 +8,21 @@ import ServicePage, { type ServicePageData } from '@/sections/service/ServicePag
 export const metadata: Metadata = {
   title: 'Full-Stack Web Development in Doha, Qatar',
   description:
-    'Nous builds web applications and APIs for businesses in Qatar — React, Next.js, Node.js, Go, Python, and PostgreSQL. Senior full-stack engineering based in Doha.',
+    'Nous builds web applications and APIs for businesses in Qatar, React, Next.js, Node.js, Go, Python, and PostgreSQL. Senior full-stack engineering based in Doha.',
   alternates: { canonical: 'https://nous.qa/services/full-stack' },
   openGraph: {
-    title: 'Full-Stack Web Development Company in Doha, Qatar — Nous',
+    title: 'Full-Stack Web Development Company in Doha, Qatar | Nous',
     description: 'React, Next.js, Node.js, and API development for Qatar businesses.',
     url: 'https://nous.qa/services/full-stack',
+    alternateLocale: ['ar_QA'],
     type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Full-Stack Web Development Company in Doha, Qatar | Nous',
+    description: 'React, Next.js, Node.js, and API development for Qatar businesses.',
+    images: ['/opengraph-image'],
   },
 }
 
@@ -34,7 +42,7 @@ const service: ServicePageData = {
   slug: 'full-stack',
   tagline: 'Web applications and APIs built for scale, in Doha.',
   description:
-    'We build production-grade web applications from frontend to backend — React and Next.js on the frontend, Node.js, Go, or Python on the backend, PostgreSQL or Supabase as the data layer. We are a senior team that writes clean, maintainable code with no dependency on offshore sub-contractors.',
+    'We build production-grade web applications from frontend to backend: React and Next.js on the frontend, Node.js, Go, or Python on the backend, PostgreSQL or Supabase as the data layer. We are a senior team that writes clean, maintainable code with no dependency on offshore sub-contractors.',
   whatWeDeliver: [
     'React and Next.js web applications (App Router, RSC)',
     'REST and GraphQL API design and development',

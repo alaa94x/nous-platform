@@ -230,7 +230,21 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
   }, [])
 
   const handleSubmit = async () => {
-    if (!isReady || submitting) return
+    if (submitting) return
+    // The submit button stays enabled (not HTML `disabled`) even while the
+    // brief is incomplete, so a click here needs its own feedback path —
+    // otherwise it silently does nothing, sighted or not.
+    if (!isReady) {
+      const firstInvalid =
+        !hasName  ? { id: 'cp-name',    msg: 'Enter your name to continue.' } :
+        !hasPhone ? { id: 'cp-phone',   msg: 'Enter a valid phone number, or clear the field to leave it blank.' } :
+        !hasEmail ? { id: 'cp-email',   msg: 'Enter a valid email address to continue.' } :
+        !hasSvc   ? { id: null,         msg: 'Select at least one service to continue.' } :
+                    { id: 'cp-message', msg: 'Describe your vision to continue.' }
+      setError(firstInvalid.msg)
+      if (firstInvalid.id) document.getElementById(firstInvalid.id)?.focus()
+      return
+    }
     setSubmitting(true)
     setError('')
     try {
@@ -501,6 +515,27 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
 
           {/* ── Header: never scrolls ── */}
           <div className="cp-form-header">
+            {/* Screen-reader progress announcement, independent of viewport:
+                the visual progress bars above are either aria-hidden (desktop
+                preview) or display:none on desktop (.cp-mob-progress), so this
+                is the only progress feedback assistive tech gets on any size. */}
+            <span
+              aria-live="polite"
+              style={{
+                position: 'absolute',
+                width: 1,
+                height: 1,
+                padding: 0,
+                margin: -1,
+                overflow: 'hidden',
+                clip: 'rect(0,0,0,0)',
+                whiteSpace: 'nowrap',
+                border: 0,
+              }}
+            >
+              {briefStatus}, {pct}% complete
+            </span>
+
             {/* Mobile progress bar (visible < 1024px only) */}
             <div className="cp-mob-progress">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
@@ -603,6 +638,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                       placeholder="5X XXX XXXX"
                       aria-label="Phone number (optional)"
                       aria-invalid={phoneError}
+                      aria-describedby={phoneError ? 'cp-phone-error' : undefined}
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
                       onBlur={() => setPhoneTouched(true)}
@@ -610,7 +646,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                     />
                   </div>
                   {phoneError && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
+                    <span id="cp-phone-error" style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
                       Enter a valid number (digits only)
                     </span>
                   )}
@@ -634,13 +670,14 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                     placeholder="hello@company.qa"
                     aria-required="true"
                     aria-invalid={emailError}
+                    aria-describedby={emailError ? 'cp-email-error' : undefined}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     onBlur={() => setEmailTouched(true)}
                     style={{ ...inputStyle, fontSize: 'clamp(16px, 1.6vw, 20px)' }}
                   />
                   {emailError && (
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
+                    <span id="cp-email-error" style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
                       Enter a valid email address
                     </span>
                   )}

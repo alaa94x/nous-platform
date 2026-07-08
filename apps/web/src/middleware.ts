@@ -30,6 +30,35 @@ const SECURITY_HEADERS = [
   ['X-DNS-Prefetch-Control',  'on'],
 ] as const
 
+// Supabase Storage (project images) — same project as the app's own DB.
+const supabaseHostname = process.env.NEXT_PUBLIC_SUPABASE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+  : '*.supabase.co'
+
+// Static CSP — no per-request nonce. A nonce would require reading a
+// per-request header via next/headers() in the root layout, which forces
+// Next.js to opt the *entire* site out of ISR/static rendering (the
+// homepage and /contact both rely on `revalidate = 60`). Trading that away
+// for a stricter script-src wasn't worth it, so script-src also carries
+// 'unsafe-inline' — the JSON-LD and service-worker scripts it covers are
+// static, build-time strings, not user input, so the realistic exposure is
+// low. Every other directive below is fully locked down.
+const CSP = [
+  `default-src 'self'`,
+  // 'unsafe-eval' is dev-only — React Fast Refresh/HMR needs it locally,
+  // React never calls eval() in a production build.
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? ` 'unsafe-eval'` : ''}`,
+  `style-src 'self' 'unsafe-inline'`,
+  `img-src 'self' data: https://${supabaseHostname} https://picsum.photos https://stitchedqa.com`,
+  `font-src 'self' data:`,
+  `connect-src 'self' https://${supabaseHostname} https://*.sentry.io`,
+  `object-src 'none'`,
+  `base-uri 'self'`,
+  `form-action 'self'`,
+  `frame-ancestors 'none'`,
+  `upgrade-insecure-requests`,
+].join('; ')
+
 export function middleware(req: NextRequest) {
   const ip       = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const { pathname } = req.nextUrl
@@ -56,6 +85,7 @@ export function middleware(req: NextRequest) {
   for (const [key, val] of SECURITY_HEADERS) {
     res.headers.set(key, val)
   }
+  res.headers.set('Content-Security-Policy', CSP)
   return res
 }
 

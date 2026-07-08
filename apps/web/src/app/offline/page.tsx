@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Offline — Nous',
+  title: 'Offline | Nous',
   robots: { index: false },
 }
 

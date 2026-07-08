@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: '/manifest.json',
   title: {
-    default: 'Nous — AI, Web & App Development Agency in Doha, Qatar',
-    template: '%s — Nous',
+    default: 'Nous, AI, Web & App Development Agency in Doha, Qatar',
+    template: '%s | Nous',
   },
   description:
     'Nous is a Doha, Qatar-based technology agency specializing in AI, full-stack engineering, mobile development, e-commerce, cloud infrastructure, and design. We transform complex visions into intelligent systems.',
@@ -46,16 +46,20 @@ export const metadata: Metadata = {
     languages: { 'en': 'https://nous.qa', 'ar-QA': 'https://nous.qa/ar' },
   },
   openGraph: {
-    title: 'Nous — AI, Web & App Development Agency in Doha, Qatar',
+    title: 'Nous, AI, Web & App Development Agency in Doha, Qatar',
     description: 'Quiet luxury. Engineered systems. Doha, Qatar.',
     url: 'https://nous.qa',
     siteName: 'Nous',
     locale: 'en_US',
+    // TODO: once dedicated /ar routes ship, set this dynamically per-locale
+    // instead of listing it sitewide (see hreflang links below for the
+    // equivalent HTML-level signal already in place).
+    alternateLocale: ['ar_QA'],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Nous — AI, Web & App Development Agency in Doha, Qatar',
+    title: 'Nous, AI, Web & App Development Agency in Doha, Qatar',
     description: 'Quiet luxury. Engineered systems. Doha, Qatar.',
   },
   robots: { index: true, follow: true },
@@ -69,10 +73,13 @@ export const metadata: Metadata = {
   },
 }
 
-const jsonLd = [
-  {
-    '@context': 'https://schema.org',
-    '@type': ['Organization', 'LocalBusiness'],
+// Sitewide only — this describes the business itself, so it's valid on every
+// page. Page-specific structured data (FAQPage, CreativeWork, etc.) belongs on
+// the page that actually shows that content, not here (see page.tsx for the
+// homepage FAQ schema).
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': ['Organization', 'LocalBusiness'],
     '@id': 'https://nous.qa/#organization',
     name: 'Nous',
     url: 'https://nous.qa',
@@ -118,62 +125,15 @@ const jsonLd = [
       '@type': 'OfferCatalog',
       name: 'Technology Services',
       itemListElement: [
-        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Artificial Intelligence Development', description: 'LLMs, RAG, AI agents, NLP, TensorFlow, PyTorch — custom AI systems built for Qatar businesses.' } },
-        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Full-Stack Web Development', description: 'React, Next.js, Node.js, Go, Python, PostgreSQL — end-to-end web applications and APIs.' } },
-        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Mobile App Development', description: 'React Native, Swift, Flutter, Kotlin — iOS and Android apps built for the Gulf market.' } },
-        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'E-Commerce Solutions', description: 'Shopify, headless commerce, Stripe, WooCommerce — online stores and retail platforms.' } },
-        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cloud Infrastructure', description: 'AWS, GCP, Docker, Kubernetes, Terraform, CI/CD — scalable cloud architecture and DevOps.' } },
-        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Design & Motion', description: 'Figma, Framer, GSAP, Three.js — premium UI/UX design and motion design.' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Artificial Intelligence Development', description: 'LLMs, RAG, AI agents, NLP, TensorFlow, PyTorch: custom AI systems built for Qatar businesses.' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Full-Stack Web Development', description: 'React, Next.js, Node.js, Go, Python, PostgreSQL: end-to-end web applications and APIs.' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Mobile App Development', description: 'React Native, Swift, Flutter, Kotlin: iOS and Android apps built for the Gulf market.' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'E-Commerce Solutions', description: 'Shopify, headless commerce, Stripe, WooCommerce: online stores and retail platforms.' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cloud Infrastructure', description: 'AWS, GCP, Docker, Kubernetes, Terraform, CI/CD: scalable cloud architecture and DevOps.' } },
+        { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Design & Motion', description: 'Figma, Framer, GSAP, Three.js: premium UI/UX design and motion design.' } },
       ],
     },
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: 'What does Nous do?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Nous is a technology agency based in Doha, Qatar. We design and build AI systems, web applications, mobile apps, e-commerce platforms, and cloud infrastructure for businesses in Qatar and across the Gulf region.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Where is Nous located?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Nous is based in Doha, Qatar. We work with clients across Qatar, the UAE, Saudi Arabia, and the broader GCC region.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'What technologies does Nous build with?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'We work with React, Next.js, Node.js, Python, Go, React Native, Swift, Flutter, Shopify, AWS, GCP, Docker, Kubernetes, and leading AI frameworks including LLMs, RAG pipelines, TensorFlow, and PyTorch.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'How quickly does Nous respond to inquiries?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'We reply to all project inquiries within 24 hours. You can also reach us immediately via WhatsApp at +974 7748 4004.',
-        },
-      },
-      {
-        '@type': 'Question',
-        name: 'Does Nous work in Arabic?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes. Nous serves clients in both English and Arabic, and we build bilingual products that support both LTR and RTL interfaces.',
-        },
-      },
-    ],
-  },
-]
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -185,51 +145,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${fraunces.variable} ${spaceMono.variable} ${ibmPlexArabic.variable}`}>
       <head>
-        {/* hreflang — tells search engines which language version is canonical for each locale */}
+        {/* hreflang — tells search engines which language version is canonical for each locale.
+            TODO: the ar-QA target below (/ar) does not exist as a real route yet, the site is
+            English-only with inline Arabic content. Once dedicated /ar pages ship, point this
+            at real localized routes and add matching alternates.languages entries per page. */}
         <link rel="alternate" hrefLang="en" href="https://nous.qa" />
         <link rel="alternate" hrefLang="ar-QA" href="https://nous.qa/ar" />
         <link rel="alternate" hrefLang="x-default" href="https://nous.qa" />
-        {/* Hero image — preload AVIF for supporting browsers, WebP as universal fallback.
-            imagesrcset on the WebP link lets the browser pick the right breakpoint file
-            before JS executes, eliminating the LCP discovery delay. */}
-        <link
-          rel="preload"
-          as="image"
-          href="/hero-1920.avif"
-          type="image/avif"
+        {/* JSON-LD: Organization/LocalBusiness — valid sitewide, unlike the
+            homepage-specific hero image preload and FAQ schema which used to
+            live here (see page.tsx) and were leaking onto every route. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
-        <link
-          rel="preload"
-          as="image"
-          href="/hero-1920.webp"
-          type="image/webp"
-          // @ts-expect-error — imagesrcset is valid HTML but not in React's type defs yet
-          imagesrcset="/hero-828.webp 828w, /hero-1200.webp 1200w, /hero-1920.webp 1920w"
-          imagesizes="100vw"
-        />
-        {/* Amiri Arabic font — preload the subset for LCP */}
-        <link
-          rel="preload"
-          href="/fonts/amiri-400-arabic.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="preload"
-          href="/fonts/amiri-700-arabic.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-        {/* JSON-LD structured data — array of graph nodes */}
-        {jsonLd.map((node, i) => (
-          <script
-            key={i}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(node) }}
-          />
-        ))}
         {/* Service Worker registration */}
         <script dangerouslySetInnerHTML={{ __html: `
           if ('serviceWorker' in navigator) {
