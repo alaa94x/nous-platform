@@ -228,6 +228,7 @@ export default function Hero({
             >
               <span
                 lang="ar"
+                dir="rtl"
                 className="h-line h-line-ar"
                 style={{
                   fontFamily: 'var(--font-arabic)',

@@ -8,13 +8,21 @@ import ServicePage, { type ServicePageData } from '@/sections/service/ServicePag
 export const metadata: Metadata = {
   title: 'Mobile App Development in Doha, Qatar',
   description:
-    'Nous builds iOS and Android apps for businesses in Qatar — React Native, Swift, Flutter, and Kotlin. Mobile app development agency based in Doha.',
+    'Nous builds iOS and Android apps for businesses in Qatar, React Native, Swift, Flutter, and Kotlin. Mobile app development agency based in Doha.',
   alternates: { canonical: 'https://nous.qa/services/mobile' },
   openGraph: {
-    title: 'Mobile App Development in Doha, Qatar — Nous',
+    title: 'Mobile App Development in Doha, Qatar | Nous',
     description: 'iOS and Android apps built for the Gulf market. React Native, Swift, Flutter, Kotlin.',
     url: 'https://nous.qa/services/mobile',
+    alternateLocale: ['ar_QA'],
     type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Mobile App Development in Doha, Qatar | Nous',
+    description: 'iOS and Android apps built for the Gulf market. React Native, Swift, Flutter, Kotlin.',
+    images: ['/opengraph-image'],
   },
 }
 

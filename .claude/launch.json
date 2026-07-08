@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@nous/web", "dev"],
       "port": 3002
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@nous/admin", "dev"],
+      "port": 3001
     }
   ]
 }

@@ -44,11 +44,15 @@ export async function POST(req: NextRequest) {
   const { name, email, phone, services, message } = parsed.data
 
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY
+  // Public form submission — the anon key is sufficient (see the
+  // public_insert_contacts policy in supabase/migrations/001_rls_policies.sql).
+  // The service role key bypasses RLS entirely and isn't needed for an insert
+  // this policy already allows.
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (supabaseUrl && serviceKey) {
+  if (supabaseUrl && anonKey) {
     const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(supabaseUrl, serviceKey, {
+    const supabase = createClient(supabaseUrl, anonKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     })
 

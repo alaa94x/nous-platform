@@ -153,7 +153,7 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
         position: 'absolute', top: 20, left: 24, right: 24,
         display: 'flex', justifyContent: 'space-between', zIndex: 2,
       }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'rgba(240,237,234,.38)', letterSpacing: '.12em' }}>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.12em' }}>
           {proj.year}
         </span>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#60B89A', letterSpacing: '.12em' }}>
@@ -215,7 +215,7 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
 
         <p style={{
           fontFamily: 'var(--font-mono)', fontSize: 8.5,
-          color: 'rgba(240,237,234,.4)', letterSpacing: '.03em',
+          color: 'var(--muted)', letterSpacing: '.03em',
           lineHeight: 1.75, marginBottom: 12,
         }}>{proj.description}</p>
 

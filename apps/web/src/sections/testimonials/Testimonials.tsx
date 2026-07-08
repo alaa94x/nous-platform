@@ -1,30 +1,19 @@
-// Server component — plain HTML, AEO-friendly. Replace seed data with real quotes.
+// Server component — plain HTML, AEO-friendly.
 
-const testimonials = [
-  {
-    quote:
-      'Nous delivered our Shopify storefront in six weeks, start to finish. The Arabic RTL layout was flawless on day one, and the team communicated clearly throughout. We would not build with anyone else in Qatar.',
-    author: 'Founder',
-    role: 'Stitched',
-    initials: 'S',
-  },
-  {
-    quote:
-      'We needed a platform that felt as premium as our in-store experience. Nous understood that immediately. The result is a site that earns the trust of our customers before they even read the copy.',
-    author: 'Director',
-    role: 'Elite Collections',
-    initials: 'E',
-  },
-  {
-    quote:
-      'The team at Nous built us a custom CMS that our non-technical staff adopted on day one. The site performs beautifully on mobile, which is where 90 percent of our visitors are.',
-    author: 'Creative Lead',
-    role: 'The Seventh Sense',
-    initials: 'T',
-  },
-]
+interface Testimonial {
+  quote:    string
+  author:   string
+  role:     string | null
+  initials: string | null
+}
 
-export default function Testimonials() {
+interface TestimonialsProps {
+  testimonials: Testimonial[]
+}
+
+export default function Testimonials({ testimonials }: TestimonialsProps) {
+  if (testimonials.length === 0) return null
+
   return (
     <section
       id="testimonials"

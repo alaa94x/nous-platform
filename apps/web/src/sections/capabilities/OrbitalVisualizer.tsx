@@ -214,7 +214,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                       fontFamily: 'var(--font-mono)',
                       fontSize: 'clamp(13px, 1.6vw, 20px)',
                       fontWeight: 400,
-                      color: 'rgba(96,184,154,.28)',
+                      color: 'rgba(96,184,154,.85)',
                       letterSpacing: '.08em', lineHeight: 1.4,
                       textTransform: 'uppercase',
                     }}>
@@ -223,7 +223,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                     <span style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: 9,
-                      color: 'rgba(96,184,154,.16)',
+                      color: 'rgba(96,184,154,.78)',
                       letterSpacing: '.22em', textTransform: 'uppercase',
                     }}>
                       to explore its orbit
@@ -270,7 +270,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                 style={{
                   fontFamily: 'var(--font-mono)', fontSize: 7,
                   letterSpacing: '.2em', textTransform: 'uppercase',
-                  color: 'rgba(96,184,154,.22)', display: 'block', whiteSpace: 'nowrap',
+                  color: 'rgba(96,184,154,.78)', display: 'block', whiteSpace: 'nowrap',
                 }}
               >
                 {view === 'engineering' ? '// engineering view' : '// business view'}

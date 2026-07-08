@@ -6,22 +6,30 @@ import Footer, { DEFAULT_CONTACT_ITEMS, DEFAULT_SOCIAL_ITEMS } from '@/sections/
 import CaseStudyPage from '@/sections/work/CaseStudyPage'
 
 export const metadata: Metadata = {
-  title: 'Elite Collections — Case Study',
+  title: 'Elite Collections, Case Study',
   description:
-    'How Nous built the Elite Collections digital platform — a luxury retail brand with a custom web presence, product catalog, and booking system in Doha, Qatar.',
+    'How Nous built the Elite Collections digital platform, a luxury retail brand with a custom web presence, product catalog, and booking system in Doha, Qatar.',
   alternates: { canonical: 'https://nous.qa/work/elite-collections' },
   openGraph: {
-    title: 'Elite Collections — Case Study | Nous',
+    title: 'Elite Collections, Case Study | Nous',
     description: 'Luxury retail platform designed and developed by Nous in Doha, Qatar.',
     url: 'https://nous.qa/work/elite-collections',
+    alternateLocale: ['ar_QA'],
     type: 'article',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Elite Collections, Case Study | Nous',
+    description: 'Luxury retail platform designed and developed by Nous in Doha, Qatar.',
+    images: ['/opengraph-image'],
   },
 }
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'CreativeWork',
-  name: 'Elite Collections — Digital Platform',
+  name: 'Elite Collections, Digital Platform',
   url: 'https://nous.qa/work/elite-collections',
   creator: {
     '@type': 'Organization',
@@ -43,7 +51,7 @@ const project = {
   externalUrl: null,
   services: ['Full-Stack Engineering', 'Design & Motion', 'E-Commerce Solutions'],
   overview:
-    'Elite Collections is a luxury retail brand based in Doha, Qatar. Nous designed and built their complete digital presence — encompassing brand identity, a curated product catalog, and an appointment booking system for private shopping experiences.',
+    'Elite Collections is a luxury retail brand based in Doha, Qatar. Nous designed and built their complete digital presence, encompassing brand identity, a curated product catalog, and an appointment booking system for private shopping experiences.',
   challenge:
     'Luxury retail in the Gulf market demands a digital presence that matches the in-store experience: unhurried, exclusive, and visually immaculate. The brand needed a bilingual platform that communicated prestige without being cold, and that funneled high-intent buyers toward private appointments rather than impulsive checkouts.',
   solution:

@@ -8,13 +8,21 @@ import ServicePage, { type ServicePageData } from '@/sections/service/ServicePag
 export const metadata: Metadata = {
   title: 'Cloud Infrastructure and DevOps in Doha, Qatar',
   description:
-    'Nous designs and manages cloud infrastructure for businesses in Qatar — AWS, GCP, Docker, Kubernetes, Terraform, and CI/CD pipelines. DevOps consulting based in Doha.',
+    'Nous designs and manages cloud infrastructure for businesses in Qatar, AWS, GCP, Docker, Kubernetes, Terraform, and CI/CD pipelines. DevOps consulting based in Doha.',
   alternates: { canonical: 'https://nous.qa/services/cloud' },
   openGraph: {
-    title: 'Cloud Infrastructure and DevOps in Doha, Qatar — Nous',
+    title: 'Cloud Infrastructure and DevOps in Doha, Qatar | Nous',
     description: 'AWS, GCP, Kubernetes, and CI/CD for Qatar businesses.',
     url: 'https://nous.qa/services/cloud',
+    alternateLocale: ['ar_QA'],
     type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Cloud Infrastructure and DevOps in Doha, Qatar | Nous',
+    description: 'AWS, GCP, Kubernetes, and CI/CD for Qatar businesses.',
+    images: ['/opengraph-image'],
   },
 }
 
@@ -49,7 +57,7 @@ const service: ServicePageData = {
   useCases: [
     {
       title: 'Startup infrastructure from scratch',
-      body: 'Set up a production-grade AWS environment with staging, logging, alerting, and CI/CD from day one — before you have a DevOps team.',
+      body: 'Set up a production-grade AWS environment with staging, logging, alerting, and CI/CD from day one, before you have a DevOps team.',
     },
     {
       title: 'Cloud migration',

@@ -8,13 +8,21 @@ import ServicePage, { type ServicePageData } from '@/sections/service/ServicePag
 export const metadata: Metadata = {
   title: 'E-Commerce Development in Doha, Qatar',
   description:
-    'Nous builds Shopify and headless e-commerce stores for businesses in Qatar — bilingual Arabic/English, integrated payments, and custom storefronts. Based in Doha.',
+    'Nous builds Shopify and headless e-commerce stores for businesses in Qatar, bilingual Arabic/English, integrated payments, and custom storefronts. Based in Doha.',
   alternates: { canonical: 'https://nous.qa/services/ecommerce' },
   openGraph: {
-    title: 'E-Commerce Development in Doha, Qatar — Nous',
+    title: 'E-Commerce Development in Doha, Qatar | Nous',
     description: 'Shopify and headless e-commerce for Qatar businesses. Bilingual, fast, conversion-optimized.',
     url: 'https://nous.qa/services/ecommerce',
+    alternateLocale: ['ar_QA'],
     type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'E-Commerce Development in Doha, Qatar | Nous',
+    description: 'Shopify and headless e-commerce for Qatar businesses. Bilingual, fast, conversion-optimized.',
+    images: ['/opengraph-image'],
   },
 }
 
@@ -34,7 +42,7 @@ const service: ServicePageData = {
   slug: 'ecommerce',
   tagline: 'Online stores built for Gulf shoppers.',
   description:
-    'We design and develop e-commerce platforms built for the Qatar and Gulf market — bilingual from day one, integrated with local payment gateways, and optimized for the mobile-first shopping behavior of Gulf consumers. Whether you need a Shopify store, a headless storefront, or a fully custom platform, we deliver it complete.',
+    'We design and develop e-commerce platforms built for the Qatar and Gulf market, bilingual from day one, integrated with local payment gateways, and optimized for the mobile-first shopping behavior of Gulf consumers. Whether you need a Shopify store, a headless storefront, or a fully custom platform, we deliver it complete.',
   whatWeDeliver: [
     'Shopify store design, development, and theme customization',
     'Headless Shopify with Next.js custom storefront',

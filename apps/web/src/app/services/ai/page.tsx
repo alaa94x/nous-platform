@@ -8,13 +8,21 @@ import ServicePage, { type ServicePageData } from '@/sections/service/ServicePag
 export const metadata: Metadata = {
   title: 'AI Development in Doha, Qatar',
   description:
-    'Nous builds custom AI systems for businesses in Qatar and the Gulf — LLMs, RAG pipelines, AI agents, NLP, computer vision, and intelligent automation. Based in Doha.',
+    'Nous builds custom AI systems for businesses in Qatar and the Gulf, LLMs, RAG pipelines, AI agents, NLP, computer vision, and intelligent automation. Based in Doha.',
   alternates: { canonical: 'https://nous.qa/services/ai' },
   openGraph: {
-    title: 'AI Development Company in Doha, Qatar — Nous',
+    title: 'AI Development Company in Doha, Qatar | Nous',
     description: 'Custom AI systems, LLMs, RAG pipelines, and intelligent automation for Qatar businesses.',
     url: 'https://nous.qa/services/ai',
+    alternateLocale: ['ar_QA'],
     type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AI Development Company in Doha, Qatar | Nous',
+    description: 'Custom AI systems, LLMs, RAG pipelines, and intelligent automation for Qatar businesses.',
+    images: ['/opengraph-image'],
   },
 }
 
@@ -34,7 +42,7 @@ const service: ServicePageData = {
   slug: 'ai',
   tagline: 'Custom AI systems for businesses in Qatar and the Gulf.',
   description:
-    'We design, build, and deploy production-grade AI systems — from large language model integrations and retrieval-augmented generation pipelines to custom NLP models and AI agents. Every system we build is grounded in real business outcomes, not technology for its own sake.',
+    'We design, build, and deploy production-grade AI systems, from large language model integrations and retrieval-augmented generation pipelines to custom NLP models and AI agents. Every system we build is grounded in real business outcomes, not technology for its own sake.',
   whatWeDeliver: [
     'LLM integration (GPT-4, Claude, Gemini, open-source models)',
     'Retrieval-Augmented Generation (RAG) pipelines',

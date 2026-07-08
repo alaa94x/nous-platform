@@ -1,6 +1,10 @@
 // Server component — no 'use client'. All text is in the initial HTML for crawlers and AEO.
 
-const faqs = [
+// Exported so page.tsx can build the homepage's FAQPage JSON-LD from this
+// exact array — Google requires structured data to match visible copy
+// word-for-word, so there must be one source of truth, not a hand-copied
+// duplicate that can drift out of sync.
+export const faqs = [
   {
     q: 'What does Nous do?',
     a: 'Nous is a technology agency based in Doha, Qatar. We design and build AI systems, web applications, mobile apps, e-commerce platforms, and cloud infrastructure for businesses in Qatar and across the Gulf region.',

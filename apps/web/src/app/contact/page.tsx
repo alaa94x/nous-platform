@@ -11,17 +11,20 @@ export const metadata: Metadata = {
   description: 'Tell us what you are building. We reply to all inquiries within 24 hours. AI, web, mobile, and e-commerce development in Doha, Qatar.',
   alternates:  { canonical: 'https://nous.qa/contact' },
   openGraph: {
-    title:       'Start a Project — Nous',
+    title:       'Start a Project | Nous',
     description: 'Tell us what you are building. We reply within 24 hours.',
     url:         'https://nous.qa/contact',
     siteName:    'Nous',
     locale:      'en_US',
+    alternateLocale: ['ar_QA'],
     type:        'website',
+    images:      ['/opengraph-image'],
   },
   twitter: {
     card:        'summary_large_image',
-    title:       'Start a Project — Nous',
+    title:       'Start a Project | Nous',
     description: 'Tell us what you are building. We reply within 24 hours.',
+    images:      ['/opengraph-image'],
   },
 }
 
@@ -43,10 +46,15 @@ const SEED_SERVICES = [
 
 async function getContactData() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Public page read — the anon key is sufficient (see the public_read_*
+  // policies in supabase/migrations/001_rls_policies.sql). The service role
+  // key bypasses RLS entirely and has no business being used for a plain
+  // public content fetch.
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const fallback = { settings: SEED_SETTINGS, services: SEED_SERVICES }
 
   if (!url || !key || url.includes('your-project')) {
-    return { settings: SEED_SETTINGS, services: SEED_SERVICES }
+    return fallback
   }
 
   try {
@@ -55,10 +63,17 @@ async function getContactData() {
       auth: { autoRefreshToken: false, persistSession: false },
     })
 
-    const [{ data: rawSettings }, { data: services }] = await Promise.all([
+    const query = Promise.all([
       supabase.from('site_settings').select('key, value'),
       supabase.from('services').select('id, idx, name, category, tech_pills').eq('active', true).order('sort_order'),
     ])
+    // A slow/hanging connection shouldn't be able to stall the whole page —
+    // give up and serve seed data if Supabase doesn't answer in time.
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase request timed out')), 4000),
+    )
+
+    const [{ data: rawSettings }, { data: services }] = await Promise.race([query, timeout])
 
     const settings = { ...SEED_SETTINGS }
     for (const row of (rawSettings as { key: string; value: string }[] | null) ?? []) {
@@ -70,7 +85,7 @@ async function getContactData() {
       services: services && services.length > 0 ? services : SEED_SERVICES,
     }
   } catch {
-    return { settings: SEED_SETTINGS, services: SEED_SERVICES }
+    return fallback
   }
 }
 

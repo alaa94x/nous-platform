@@ -38,6 +38,7 @@ const NAV = [
   { href: '/dashboard/contacts',  label: 'Contacts',  short: 'Leads',   icon: '✉' },
   { href: '/dashboard/services',  label: 'Services',  short: 'Services',icon: '◎' },
   { href: '/dashboard/projects',  label: 'Projects',  short: 'Works',   icon: '⬡' },
+  { href: '/dashboard/testimonials', label: 'Testimonials', short: 'Quotes', icon: '❝' },
   { href: '/dashboard/settings',  label: 'Settings',  short: 'Config',  icon: '⚙' },
 ]
 

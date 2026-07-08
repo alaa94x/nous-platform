@@ -204,7 +204,7 @@ export default function Footer({
           gap: 24, paddingTop: 28, width: '100%',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <a href="#" aria-label={`${companyName} — return to homepage`}
+            <a href="#" aria-label={`${companyName}, return to homepage`}
               style={{ display: 'flex', alignItems: 'center', gap: 12 }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

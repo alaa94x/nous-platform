@@ -70,14 +70,11 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
-      // API: no-cache + security headers
+      // API: no-cache (security headers now come from the site-wide block above)
       {
         source: '/api/:path*',
         headers: [
-          { key: 'Cache-Control',                value: 'no-store' },
-          { key: 'X-Content-Type-Options',       value: 'nosniff' },
-          { key: 'X-Frame-Options',              value: 'DENY' },
-          { key: 'Referrer-Policy',              value: 'strict-origin-when-cross-origin' },
+          { key: 'Cache-Control', value: 'no-store' },
         ],
       },
     ]

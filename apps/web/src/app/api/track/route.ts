@@ -53,10 +53,19 @@ export async function POST(req: NextRequest) {
       device?: string
     }
     const { event, path, metadata, session_id, referrer, device } = body
-    if (!event) return NextResponse.json({ ok: false }, { status: 400 })
+    if (!event || typeof event !== 'string' || event.length > 80) {
+      return NextResponse.json({ ok: false }, { status: 400 })
+    }
+    // metadata is client-controlled and otherwise unbounded — cap it so a
+    // malicious or buggy client can't bloat the analytics table indefinitely.
+    if (metadata !== undefined && JSON.stringify(metadata).length > 2000) {
+      return NextResponse.json({ ok: false }, { status: 400 })
+    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    // Public event ingestion — the anon key is sufficient (see the
+    // public_insert_analytics policy in supabase/migrations/001_rls_policies.sql).
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     if (!url || !key || url.includes('your-project')) {
       return NextResponse.json({ ok: true })
     }

@@ -8,13 +8,21 @@ import ServicePage, { type ServicePageData } from '@/sections/service/ServicePag
 export const metadata: Metadata = {
   title: 'UI/UX Design and Motion Design in Doha, Qatar',
   description:
-    'Nous designs premium digital interfaces and motion experiences for businesses in Qatar — Figma, Framer, GSAP, Three.js, and bilingual Arabic/English design systems. Based in Doha.',
+    'Nous designs premium digital interfaces and motion experiences for businesses in Qatar, Figma, Framer, GSAP, Three.js, and bilingual Arabic/English design systems. Based in Doha.',
   alternates: { canonical: 'https://nous.qa/services/design' },
   openGraph: {
-    title: 'UI/UX and Motion Design Agency in Doha, Qatar — Nous',
+    title: 'UI/UX and Motion Design Agency in Doha, Qatar | Nous',
     description: 'Premium interface design and motion for Qatar businesses. Figma, Framer, GSAP, Three.js.',
     url: 'https://nous.qa/services/design',
+    alternateLocale: ['ar_QA'],
     type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'UI/UX and Motion Design Agency in Doha, Qatar | Nous',
+    description: 'Premium interface design and motion for Qatar businesses. Figma, Framer, GSAP, Three.js.',
+    images: ['/opengraph-image'],
   },
 }
 
@@ -34,7 +42,7 @@ const service: ServicePageData = {
   slug: 'design',
   tagline: 'Premium interfaces and motion for brands that care about craft.',
   description:
-    'We design digital products and brand experiences that look and feel like they cost significantly more than they did. Our process is research-first — we audit your audience, your competition, and your brand assets before touching Figma. Every design we deliver is production-ready, not a concept that needs to be re-engineered before it can ship.',
+    'We design digital products and brand experiences that look and feel like they cost significantly more than they did. Our process is research-first: we audit your audience, your competition, and your brand assets before touching Figma. Every design we deliver is production-ready, not a concept that needs to be re-engineered before it can ship.',
   whatWeDeliver: [
     'UI/UX design for web and mobile (Figma)',
     'Design systems and component libraries',
@@ -71,7 +79,7 @@ const service: ServicePageData = {
     },
     {
       q: 'Can you redesign an existing product?',
-      a: 'Yes. We start every redesign with an audit of the existing product — what works, what is broken, what the users actually need. We redesign with evidence, not aesthetics alone.',
+      a: 'Yes. We start every redesign with an audit of the existing product: what works, what is broken, what the users actually need. We redesign with evidence, not aesthetics alone.',
     },
   ],
 }

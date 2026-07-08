@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { useReducedMotion } from 'motion/react'
 
 interface NavProps {
@@ -8,10 +9,13 @@ interface NavProps {
   variant?:  'default' | 'contact'
 }
 
+// Absolute-path anchors — these must resolve correctly from any route, not
+// just the homepage. A bare "#capabilities" href does nothing on /work/* or
+// /services/* pages since no matching element exists there.
 const NAV_LINKS = [
-  { href: '#capabilities', label: 'Capabilities', section: 'capabilities' },
-  { href: '#works',        label: 'Proof',         section: 'works'        },
-  { href: '/contact',      label: 'Contact',      section: 'contact'      },
+  { href: '/#capabilities', label: 'Capabilities', section: 'capabilities' },
+  { href: '/#works',        label: 'Proof',         section: 'works'        },
+  { href: '/contact',       label: 'Contact',      section: 'contact'      },
 ] as const
 
 export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps = {}) {
@@ -155,9 +159,9 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <a
-            href={variant === 'contact' ? '/' : '#'}
-            aria-label="Nous — return to homepage"
+          <Link
+            href="/"
+            aria-label="Nous, return to homepage"
             data-magnetic-btn="true"
             style={{ display: 'flex', alignItems: 'center', gap: 12 }}
           >
@@ -183,7 +187,7 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
             >
               {siteName}
             </span>
-          </a>
+          </Link>
         </div>
 
         <div className="flex items-center" style={{ gap: 36 }}>
@@ -249,9 +253,9 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
           opacity: 1,
         }}
       >
-        <a
-          href={variant === 'contact' ? '/' : '#'}
-          aria-label="Nous — return to homepage"
+        <Link
+          href="/"
+          aria-label="Nous, return to homepage"
           style={{ display: 'block' }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -262,7 +266,7 @@ export default function Nav({ siteName = 'Nous', variant = 'default' }: NavProps
             height={70}
             style={{ width: 70, height: 70 }}
           />
-        </a>
+        </Link>
       </div>
 
       {/* ── MOBILE BOTTOM RAIL ──────────────────────────────── */}
