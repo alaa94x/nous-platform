@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useReducedMotion } from 'motion/react'
 import { useReveal } from '@/components/useReveal'
 
@@ -14,6 +15,8 @@ interface Project {
   tags: string[] | null
   image_url: string | null
   url?: string | null
+  slug?: string | null
+  is_case_study?: boolean | null
 }
 
 interface WorksProps {
@@ -97,6 +100,10 @@ function useCardTilt(reduced: boolean) {
 function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index: number; reduced: boolean; priority?: boolean }) {
   const { cardRef, contentRef, lineRef } = useCardTilt(reduced)
   const idx = String(index + 1).padStart(2, '0')
+  // An internal case-study page takes precedence over an external client-site
+  // link, so the card opens the /work/[slug] story rather than leaving the site.
+  const caseHref = proj.is_case_study && proj.slug ? `/work/${proj.slug}` : null
+  const hasLink  = Boolean(caseHref || proj.url)
 
   const cardEl = (
     <div
@@ -110,7 +117,7 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
         transformStyle: 'preserve-3d',
         boxShadow: '0 4px 24px rgba(0,0,0,.3)',
         transition: 'box-shadow .5s, border-color .3s',
-        cursor: proj.url ? 'pointer' : 'default',
+        cursor: hasLink ? 'pointer' : 'default',
         background: '#0D1A17',
       }}
     >
@@ -161,8 +168,8 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
         </span>
       </div>
 
-      {/* Visit arrow — only when url set */}
-      {proj.url && (
+      {/* Visit arrow — shown whenever the card links somewhere */}
+      {hasLink && (
         <div className="proj-arrow" style={{
           position: 'absolute', bottom: 24, right: 24, zIndex: 4,
           width: 34, height: 34, borderRadius: '50%',
@@ -223,7 +230,7 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
           height: 1.5, background: '#60B89A',
           // Stop short of the visit-arrow circle (34px + gap) so the reveal
           // line doesn't run underneath/through it on hover.
-          width: proj.url ? 'calc(100% - 50px)' : '100%',
+          width: hasLink ? 'calc(100% - 50px)' : '100%',
           transform: 'scaleX(0)', transformOrigin: 'left',
           transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
         }} />
@@ -231,6 +238,13 @@ function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index:
     </div>
   )
 
+  if (caseHref) {
+    return (
+      <Link href={caseHref} style={{ display: 'block', height: '100%', textDecoration: 'none' }}>
+        {cardEl}
+      </Link>
+    )
+  }
   if (proj.url) {
     return (
       <a href={proj.url} target="_blank" rel="noopener noreferrer"

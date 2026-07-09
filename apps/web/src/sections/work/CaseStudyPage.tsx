@@ -2,28 +2,8 @@
 
 import Link from 'next/link'
 import { ArrowLeft, ArrowUpRight } from '@phosphor-icons/react'
-
-interface ResultMetric {
-  metric: string
-  value: string
-  note: string
-}
-
-interface CaseStudyProject {
-  name: string
-  nameAr: string
-  tagline: string
-  year: string
-  tags: string[]
-  externalUrl: string | null
-  services: string[]
-  overview: string
-  challenge: string
-  solution: string
-  results: ResultMetric[]
-  tech: string[]
-  imageUrl: string | null
-}
+import { serviceSlug } from '@/lib/service-slugs'
+import type { CaseStudyProject } from '@/lib/case-studies'
 
 export default function CaseStudyPage({ project }: { project: CaseStudyProject }) {
   return (
@@ -236,6 +216,45 @@ export default function CaseStudyPage({ project }: { project: CaseStudyProject }
           <Section title="Our Solution" body={project.solution} />
         </div>
 
+        {/* Services applied — cross-links to the full service pages. Turns each
+            case study into a hub that feeds the (otherwise low-traffic) service
+            pages, and lets a reader jump from proof to the capability behind it. */}
+        {(() => {
+          const linked = project.services
+            .map(name => ({ name, slug: serviceSlug(name) }))
+            .filter((s): s is { name: string; slug: string } => Boolean(s.slug))
+          if (linked.length === 0) return null
+          return (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,.08)', paddingTop: 40, marginBottom: 64 }}>
+              <h3 style={{
+                fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)',
+                letterSpacing: '.22em', textTransform: 'uppercase', marginBottom: 20,
+              }}>
+                Services Applied
+              </h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {linked.map(s => (
+                  <Link
+                    key={s.slug}
+                    href={`/services/${s.slug}`}
+                    className="cs-service-link"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 7,
+                      fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)',
+                      border: '1px solid rgba(96,184,154,.3)', padding: '7px 14px',
+                      letterSpacing: '.06em', textDecoration: 'none',
+                      transition: 'border-color .2s, color .2s',
+                    }}
+                  >
+                    {s.name}
+                    <ArrowUpRight size={11} weight="bold" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
         {/* Tech stack */}
         <div style={{
           borderTop: '1px solid rgba(255,255,255,.08)',
@@ -304,6 +323,7 @@ export default function CaseStudyPage({ project }: { project: CaseStudyProject }
       </div>
 
       <style>{`
+        .cs-service-link:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
         @media (max-width: 768px) {
           article > div,
           article > div > header,

@@ -128,12 +128,16 @@ export default function Cursor() {
       s.tx = e.clientX; s.ty = e.clientY
       s.otx = e.clientX; s.oty = e.clientY
       s.dirty = true
+      // Detect what's under the cursor. Work cards get the "VIEW PROJECT"
+      // state; any link or button gets the enlarged magnetic ring. This works
+      // on every page (service pages included), not just where an author
+      // remembered to tag an element.
       const hit  = document.elementFromPoint(e.clientX, e.clientY)
-      const card = hit?.closest('[data-card]')
-      const mag  = hit?.closest('[data-mag]')
-      if (card)     { s.curState = 'project';  s.magTarget = null }
-      else if (mag) { s.curState = 'magnetic'; s.magTarget = mag  }
-      else          { s.curState = 'default';  s.magTarget = null }
+      const card = hit?.closest('[data-card], .proj-card')
+      const link = hit?.closest('a, button, [data-magnetic-btn]')
+      if (card)      { s.curState = 'project';  s.magTarget = null }
+      else if (link) { s.curState = 'magnetic'; s.magTarget = null }
+      else           { s.curState = 'default';  s.magTarget = null }
       scheduleRaf()
     }
     document.addEventListener('mousemove', onMove)
@@ -144,7 +148,7 @@ export default function Cursor() {
       if (!orb) return
       orb.style.width = orb.style.height = small ? '12vw' : '30vw'
     }
-    document.querySelectorAll('a, button, [data-mag]').forEach(el => {
+    document.querySelectorAll('a, button, [data-magnetic-btn]').forEach(el => {
       el.addEventListener('mouseenter', () => constrict(true))
       el.addEventListener('mouseleave', () => constrict(false))
     })

@@ -1,8 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useReveal } from '@/components/useReveal'
+import { SERVICE_PAGE_SLUGS } from '@/lib/service-slugs'
 import OrbitalVisualizer from './OrbitalVisualizer'
 
 // ── Scramble hook — drives DOM directly, no React re-renders ──────────────────
@@ -113,6 +115,12 @@ const SUBTEXT = {
   engineering: 'Precision-crafted codebases designed for absolute zero-downtime scalability.',
 }
 
+// The 6 service pages were previously orphans with no inbound links. Each
+// capability row now deep-links to its page via the shared slug map.
+function getServiceSlug(svc: Service): string | undefined {
+  return SERVICE_PAGE_SLUGS[svc.name] ?? (svc.name_tech ? SERVICE_PAGE_SLUGS[svc.name_tech] : undefined)
+}
+
 // ── Service row — isolated so useScramble hook can run per row ────────────────
 
 function ServiceRow({
@@ -132,6 +140,7 @@ function ServiceRow({
   const nameAr   = getDisplayNameAr(svc, view)
   const tags     = getTags(svc, view)
   const outcomes = getOutcomes(svc, view)
+  const slug     = getServiceSlug(svc)
   const { elRef, scramble, reset } = useScramble(name, reduced)
 
   const handleEnter = () => { scramble(); onMouseEnter() }
@@ -239,6 +248,22 @@ function ServiceRow({
           >
             <path d="M2 4.5L6 8L10 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
+
+          {/* Deep-link to the full service page. stopPropagation so it navigates
+              instead of toggling the row's mobile accordion. */}
+          {slug && (
+            <Link
+              href={`/services/${slug}`}
+              onClick={e => e.stopPropagation()}
+              aria-label={`Open the ${name} service page`}
+              className="svc-open-link"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--muted)', transition: 'color .2s' }}
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+                <path d="M3.5 9.5L9.5 3.5M9.5 3.5H4.5M9.5 3.5V8.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -415,6 +440,7 @@ export default function Capabilities({ services }: CapabilitiesProps) {
         }
         .acc-chevron { display: none; color: var(--muted); }
         .acc-body    { display: none; }
+        .svc-open-link:hover { color: var(--accent) !important; }
 
         /* Tablet */
         @media (max-width: 1100px) {

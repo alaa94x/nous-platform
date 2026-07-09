@@ -61,6 +61,7 @@ const SECTIONS: Section[] = [
       { key: 'site_name',    label: 'Site Wordmark',  hint: 'Nav bar next to the logo',    placeholder: 'nous.',  maxChars: 20 },
       { key: 'company_name', label: 'Company Name',   hint: 'Used in copyright line',      placeholder: 'Nous',   maxChars: 40 },
       { key: 'contact_email', label: 'Contact Email', hint: 'Shown in Contact section',    placeholder: 'nouslab@icould.com', colSpan: 2 },
+      { key: 'footer_copyright', label: 'Footer Copyright', hint: 'Leave blank to auto-generate © YEAR Company', placeholder: '© 2026 Nous. All Rights Reserved.', maxChars: 120, colSpan: 2 },
     ],
   },
 ]
