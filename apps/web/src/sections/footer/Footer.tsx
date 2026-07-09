@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import {
   EnvelopeSimple, WhatsappLogo, Phone, InstagramLogo, LinkedinLogo,
   XLogo, TiktokLogo, YoutubeLogo, GithubLogo, BehanceLogo, DribbbleLogo,
@@ -31,11 +32,48 @@ export interface SocialItem {
 }
 
 export interface FooterProps {
-  siteName?:      string
-  contactItems?:  ContactItem[]
-  socialItems?:   SocialItem[]
-  companyName?:   string
+  siteName?:        string
+  contactItems?:    ContactItem[]
+  socialItems?:     SocialItem[]
+  companyName?:     string
+  footerCopyright?: string
 }
+
+// ── Site-map navigation ─────────────────────────────────────────────────────
+// These are the routes that had zero inbound links (the /services/* pages were
+// orphans reachable only via the sitemap). Surfacing them in the footer makes
+// them discoverable to visitors and passes internal link equity for SEO.
+
+interface FooterNavGroup { title: string; links: { label: string; href: string }[] }
+
+const FOOTER_NAV: FooterNavGroup[] = [
+  {
+    title: 'Services',
+    links: [
+      { label: 'AI & Automation',   href: '/services/ai' },
+      { label: 'Full-Stack',        href: '/services/full-stack' },
+      { label: 'Mobile Apps',       href: '/services/mobile' },
+      { label: 'E-Commerce',        href: '/services/ecommerce' },
+      { label: 'Cloud',             href: '/services/cloud' },
+      { label: 'Design & Motion',   href: '/services/design' },
+    ],
+  },
+  {
+    title: 'Selected Work',
+    links: [
+      { label: 'Stitched',          href: '/work/stitched' },
+      { label: 'Elite Collections', href: '/work/elite-collections' },
+      { label: 'The Seventh Sense', href: '/work/the-seventh-sense' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'Home',              href: '/' },
+      { label: 'Start a Project',   href: '/contact' },
+    ],
+  },
+]
 
 // ── Icon maps ─────────────────────────────────────────────────────────────────
 
@@ -75,14 +113,18 @@ export const DEFAULT_SOCIAL_ITEMS: SocialItem[] = [
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function Footer({
-  siteName     = 'nous.',
-  companyName  = 'Nous',
-  contactItems = DEFAULT_CONTACT_ITEMS,
-  socialItems  = DEFAULT_SOCIAL_ITEMS,
+  siteName        = 'nous.',
+  companyName     = 'Nous',
+  contactItems    = DEFAULT_CONTACT_ITEMS,
+  socialItems     = DEFAULT_SOCIAL_ITEMS,
+  footerCopyright,
 }: FooterProps) {
   const year      = new Date().getFullYear()
   const primary   = contactItems.filter(c => c.enabled && c.primary)
   const secondary = contactItems.filter(c => c.enabled && !c.primary)
+  // Admin can override the copyright line verbatim; otherwise auto-generate it
+  // so the year stays current without anyone having to edit it each January.
+  const copyright = footerCopyright?.trim() || `© ${year} ${companyName}. All Rights Reserved.`
 
   return (
     <footer
@@ -198,13 +240,50 @@ export default function Footer({
           </div>
         )}
 
+        {/* ── Site-map nav ───────────────────────────────────── */}
+        <nav
+          aria-label="Footer"
+          className="footer-nav"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${FOOTER_NAV.length}, minmax(0, 1fr))`,
+            gap: 24,
+            paddingTop: 28,
+            paddingBottom: 28,
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          {FOOTER_NAV.map(group => (
+            <div key={group.title} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)',
+                letterSpacing: '.2em', textTransform: 'uppercase',
+              }}>
+                {group.title}
+              </span>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {group.links.map(link => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="footer-nav-link" style={{
+                      fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text)',
+                      letterSpacing: '.04em', textDecoration: 'none', transition: 'color .2s',
+                    }}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
         {/* ── Brand row ──────────────────────────────────────── */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           gap: 24, paddingTop: 28, width: '100%',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <a href="#" aria-label={`${companyName}, return to homepage`}
+          <div className="footer-brand-row" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <Link href="/" aria-label={`${companyName}, return to homepage`}
               style={{ display: 'flex', alignItems: 'center', gap: 12 }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -216,7 +295,7 @@ export default function Footer({
               }}>
                 {siteName}
               </span>
-            </a>
+            </Link>
             <span style={{
               width: 1, height: 14, background: 'var(--border)',
               display: 'inline-block', flexShrink: 0,
@@ -225,7 +304,7 @@ export default function Footer({
               fontFamily: 'var(--font-mono)', fontSize: 8,
               color: 'var(--muted)', letterSpacing: '.05em',
             }}>
-              &copy; {year} {companyName}. All Rights Reserved.
+              {copyright}
             </span>
           </div>
         </div>
@@ -235,8 +314,11 @@ export default function Footer({
         .footer-social-link:hover    { color: var(--accent) !important; }
         .footer-contact-pill:hover   { border-color: var(--accent) !important; color: var(--accent) !important; }
         .footer-contact-primary:hover { opacity: .82 !important; color: var(--bg) !important; border-color: var(--accent) !important; }
+        .footer-nav-link:hover       { color: var(--accent) !important; }
         @media (max-width: 768px) {
           .footer-body { padding: 40px 24px 36px !important; }
+          .footer-nav  { grid-template-columns: 1fr 1fr !important; row-gap: 28px !important; }
+          .footer-brand-row { flex-wrap: wrap !important; gap: 12px !important; }
         }
         @media (max-width: 480px) {
           .footer-body { padding: 36px 20px 32px !important; }

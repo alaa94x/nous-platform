@@ -1,76 +1,33 @@
 import type { MetadataRoute } from 'next'
+import { getCaseStudySlugs } from '@/lib/case-studies'
 
 const BASE = 'https://nous.qa'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+const SERVICE_SLUGS = ['ai', 'full-stack', 'mobile', 'ecommerce', 'cloud', 'design']
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date()
+  const caseStudySlugs = await getCaseStudySlugs()
+
   return [
-    {
-      url: BASE,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
-    {
-      url: `${BASE}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    // Case studies
-    {
-      url: `${BASE}/work/stitched`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+    { url: BASE,              lastModified: now, changeFrequency: 'weekly',  priority: 1 },
+    { url: `${BASE}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+
+    // Case studies — sourced from the projects table (falls back to the seed
+    // slugs) so publishing new work in admin adds it to the sitemap.
+    ...caseStudySlugs.map(slug => ({
+      url: `${BASE}/work/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
       priority: 0.7,
-    },
-    {
-      url: `${BASE}/work/elite-collections`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${BASE}/work/the-seventh-sense`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
+    })),
+
     // Service pages
-    {
-      url: `${BASE}/services/ai`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
+    ...SERVICE_SLUGS.map(slug => ({
+      url: `${BASE}/services/${slug}`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
       priority: 0.8,
-    },
-    {
-      url: `${BASE}/services/full-stack`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE}/services/mobile`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE}/services/ecommerce`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE}/services/cloud`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE}/services/design`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
+    })),
   ]
 }

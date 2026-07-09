@@ -28,9 +28,10 @@ const SEED_SETTINGS: Record<string, string> = {
   hero_cta_primary:   'Initialize Project',
   hero_cta_secondary: 'View Selected Works',
   contact_email:      'nouslab@icould.com',
-  footer_location:    'Qatar · 2026',
-  footer_copyright:   '© 2025 Nous. All Rights Reserved.',
-  footer_badge:       'AN NOUS MASTERPIECE ✦ AN NOUS MASTERPIECE ✦ ',
+  // Blank by default so the Footer auto-generates "© YEAR Company"; admin can
+  // set a verbatim override in Settings. (footer_location / footer_badge were
+  // vestigial keys nothing rendered, removed.)
+  footer_copyright:   '',
 }
 
 const SEED_SERVICES = [
@@ -94,7 +95,7 @@ async function getPageData() {
     const query = Promise.all([
       supabase.from('site_settings').select('key, value'),
       supabase.from('services').select('id, idx, name, name_ar, name_tech, name_tech_ar, category, tech_pills, business_pills, business_tags, engineering_tags, business_outcomes, engineering_stack, business_subtext').eq('active', true).order('sort_order'),
-      supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url, url').eq('active', true).order('sort_order'),
+      supabase.from('projects').select('id, name, name_ar, description, year, tags, image_url, url, slug, is_case_study').eq('active', true).order('sort_order'),
       supabase.from('testimonials').select('quote, author, role, initials').eq('active', true).order('sort_order'),
     ])
     // A slow/hanging connection shouldn't be able to stall the whole page —
@@ -111,10 +112,25 @@ async function getPageData() {
       if (row.value) settings[row.key] = row.value
     }
 
+    // The projects select asks for slug/is_case_study (migration 009). If that
+    // migration hasn't been applied yet those columns don't exist and the query
+    // returns null — fall back to the base columns so the Works grid never
+    // empties during the deploy → migrate window.
+    let projectRows = projects
+    if (!projectRows) {
+      const { data } = await supabase
+        .from('projects')
+        .select('id, name, name_ar, description, year, tags, image_url, url')
+        .eq('active', true)
+        .order('sort_order')
+      // slug/is_case_study are optional on the consumer; base rows are fine.
+      projectRows = data as typeof projects
+    }
+
     return {
       settings,
       services: (services && services.length > 0) ? services : SEED_SERVICES,
-      projects: (projects && projects.length > 0) ? projects : SEED_PROJECTS,
+      projects: (projectRows && projectRows.length > 0) ? projectRows : SEED_PROJECTS,
       testimonials: (testimonials && testimonials.length > 0) ? testimonials : SEED_TESTIMONIALS,
     }
   } catch {
@@ -204,10 +220,11 @@ export default async function HomePage() {
         </SectionBoundary>
       </main>
       <Footer
-        siteName      = {s['site_name']}
-        companyName   = {s['company_name'] ?? 'Nous'}
-        contactItems  = {contactItems}
-        socialItems   = {socialItems}
+        siteName        = {s['site_name']}
+        companyName     = {s['company_name'] ?? 'Nous'}
+        contactItems    = {contactItems}
+        socialItems     = {socialItems}
+        footerCopyright = {s['footer_copyright'] || undefined}
       />
     </>
   )

@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useRef, KeyboardEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import ImageUpload from '@/components/ImageUpload'
 
+type ResultMetric = { metric: string; value: string; note: string }
+
 type Project = {
   id: string
   name: string
@@ -15,11 +17,32 @@ type Project = {
   url: string | null
   sort_order: number | null
   active: boolean | null
+  // ── Case-study fields (migration 009) ──
+  slug: string | null
+  is_case_study: boolean | null
+  tagline: string | null
+  external_url: string | null
+  overview: string | null
+  challenge: string | null
+  solution: string | null
+  results: ResultMetric[] | null
+  tech: string[] | null
+  services: string[] | null
 }
 
 const EMPTY: Omit<Project, 'id'> = {
   name: '', name_ar: '', description: '', year: new Date().getFullYear().toString(),
   tags: [], image_url: null, url: null, sort_order: 99, active: true,
+  slug: '', is_case_study: false, tagline: '', external_url: null,
+  overview: '', challenge: '', solution: '', results: [], tech: [], services: [],
+}
+
+// Turns "The Seventh Sense" → "the-seventh-sense" for the /work/[slug] route.
+function slugify(s: string): string {
+  return s.toLowerCase().trim()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 // ── Pill chip input ────────────────────────────────────────────────────────────
@@ -72,6 +95,34 @@ function PillInput({ pills, onChange, placeholder }: { pills: string[]; onChange
         placeholder={pills.length === 0 ? (placeholder ?? 'Tag, Enter to add...') : 'Add more...'}
         style={{ flex: 1, minWidth: 120, background: 'none', border: 'none', padding: '2px 4px', fontSize: 10, color: 'var(--text)', outline: 'none', fontFamily: 'ui-monospace, monospace' }}
       />
+    </div>
+  )
+}
+
+// ── Results repeater (metric / value / note) ────────────────────────────────────
+
+function ResultsEditor({ results, onChange }: { results: ResultMetric[]; onChange: (r: ResultMetric[]) => void }) {
+  const update = (i: number, patch: Partial<ResultMetric>) =>
+    onChange(results.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
+  const remove = (i: number) => onChange(results.filter((_, idx) => idx !== i))
+  const add = () => onChange([...results, { metric: '', value: '', note: '' }])
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {results.map((r, i) => (
+        <div key={i} className="proj-results-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.4fr 32px', gap: 8, alignItems: 'center' }}>
+          <input value={r.value}  onChange={e => update(i, { value: e.target.value })}  placeholder="6 weeks" />
+          <input value={r.metric} onChange={e => update(i, { metric: e.target.value })} placeholder="Storefront live" />
+          <input value={r.note}   onChange={e => update(i, { note: e.target.value })}   placeholder="from brief to launch" />
+          <button type="button" onClick={() => remove(i)} className="adm-icon-btn" style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--danger)', cursor: 'pointer', height: 32, fontSize: 14 }}>×</button>
+        </div>
+      ))}
+      <button type="button" onClick={add} className="adm-action-btn" style={{ ...btnStyle('transparent', 'var(--accent)', 'var(--border)'), alignSelf: 'flex-start' }}>
+        + Add result
+      </button>
+      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'var(--muted)', opacity: .55, lineHeight: 1.6, margin: 0 }}>
+        Columns: value (large number), metric (label), note (small caption). Shown as the results strip on the case study.
+      </p>
     </div>
   )
 }
@@ -159,6 +210,72 @@ function ProjectForm({
         )}
       </div>
 
+      {/* ── Case study ─────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={!!buf.is_case_study}
+            onChange={e => onChange({ is_case_study: e.target.checked, slug: buf.slug || slugify(buf.name || '') })}
+            style={{ width: 16, height: 16, accentColor: 'var(--accent)' }}
+          />
+          <span style={{ fontSize: 11, color: 'var(--text)', fontFamily: 'ui-monospace, monospace', letterSpacing: '.04em' }}>
+            Has a full case study page
+          </span>
+        </label>
+
+        {buf.is_case_study && (
+          <>
+            <div className="proj-row-2">
+              <div>
+                <label style={labelStyle}>Slug</label>
+                <input value={buf.slug ?? ''} onChange={e => onChange({ slug: slugify(e.target.value) })} placeholder="stitched" />
+                <p style={hintStyle}>nous.qa/work/{buf.slug || 'your-slug'}</p>
+              </div>
+              <div>
+                <label style={labelStyle}>External Site (optional)</label>
+                <input value={buf.external_url ?? ''} onChange={e => onChange({ external_url: e.target.value || null })} placeholder="https://clientsite.com" />
+                <p style={hintStyle}>Adds a &ldquo;Visit Site&rdquo; button. Leave blank to omit.</p>
+              </div>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Tagline</label>
+              <input value={buf.tagline ?? ''} onChange={e => onChange({ tagline: e.target.value })} placeholder="Premium fashion e-commerce for the Qatar market." />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Overview</label>
+              <textarea value={buf.overview ?? ''} onChange={e => onChange({ overview: e.target.value })} rows={3} placeholder="What the project is and what Nous delivered." style={textareaStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>The Challenge</label>
+              <textarea value={buf.challenge ?? ''} onChange={e => onChange({ challenge: e.target.value })} rows={3} placeholder="The problem the client needed solved." style={textareaStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Our Solution</label>
+              <textarea value={buf.solution ?? ''} onChange={e => onChange({ solution: e.target.value })} rows={3} placeholder="How Nous approached and built it." style={textareaStyle} />
+            </div>
+
+            <div>
+              <label style={{ ...labelStyle, marginBottom: 7 }}>Services Applied</label>
+              <PillInput pills={Array.isArray(buf.services) ? buf.services : []} onChange={services => onChange({ services })} placeholder="E-Commerce Solutions, Design & Motion..." />
+              <p style={hintStyle}>Match a service name to cross-link (e.g. &ldquo;Design &amp; Motion&rdquo;, &ldquo;Full-Stack Engineering&rdquo;).</p>
+            </div>
+
+            <div>
+              <label style={{ ...labelStyle, marginBottom: 7 }}>Technologies Used</label>
+              <PillInput pills={Array.isArray(buf.tech) ? buf.tech : []} onChange={tech => onChange({ tech })} placeholder="Next.js, Shopify, Figma..." />
+            </div>
+
+            <div>
+              <label style={{ ...labelStyle, marginBottom: 7 }}>Results</label>
+              <ResultsEditor results={Array.isArray(buf.results) ? buf.results : []} onChange={results => onChange({ results })} />
+            </div>
+          </>
+        )}
+      </div>
+
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <button onClick={onSave} disabled={saving || !buf.name?.trim()} className="adm-action-btn" style={btnStyle('var(--accent)', '#0E1210')}>
           {saving ? 'Saving...' : isNew ? 'Create Project' : 'Save'}
@@ -193,13 +310,23 @@ export default function ProjectsPage() {
     if (!editing) return
     setSaving(true)
     await supabase.from('projects').update({
-      name:        editBuf.name,
-      name_ar:     editBuf.name_ar || null,
-      description: editBuf.description,
-      year:        editBuf.year,
-      tags:        Array.isArray(editBuf.tags) ? editBuf.tags : [],
-      image_url:   editBuf.image_url || null,
-      url:         editBuf.url || null,
+      name:          editBuf.name,
+      name_ar:       editBuf.name_ar || null,
+      description:   editBuf.description,
+      year:          editBuf.year,
+      tags:          Array.isArray(editBuf.tags) ? editBuf.tags : [],
+      image_url:     editBuf.image_url || null,
+      url:           editBuf.url || null,
+      slug:          editBuf.slug || null,
+      is_case_study: !!editBuf.is_case_study,
+      tagline:       editBuf.tagline || null,
+      external_url:  editBuf.external_url || null,
+      overview:      editBuf.overview || null,
+      challenge:     editBuf.challenge || null,
+      solution:      editBuf.solution || null,
+      results:       Array.isArray(editBuf.results) ? editBuf.results : [],
+      tech:          Array.isArray(editBuf.tech) ? editBuf.tech : [],
+      services:      Array.isArray(editBuf.services) ? editBuf.services : [],
     }).eq('id', editing)
     await fetchProjects()
     setSaving(false)
@@ -211,15 +338,25 @@ export default function ProjectsPage() {
     if (!newBuf.name?.trim()) return
     setSaving(true)
     await supabase.from('projects').insert({
-      name:        newBuf.name,
-      name_ar:     newBuf.name_ar || null,
-      description: newBuf.description || null,
-      year:        newBuf.year,
-      tags:        Array.isArray(newBuf.tags) ? newBuf.tags : [],
-      image_url:   newBuf.image_url || null,
-      url:         newBuf.url || null,
-      sort_order:  projects.length + 1,
-      active:      true,
+      name:          newBuf.name,
+      name_ar:       newBuf.name_ar || null,
+      description:   newBuf.description || null,
+      year:          newBuf.year,
+      tags:          Array.isArray(newBuf.tags) ? newBuf.tags : [],
+      image_url:     newBuf.image_url || null,
+      url:           newBuf.url || null,
+      sort_order:    projects.length + 1,
+      active:        true,
+      slug:          newBuf.slug || null,
+      is_case_study: !!newBuf.is_case_study,
+      tagline:       newBuf.tagline || null,
+      external_url:  newBuf.external_url || null,
+      overview:      newBuf.overview || null,
+      challenge:     newBuf.challenge || null,
+      solution:      newBuf.solution || null,
+      results:       Array.isArray(newBuf.results) ? newBuf.results : [],
+      tech:          Array.isArray(newBuf.tech) ? newBuf.tech : [],
+      services:      Array.isArray(newBuf.services) ? newBuf.services : [],
     })
     await fetchProjects()
     setSaving(false)
@@ -359,6 +496,10 @@ export default function ProjectsPage() {
           .proj-row-3 { grid-template-columns: 1fr 1fr; }
           .proj-row-3 > div:first-child { grid-column: 1 / -1; }
           .proj-row-2 { grid-template-columns: 1fr; }
+          /* Stack the 3 result inputs; delete button spans them on the right */
+          .proj-results-row { grid-template-columns: 1fr 32px !important; }
+          .proj-results-row > input { grid-column: 1 !important; }
+          .proj-results-row > button { grid-row: 1 / span 3 !important; grid-column: 2 !important; height: 100% !important; }
         }
 
         /* Project card action buttons — stack vertically on small screens */
@@ -391,6 +532,29 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '.18em',
   textTransform: 'uppercase',
   marginBottom: 5,
+}
+
+const hintStyle: React.CSSProperties = {
+  fontFamily: 'ui-monospace, monospace',
+  fontSize: 8,
+  color: 'var(--muted)',
+  opacity: .55,
+  lineHeight: 1.6,
+  margin: '5px 0 0',
+}
+
+const textareaStyle: React.CSSProperties = {
+  width: '100%',
+  resize: 'vertical',
+  fontFamily: 'inherit',
+  fontSize: 12,
+  lineHeight: 1.6,
+  color: 'var(--text)',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: 4,
+  padding: '9px 10px',
+  outline: 'none',
 }
 
 function btnStyle(bg: string, color: string, border?: string): React.CSSProperties {

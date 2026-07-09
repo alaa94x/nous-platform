@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import Nav from '@/components/nav/Nav'
 import Cursor from '@/components/cursor/Cursor'
 import Noise from '@/components/noise/Noise'
-import Footer, { DEFAULT_CONTACT_ITEMS, DEFAULT_SOCIAL_ITEMS } from '@/sections/footer/Footer'
+import Footer from '@/sections/footer/Footer'
 import ServicePage, { type ServicePageData } from '@/sections/service/ServicePage'
+import { getSiteChrome } from '@/lib/site-chrome'
 
 export const metadata: Metadata = {
   title: 'E-Commerce Development in Doha, Qatar',
@@ -84,17 +85,20 @@ const service: ServicePageData = {
   ],
 }
 
-export default function EcommerceServicePage() {
+export const revalidate = 60
+
+export default async function EcommerceServicePage() {
+  const chrome = await getSiteChrome()
   return (
     <>
       <Cursor />
       <Noise />
-      <Nav siteName="nous." />
+      <Nav siteName={chrome.siteName} />
       <main id="main-content">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <ServicePage service={service} />
       </main>
-      <Footer siteName="nous." companyName="Nous" contactItems={DEFAULT_CONTACT_ITEMS} socialItems={DEFAULT_SOCIAL_ITEMS} />
+      <Footer siteName={chrome.siteName} companyName={chrome.companyName} contactItems={chrome.contactItems} socialItems={chrome.socialItems} footerCopyright={chrome.footerCopyright} />
     </>
   )
 }
