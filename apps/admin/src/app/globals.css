@@ -4,8 +4,8 @@
   --color-bg:       #0E1210;
   --color-surface:  #161C19;
   --color-surface2: #1C2420;
-  --color-accent:   #2ECC71;
-  --color-accent2:  #0A5C47;
+  --color-accent:   #CEF17B;
+  --color-accent2:  #084734;
   --color-text:     #E8EDE9;
   --color-muted:    rgba(232,237,233,0.45);
   --color-border:   rgba(232,237,233,0.08);
@@ -17,8 +17,8 @@
   --bg:       #0E1210;
   --surface:  #161C19;
   --surface2: #1C2420;
-  --accent:   #2ECC71;
-  --accent2:  #0A5C47;
+  --accent:   #CEF17B;
+  --accent2:  #084734;
   --text:     #E8EDE9;
   --muted:    rgba(232,237,233,0.45);
   --border:   rgba(232,237,233,0.08);
@@ -245,7 +245,7 @@ input:focus, textarea:focus, select:focus {
 
 @media (hover: hover) {
   .contacts-row:hover         { background: rgba(255,255,255,.018); }
-  .adm-quick-link:hover       { border-color: rgba(46,204,113,.25) !important; }
+  .adm-quick-link:hover       { border-color: rgba(206, 241, 123,.25) !important; }
   .adm-action-btn:hover       { opacity: .75; }
   a:not([class]):hover        { opacity: .8; }
 }
@@ -253,7 +253,7 @@ input:focus, textarea:focus, select:focus {
 /* On touch devices, use :active for pressed feedback instead */
 @media (hover: none) {
   .contacts-row:active        { background: rgba(255,255,255,.03); }
-  .adm-quick-link:active      { background: rgba(46,204,113,.05) !important; }
+  .adm-quick-link:active      { background: rgba(206, 241, 123,.05) !important; }
   .adm-action-btn:active      { opacity: .6; }
 }
 

@@ -28,7 +28,7 @@ export default function OGImage() {
           width: 480,
           height: 480,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(10,92,71,.22) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(8, 71, 52,.22) 0%, transparent 70%)',
         }}
       />
 
@@ -37,7 +37,7 @@ export default function OGImage() {
         style={{
           fontFamily: 'monospace',
           fontSize: 13,
-          color: '#0A5C47',
+          color: '#084734',
           letterSpacing: '0.22em',
           textTransform: 'uppercase',
           marginBottom: 28,

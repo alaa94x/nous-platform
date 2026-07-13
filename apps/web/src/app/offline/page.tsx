@@ -23,7 +23,7 @@ export default function OfflinePage() {
       <div>
         <h1
           style={{
-            fontFamily: 'var(--font-fraunces)',
+            fontFamily: 'var(--font-display)',
             fontSize: 'clamp(28px,5vw,56px)',
             fontWeight: 300,
             fontStyle: 'italic',

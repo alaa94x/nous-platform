@@ -169,7 +169,7 @@ export default async function AnalyticsPage() {
           href={process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3002'}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ fontSize: 8, color: 'var(--accent)', letterSpacing: '.14em', textTransform: 'uppercase', border: '1px solid rgba(46,204,113,.2)', padding: '5px 12px', borderRadius: 3, textDecoration: 'none', flexShrink: 0 }}
+          style={{ fontSize: 8, color: 'var(--accent)', letterSpacing: '.14em', textTransform: 'uppercase', border: '1px solid rgba(206, 241, 123,.2)', padding: '5px 12px', borderRadius: 3, textDecoration: 'none', flexShrink: 0 }}
         >
           View Site
         </a>
@@ -303,7 +303,7 @@ export default async function AnalyticsPage() {
                         <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: 'var(--text)', flexShrink: 0 }}>{count}</span>
                       </div>
                       <div style={{ height: 2, background: 'rgba(255,255,255,.06)', borderRadius: 1, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${pct(count, maxPage)}%`, background: 'rgba(46,204,113,.45)', borderRadius: 1 }} />
+                        <div style={{ height: '100%', width: `${pct(count, maxPage)}%`, background: 'rgba(206, 241, 123,.45)', borderRadius: 1 }} />
                       </div>
                     </div>
                   ))}
@@ -322,7 +322,7 @@ export default async function AnalyticsPage() {
                       <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: 'var(--text)', flexShrink: 0 }}>{count}</span>
                     </div>
                     <div style={{ height: 2, background: 'rgba(255,255,255,.06)', borderRadius: 1, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct(count, maxEvent)}%`, background: 'rgba(46,204,113,.45)', borderRadius: 1 }} />
+                      <div style={{ height: '100%', width: `${pct(count, maxEvent)}%`, background: 'rgba(206, 241, 123,.45)', borderRadius: 1 }} />
                     </div>
                   </div>
                 ))}
@@ -370,7 +370,7 @@ export default async function AnalyticsPage() {
                         {row.count}
                       </div>
                       <div style={{ fontSize: 8, color: 'var(--muted)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 5 }}>{row.label}</div>
-                      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: row.count > 0 ? 'rgba(46,204,113,.55)' : 'rgba(255,255,255,.1)' }}>
+                      <div style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: row.count > 0 ? 'rgba(206, 241, 123,.55)' : 'rgba(255,255,255,.1)' }}>
                         {i === 0 ? '100%' : `${pct(row.count, row.base)}%`}
                       </div>
                       <div style={{ height: 2, background: 'rgba(255,255,255,.06)', borderRadius: 1, overflow: 'hidden', marginTop: 10 }}>
@@ -387,7 +387,7 @@ export default async function AnalyticsPage() {
                         {row.count}
                       </span>
                       <span style={{ fontSize: 9, color: 'var(--muted)', letterSpacing: '.1em', textTransform: 'uppercase', flex: 1 }}>{row.label}</span>
-                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: row.count > 0 ? 'rgba(46,204,113,.65)' : 'rgba(255,255,255,.1)' }}>
+                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 9, color: row.count > 0 ? 'rgba(206, 241, 123,.65)' : 'rgba(255,255,255,.1)' }}>
                         {i === 0 ? '100%' : `${pct(row.count, row.base)}%`}
                       </span>
                       <div style={{ width: 60, height: 2, background: 'rgba(255,255,255,.06)', borderRadius: 1, overflow: 'hidden', alignSelf: 'center' }}>

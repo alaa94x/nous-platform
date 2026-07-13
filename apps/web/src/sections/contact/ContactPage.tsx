@@ -4,19 +4,49 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useReducedMotion } from 'motion/react'
 import { track } from '@/lib/analytics'
+import type { Locale } from '@/i18n/config'
 
-interface Service {
+export interface ContactService {
   id: string
   name: string
+  name_ar?: string | null
   idx: string | null
   category: string | null
   tech_pills: string[] | null
 }
 
 interface ContactPageProps {
-  services:      Service[]
+  services:      ContactService[]
   contactEmail?: string
+  locale?:       Locale
 }
+
+const CONTACT_COPY = {
+  en: {
+    successAria: 'Brief received successfully', successTitle: 'Brief received.', successPrefix: "We'll reply to", successSuffix: 'within 24 hours.', dismiss: 'Dismiss',
+    countryCodes: 'Country codes', countrySearch: 'Search country...', searchCountries: 'Search countries', clearSearch: 'Clear search', noResults: 'No results',
+    yourBrief: 'Your Brief', startName: 'Start with your name', addContact: 'Add your contact details', chooseService: 'Choose a service', almost: 'Almost there', complete: 'Brief complete',
+    greeting: 'Hello', emptyBrief: 'Your\nBrief.', service: 'Service', vision: 'Vision', completion: 'Completion', startBrief: 'Start your brief.',
+    title: 'Start a project.', subtitle: "Fill in the brief. We'll reply within 24 hours.", nameLabel: "What's your name?", startHere: 'Start here', namePlaceholder: 'Your name',
+    phone: 'Phone', optional: 'Optional', selectCode: 'Select country code', phoneAria: 'Phone number (optional)', phoneError: 'Enter a valid number (digits only)',
+    email: 'Email address', emailError: 'Enter a valid email address', needs: 'What do you need?', needsAria: 'Select the services you need', allApply: 'Select all that apply', serviceOptions: 'Service options',
+    notSure: 'Not sure yet', goals: 'Tell us your goals below', selectedSingle: 'service selected', selectedPlural: 'services selected', visionLabel: 'Describe your vision', visionPlaceholder: "Tell us what you're building…", visionAria: 'Describe your vision or project',
+    sending: 'Sending...', transmit: 'Transmit Brief', submitAria: 'Submit your brief', sendingAria: 'Sending your brief, please wait', response: 'Response within 24h', reply: 'Reply within 24h',
+    invalidName: 'Enter your name to continue.', invalidPhone: 'Enter a valid phone number, or clear the field to leave it blank.', invalidEmail: 'Enter a valid email address to continue.', invalidService: 'Select at least one service to continue.', invalidMessage: 'Describe your vision to continue.', submitFailed: 'Something went wrong. Email us directly at',
+  },
+  ar: {
+    successAria: 'تم استلام موجز المشروع بنجاح', successTitle: 'تم استلام موجزك.', successPrefix: 'سنرد على', successSuffix: 'خلال 24 ساعة.', dismiss: 'إغلاق',
+    countryCodes: 'رموز الدول', countrySearch: 'ابحث عن دولة...', searchCountries: 'البحث في الدول', clearSearch: 'مسح البحث', noResults: 'لا توجد نتائج',
+    yourBrief: 'موجز مشروعك', startName: 'ابدأ بكتابة اسمك', addContact: 'أضف بيانات التواصل', chooseService: 'اختر خدمة', almost: 'أوشكت على الانتهاء', complete: 'اكتمل الموجز',
+    greeting: 'مرحباً', emptyBrief: 'موجز\nمشروعك.', service: 'الخدمة', vision: 'الرؤية', completion: 'نسبة الاكتمال', startBrief: 'ابدأ موجز مشروعك.',
+    title: 'ابدأ مشروعك.', subtitle: 'املأ الموجز وسنرد عليك خلال 24 ساعة.', nameLabel: 'ما اسمك؟', startHere: 'ابدأ هنا', namePlaceholder: 'الاسم',
+    phone: 'رقم الهاتف', optional: 'اختياري', selectCode: 'اختر رمز الدولة', phoneAria: 'رقم الهاتف اختياري', phoneError: 'أدخل رقماً صحيحاً',
+    email: 'البريد الإلكتروني', emailError: 'أدخل بريداً إلكترونياً صحيحاً', needs: 'ما الذي تحتاجه؟', needsAria: 'اختر الخدمات التي تحتاجها', allApply: 'يمكنك اختيار أكثر من خدمة', serviceOptions: 'خيارات الخدمات',
+    notSure: 'لست متأكداً بعد', goals: 'أخبرنا بأهدافك أدناه', selectedSingle: 'خدمة محددة', selectedPlural: 'خدمات محددة', visionLabel: 'صف رؤيتك', visionPlaceholder: 'أخبرنا عما تريد بناءه…', visionAria: 'صف رؤيتك أو مشروعك',
+    sending: 'جارٍ الإرسال...', transmit: 'أرسل الموجز', submitAria: 'إرسال موجز المشروع', sendingAria: 'جارٍ إرسال الموجز، يرجى الانتظار', response: 'نرد خلال 24 ساعة', reply: 'الرد خلال 24 ساعة',
+    invalidName: 'أدخل اسمك للمتابعة.', invalidPhone: 'أدخل رقم هاتف صحيحاً أو اترك الحقل فارغاً.', invalidEmail: 'أدخل بريداً إلكترونياً صحيحاً للمتابعة.', invalidService: 'اختر خدمة واحدة على الأقل.', invalidMessage: 'صف رؤيتك للمتابعة.', submitFailed: 'حدث خطأ. راسلنا مباشرة على',
+  },
+} as const
 
 const COUNTRY_CODES = [
   { iso: 'QA', code: '+974', name: 'Qatar',               flag: '🇶🇦' },
@@ -108,7 +138,9 @@ const COUNTRY_CODES = [
   { iso: 'ZW', code: '+263', name: 'Zimbabwe',            flag: '🇿🇼' },
 ]
 
-export default function ContactPage({ services, contactEmail = 'nouslab@icould.com' }: ContactPageProps) {
+export default function ContactPage({ services, contactEmail = 'nouslab@icould.com', locale = 'en' }: ContactPageProps) {
+  const isAr = locale === 'ar'
+  const copy = CONTACT_COPY[locale]
   const [name,        setName]        = useState('')
   const [email,       setEmail]       = useState('')
   const [phone,       setPhone]       = useState('')
@@ -145,7 +177,6 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
   // Focus search when dropdown opens
   useEffect(() => {
     if (dialOpen) setTimeout(() => searchRef.current?.focus(), 50)
-    else setDialSearch('')
   }, [dialOpen])
 
   const filteredCodes = COUNTRY_CODES.filter(c =>
@@ -186,11 +217,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
   // Phone + email render side by side as one step, so the status names both
   // rather than singling out whichever one happens to be on the right.
   const briefStatus = !hasName
-    ? 'Start with your name'
-    : !hasEmail ? 'Add your contact details'
-    : !hasSvc   ? 'Choose a service'
-    : !hasMsg   ? 'Almost there'
-    : 'Brief complete'
+    ? copy.startName
+    : !hasEmail ? copy.addContact
+    : !hasSvc   ? copy.chooseService
+    : !hasMsg   ? copy.almost
+    : copy.complete
 
   // Step state helpers
   const stepDone   = (i: number) => !![hasName, hasEmail, hasSvc, hasMsg][i]
@@ -219,15 +250,20 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
   const toggleService = useCallback((val: string) => {
     setSelectedSvc(prev => {
       const next = new Set(prev)
-      if (val === 'Not Sure Yet') {
-        next.has(val) ? next.delete(val) : (next.clear(), next.add(val))
+      if (val === copy.notSure) {
+        if (next.has(val)) next.delete(val)
+        else {
+          next.clear()
+          next.add(val)
+        }
       } else {
-        next.delete('Not Sure Yet')
-        next.has(val) ? next.delete(val) : next.add(val)
+        next.delete(copy.notSure)
+        if (next.has(val)) next.delete(val)
+        else next.add(val)
       }
       return next
     })
-  }, [])
+  }, [copy.notSure])
 
   const handleSubmit = async () => {
     if (submitting) return
@@ -236,11 +272,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
     // otherwise it silently does nothing, sighted or not.
     if (!isReady) {
       const firstInvalid =
-        !hasName  ? { id: 'cp-name',    msg: 'Enter your name to continue.' } :
-        !hasPhone ? { id: 'cp-phone',   msg: 'Enter a valid phone number, or clear the field to leave it blank.' } :
-        !hasEmail ? { id: 'cp-email',   msg: 'Enter a valid email address to continue.' } :
-        !hasSvc   ? { id: null,         msg: 'Select at least one service to continue.' } :
-                    { id: 'cp-message', msg: 'Describe your vision to continue.' }
+        !hasName  ? { id: 'cp-name',    msg: copy.invalidName } :
+        !hasPhone ? { id: 'cp-phone',   msg: copy.invalidPhone } :
+        !hasEmail ? { id: 'cp-email',   msg: copy.invalidEmail } :
+        !hasSvc   ? { id: null,         msg: copy.invalidService } :
+                    { id: 'cp-message', msg: copy.invalidMessage }
       setError(firstInvalid.msg)
       if (firstInvalid.id) document.getElementById(firstInvalid.id)?.focus()
       return
@@ -263,14 +299,14 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
       track('contact_form_submitted', { services: Array.from(selectedSvc) })
       setSubmitted(true)
     } catch {
-      setError(`Something went wrong. Email us directly at ${contactEmail}.`)
+      setError(`${copy.submitFailed} ${contactEmail}.`)
     } finally {
       setSubmitting(false)
     }
   }
 
   const inputStyle = {
-    fontFamily:    'var(--font-fraunces)',
+    fontFamily:    isAr ? 'var(--font-arabic)' : 'var(--font-display)',
     fontSize:      'clamp(18px, 2.2vw, 28px)',
     fontWeight:    300,
     color:         'var(--text)',
@@ -278,7 +314,8 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
     border:        'none',
     outline:       'none',
     width:         '100%',
-    letterSpacing: '-.02em',
+    letterSpacing: isAr ? 0 : '-.02em',
+    textAlign:     'start',
     padding:       0,
     // Defeat browser autofill background injection
     WebkitTextFillColor: 'var(--text)',
@@ -292,7 +329,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
         <div
           role="status"
           aria-live="polite"
-          aria-label="Brief received successfully"
+          aria-label={copy.successAria}
           onClick={closeSuccess}
           style={{
             position:           'fixed',
@@ -311,7 +348,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             onClick={e => e.stopPropagation()}
             style={{
               background:  'var(--bg)',
-              border:      '1px solid rgba(96,184,154,.2)',
+              border:      '1px solid rgba(206, 241, 123,.2)',
               padding:     'clamp(36px, 5vw, 52px) clamp(32px, 5vw, 56px)',
               maxWidth:    480,
               width:       'calc(100vw - 48px)',
@@ -324,34 +361,34 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             }}
           >
             {/* Timer bar */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'rgba(96,184,154,.12)' }}>
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'rgba(206, 241, 123,.12)' }}>
               <div style={{ height: '100%', background: 'var(--accent)', animation: reduced ? 'none' : 'toast-timer 5s linear forwards', transformOrigin: 'left' }} />
             </div>
 
             {/* Check ring */}
-            <div style={{ width: 56, height: 56, borderRadius: '50%', border: '1.5px solid rgba(96,184,154,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, position: 'relative' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', border: '1.5px solid rgba(206, 241, 123,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28, position: 'relative' }}>
               {!reduced && (
                 <svg style={{ position: 'absolute', inset: 0, animation: 'spin-cw 18s linear infinite' }} viewBox="0 0 56 56" width="56" height="56">
-                  <circle cx="28" cy="28" r="26" fill="none" stroke="rgba(96,184,154,.15)" strokeWidth="1" strokeDasharray="3 5" />
+                  <circle cx="28" cy="28" r="26" fill="none" stroke="rgba(206, 241, 123,.15)" strokeWidth="1" strokeDasharray="3 5" />
                 </svg>
               )}
               <svg width="20" height="15" viewBox="0 0 20 15" fill="none">
-                <path d="M1 7.5l5.5 5.5L19 1" stroke="#60B89A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M1 7.5l5.5 5.5L19 1" stroke="#CEF17B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
 
-            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(28px,5vw,44px)', fontWeight: 700, fontStyle: 'italic', color: 'var(--text)', letterSpacing: '-.03em', lineHeight: 1.1, marginBottom: 10, textAlign: 'center' }}>
-              Brief received.
+            <h3 style={{ fontFamily: isAr ? 'var(--font-display-ar)' : 'var(--font-display)', fontSize: 'clamp(28px,5vw,44px)', fontWeight: 570, color: 'var(--text)', letterSpacing: isAr ? '-.02em' : '-.04em', lineHeight: isAr ? 1.35 : 1.05, marginBottom: 10, textAlign: 'center' }}>
+              {copy.successTitle}
             </h3>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.14em', lineHeight: 2, textAlign: 'center', marginBottom: 32 }}>
-              We&apos;ll reply to <span style={{ color: 'var(--accent)' }}>{email}</span><br />within 24 hours.
+            <p style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 14 : 9, color: 'var(--muted)', letterSpacing: isAr ? 0 : '.14em', lineHeight: 2, textAlign: 'center', marginBottom: 32 }}>
+              {copy.successPrefix} <span style={{ color: 'var(--accent)' }}>{email}</span><br />{copy.successSuffix}
             </p>
-            <div style={{ width: 40, height: 1, background: 'rgba(96,184,154,.2)', marginBottom: 28 }} />
+            <div style={{ width: 40, height: 1, background: 'rgba(206, 241, 123,.2)', marginBottom: 28 }} />
             <button
               onClick={closeSuccess}
               style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.18em', textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer', opacity: .5, padding: '4px 0' }}
             >
-              Dismiss
+              {copy.dismiss}
             </button>
           </div>
         </div>
@@ -362,7 +399,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
         <div
           ref={dialRef}
           role="listbox"
-          aria-label="Country codes"
+          aria-label={copy.countryCodes}
           style={{
             position:        'fixed',
             top:             dialPos.top,
@@ -370,7 +407,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             zIndex:          99999,
             width:           300,
             backgroundColor: '#0a1510',
-            border:          '1px solid rgba(96,184,154,.35)',
+            border:          '1px solid rgba(206, 241, 123,.35)',
             boxShadow:       '0 32px 80px rgba(0,0,0,.95), 0 8px 24px rgba(0,0,0,.8)',
             display:         'flex',
             flexDirection:   'column',
@@ -386,15 +423,15 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             <input
               ref={searchRef}
               type="text"
-              placeholder="Search country..."
+              placeholder={copy.countrySearch}
               value={dialSearch}
               onChange={e => setDialSearch(e.target.value)}
               className="cp-dial-search"
-              aria-label="Search countries"
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: 10, color: '#F0EDEA', letterSpacing: '.06em', caretColor: '#60B89A' }}
+              aria-label={copy.searchCountries}
+              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: 10, color: '#F0EDEA', letterSpacing: '.06em', caretColor: '#CEF17B' }}
             />
             {dialSearch && (
-              <button type="button" onClick={() => setDialSearch('')} aria-label="Clear search" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, opacity: .5, display: 'flex', alignItems: 'center' }}>
+              <button type="button" onClick={() => setDialSearch('')} aria-label={copy.clearSearch} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, opacity: .5, display: 'flex', alignItems: 'center' }}>
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
                   <path d="M2 2l6 6M8 2l-6 6" stroke="#F0EDEA" strokeWidth="1.2" strokeLinecap="round" />
                 </svg>
@@ -403,9 +440,9 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           </div>
 
           {/* List */}
-          <div style={{ overflowY: 'auto', maxHeight: 260, backgroundColor: '#0a1510', scrollbarWidth: 'thin', scrollbarColor: 'rgba(96,184,154,.25) transparent' }}>
+          <div style={{ overflowY: 'auto', maxHeight: 260, backgroundColor: '#0a1510', scrollbarWidth: 'thin', scrollbarColor: 'rgba(206, 241, 123,.25) transparent' }}>
             {filteredCodes.length === 0 ? (
-              <div style={{ padding: '16px 14px', fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.35)', letterSpacing: '.1em' }}>No results</div>
+              <div style={{ padding: '16px 14px', fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 13 : 9, color: 'rgba(240,237,234,.35)', letterSpacing: isAr ? 0 : '.1em' }}>{copy.noResults}</div>
             ) : filteredCodes.map(c => {
               const isSel = c.code === countryCode && c.iso === selectedCountry.iso
               return (
@@ -421,20 +458,20 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                     gap:             10,
                     width:           '100%',
                     padding:         '9px 14px',
-                    backgroundColor: isSel ? 'rgba(96,184,154,.12)' : '#0a1510',
+                    backgroundColor: isSel ? 'rgba(206, 241, 123,.12)' : '#0a1510',
                     border:          'none',
                     cursor:          'pointer',
                     transition:      'background .12s',
                   }}
                   onMouseEnter={e => { if (!isSel) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,.06)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = isSel ? 'rgba(96,184,154,.12)' : '#0a1510' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = isSel ? 'rgba(206, 241, 123,.12)' : '#0a1510' }}
                 >
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: isSel ? '#60B89A' : 'rgba(240,237,234,.45)', letterSpacing: '.04em', flexShrink: 0, minWidth: 20 }}>{c.iso}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSel ? '#60B89A' : '#F0EDEA', letterSpacing: '.06em', flex: 1, textAlign: 'left' }}>{c.name}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSel ? '#60B89A' : 'rgba(240,237,234,.4)', letterSpacing: '.04em', flexShrink: 0 }}>{c.code}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: isSel ? '#CEF17B' : 'rgba(240,237,234,.45)', letterSpacing: '.04em', flexShrink: 0, minWidth: 20 }}>{c.iso}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSel ? '#CEF17B' : '#F0EDEA', letterSpacing: '.06em', flex: 1, textAlign: 'left' }}>{c.name}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: isSel ? '#CEF17B' : 'rgba(240,237,234,.4)', letterSpacing: '.04em', flexShrink: 0 }}>{c.code}</span>
                   {isSel && (
                     <svg width="10" height="8" viewBox="0 0 10 8" fill="none" style={{ flexShrink: 0 }}>
-                      <path d="M1 4l3 3 5-6" stroke="#60B89A" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M1 4l3 3 5-6" stroke="#CEF17B" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                 </button>
@@ -446,14 +483,14 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
       )}
 
       {/* ── Page shell ──────────────────────────────────────────────── */}
-      <div className="cp-shell">
+      <div className="cp-shell" lang={locale} dir={isAr ? 'rtl' : 'ltr'}>
 
         {/* ── LEFT: live brief preview ─────────────────────────────── */}
         <aside className="cp-preview" aria-hidden="true">
           {/* Top meta */}
           <div>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--accent)', letterSpacing: '.22em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-              Your Brief
+              {copy.yourBrief}
             </span>
             <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: briefName ? 'var(--accent)' : 'rgba(240,237,234,.45)', letterSpacing: '.14em', textTransform: 'uppercase', transition: 'color .4s', fontWeight: briefName ? 600 : 400 }}>
               {briefStatus}
@@ -463,7 +500,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           {/* Large greeting */}
           <div style={{ overflow: 'hidden', flex: 1, display: 'flex', alignItems: 'center' }}>
             <div style={{
-              fontFamily:    'var(--font-fraunces)',
+              fontFamily:    isAr ? 'var(--font-display-ar)' : 'var(--font-display)',
               fontSize:      'clamp(52px, 6.5vw, 96px)',
               fontWeight:    700,
               color:         'var(--text)',
@@ -474,7 +511,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
               wordBreak:     'break-word',
               whiteSpace:    'pre-line',
             }}>
-              {briefName ? `Hello,\n${briefName}.` : 'Your\nBrief.'}
+              {briefName ? `${copy.greeting}،\n${briefName}.` : copy.emptyBrief}
             </div>
           </div>
 
@@ -482,16 +519,16 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {hasSvc && (
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'rgba(240,237,234,.45)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Service</span>
-                <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 15, fontWeight: 300, fontStyle: 'italic', color: 'var(--accent)', lineHeight: 1.5 }}>
+                <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 12 : 7, color: 'rgba(240,237,234,.45)', letterSpacing: isAr ? 0 : '.18em', textTransform: isAr ? 'none' : 'uppercase', display: 'block', marginBottom: 6 }}>{copy.service}</span>
+                <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-display)', fontSize: 15, fontWeight: 520, color: 'var(--accent)', lineHeight: 1.5 }}>
                   {Array.from(selectedSvc).join(', ')}
                 </span>
               </div>
             )}
             {hasMsg && (
               <div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'rgba(240,237,234,.45)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Vision</span>
-                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 12, fontWeight: 300, color: 'rgba(240,237,234,.5)', lineHeight: 1.85, maxHeight: 60, overflow: 'hidden' }}>
+                <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 12 : 7, color: 'rgba(240,237,234,.45)', letterSpacing: isAr ? 0 : '.18em', textTransform: isAr ? 'none' : 'uppercase', display: 'block', marginBottom: 6 }}>{copy.vision}</span>
+                <p style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-body)', fontSize: 12, fontWeight: 400, color: 'rgba(240,237,234,.5)', lineHeight: 1.85, maxHeight: 60, overflow: 'hidden' }}>
                   {message}
                 </p>
               </div>
@@ -500,11 +537,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             {/* Progress bar */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'rgba(240,237,234,.4)', letterSpacing: '.14em', textTransform: 'uppercase' }}>Completion</span>
+                <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 12 : 7, color: 'rgba(240,237,234,.4)', letterSpacing: isAr ? 0 : '.14em', textTransform: isAr ? 'none' : 'uppercase' }}>{copy.completion}</span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--accent)', letterSpacing: '.1em' }}>{pct}%</span>
               </div>
               <div style={{ height: 1, background: 'var(--border)', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: 'var(--accent)', transition: reduced ? 'none' : 'width .6s cubic-bezier(.16,1,.3,1)' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'var(--accent)', transform: `scaleX(${pct / 100})`, transformOrigin: isAr ? 'right center' : 'left center', transition: reduced ? 'none' : 'transform var(--motion-ui) var(--ease-out)' }} />
               </div>
             </div>
           </div>
@@ -539,24 +576,24 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             {/* Mobile progress bar (visible < 1024px only) */}
             <div className="cp-mob-progress">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(18px, 5vw, 22px)', fontWeight: 700, color: 'var(--text)', letterSpacing: '-.03em' }}>
-                  {briefName ? `Hello, ${briefName}.` : 'Start your brief.'}
+                <span style={{ fontFamily: isAr ? 'var(--font-display-ar)' : 'var(--font-display)', fontSize: 'clamp(18px, 5vw, 22px)', fontWeight: 570, color: 'var(--text)', letterSpacing: isAr ? '-.01em' : '-.03em' }}>
+                  {briefName ? `${copy.greeting}، ${briefName}.` : copy.startBrief}
                 </span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--accent)', letterSpacing: '.1em' }}>{pct}%</span>
               </div>
               <div style={{ height: 2, background: 'var(--border)', position: 'relative' }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${pct}%`, background: 'var(--accent)', transition: reduced ? 'none' : 'width .6s cubic-bezier(.16,1,.3,1)' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'var(--accent)', transform: `scaleX(${pct / 100})`, transformOrigin: isAr ? 'right center' : 'left center', transition: reduced ? 'none' : 'transform var(--motion-ui) var(--ease-out)' }} />
               </div>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7.5, color: 'var(--accent)', letterSpacing: '.14em', textTransform: 'uppercase', display: 'block', marginTop: 6, fontWeight: 600 }}>
                 {briefStatus}
               </span>
             </div>
 
-            <h1 className="cp-form-title" style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(24px, 2.6vw, 38px)', fontWeight: 700, fontStyle: 'italic', color: 'var(--text)', letterSpacing: '-.03em', lineHeight: 1.05, marginBottom: 6 }}>
-              Start a project.
+            <h1 className="cp-form-title" style={{ fontFamily: isAr ? 'var(--font-display-ar)' : 'var(--font-display)', fontSize: 'clamp(24px, 2.6vw, 38px)', fontWeight: 570, color: 'var(--text)', letterSpacing: isAr ? '-.02em' : '-.04em', lineHeight: isAr ? 1.35 : 1.05, marginBottom: 6 }}>
+              {copy.title}
             </h1>
             <p className="cp-form-subtitle" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.55)', letterSpacing: '.12em', lineHeight: 1.8, marginBottom: 20 }}>
-              Fill in the brief. We&apos;ll reply within 24 hours.
+              {copy.subtitle}
             </p>
           </div>
 
@@ -571,11 +608,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                 <label htmlFor="cp-name" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
-                  What&apos;s your name?
+                  {copy.nameLabel}
                 </label>
                 {!hasName && (
                   <span className="cp-nudge" aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--accent)', letterSpacing: '.12em', opacity: .8 }}>
-                    Start here
+                    {copy.startHere}
                   </span>
                 )}
               </div>
@@ -583,13 +620,13 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                 id="cp-name"
                 type="text"
                 autoComplete="name"
-                placeholder="Your name"
+                placeholder={copy.namePlaceholder}
                 aria-required="true"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 style={inputStyle}
               />
-              <div className="cp-underline" style={{ width: hasName ? '100%' : 0 }} />
+              <div className="cp-underline" style={{ transform: `scaleX(${hasName ? 1 : 0})` }} />
             </div>
 
             {/* Step 2 — Phone + Email in one row */}
@@ -602,7 +639,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                 {/* ── Phone (left, first — optional) ── */}
                 <div className="cp-contact-cell">
                   <label htmlFor="cp-phone" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-                    Phone <span style={{ opacity: .5, fontSize: 7 }}>(Optional)</span>
+                    {copy.phone} <span style={{ opacity: .5, fontSize: 7 }}>({copy.optional})</span>
                   </label>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {/* Custom country code dropdown */}
@@ -610,7 +647,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                       <button
                         ref={triggerRef}
                         type="button"
-                        aria-label="Select country code"
+                        aria-label={copy.selectCode}
                         aria-expanded={dialOpen}
                         aria-haspopup="listbox"
                         onClick={() => {
@@ -625,7 +662,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.6)', letterSpacing: '.04em' }}>{selectedCountry.iso}</span>
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent)', letterSpacing: '.03em' }}>{selectedCountry.code}</span>
                         <svg width="8" height="5" viewBox="0 0 8 5" fill="none" style={{ flexShrink: 0, transition: 'transform .2s', transform: dialOpen ? 'rotate(180deg)' : 'none' }}>
-                          <path d="M1 1l3 3 3-3" stroke="#60B89A" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M1 1l3 3 3-3" stroke="#CEF17B" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
 
@@ -636,7 +673,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                       type="tel"
                       autoComplete="tel"
                       placeholder="5X XXX XXXX"
-                      aria-label="Phone number (optional)"
+                      aria-label={copy.phoneAria}
                       aria-invalid={phoneError}
                       aria-describedby={phoneError ? 'cp-phone-error' : undefined}
                       value={phone}
@@ -647,11 +684,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                   </div>
                   {phoneError && (
                     <span id="cp-phone-error" style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
-                      Enter a valid number (digits only)
+                      {copy.phoneError}
                     </span>
                   )}
                   <div style={{ height: 1, background: phoneError ? '#e05555' : 'var(--border)', marginTop: 6, position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: phone.trim().length > 0 && !phoneError ? '100%' : 0, background: 'var(--accent)', transition: reduced ? 'none' : 'width .5s cubic-bezier(.16,1,.3,1)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'var(--accent)', transform: `scaleX(${phone.trim().length > 0 && !phoneError ? 1 : 0})`, transformOrigin: isAr ? 'right center' : 'left center', transition: reduced ? 'none' : 'transform var(--motion-ui) var(--ease-out)' }} />
                   </div>
                 </div>
 
@@ -661,7 +698,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                 {/* ── Email (right, second — required) ── */}
                 <div className="cp-contact-cell">
                   <label htmlFor="cp-email" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-                    Email address
+                    {copy.email}
                   </label>
                   <input
                     id="cp-email"
@@ -678,11 +715,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                   />
                   {emailError && (
                     <span id="cp-email-error" style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#e05555', letterSpacing: '.06em', display: 'block', marginTop: 4 }}>
-                      Enter a valid email address
+                      {copy.emailError}
                     </span>
                   )}
                   <div style={{ height: 1, background: emailError ? '#e05555' : 'var(--border)', marginTop: 6, position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: hasEmail ? '100%' : 0, background: 'var(--accent)', transition: reduced ? 'none' : 'width .5s cubic-bezier(.16,1,.3,1)' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: 'var(--accent)', transform: `scaleX(${hasEmail ? 1 : 0})`, transformOrigin: isAr ? 'right center' : 'left center', transition: reduced ? 'none' : 'transform var(--motion-ui) var(--ease-out)' }} />
                   </div>
                 </div>
               </div>
@@ -694,26 +731,27 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
               style={{ opacity: stepOpacity(2), transition: reduced ? 'none' : 'opacity .5s cubic-bezier(.16,1,.3,1)' }}
             >
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10, gap: 8, flexWrap: 'wrap' }}>
-                <span role="group" aria-label="Select the services you need" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase' }}>
-                  What do you need?
+                <span role="group" aria-label={copy.needsAria} style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 14 : 9, color: 'rgba(240,237,234,.75)', letterSpacing: isAr ? 0 : '.18em', textTransform: isAr ? 'none' : 'uppercase' }}>
+                  {copy.needs}
                 </span>
-                <span aria-hidden="true" style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'rgba(240,237,234,.4)', letterSpacing: '.12em' }}>Select all that apply</span>
+                <span aria-hidden="true" style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 12 : 7, color: 'rgba(240,237,234,.4)', letterSpacing: isAr ? 0 : '.12em' }}>{copy.allApply}</span>
               </div>
 
-              <div role="group" aria-label="Service options" className="cp-svc-grid">
+              <div role="group" aria-label={copy.serviceOptions} className="cp-svc-grid">
                 {services.map(s => {
-                  const sel = selectedSvc.has(s.name)
+                  const serviceName = isAr ? (s.name_ar || s.name) : s.name
+                  const sel = selectedSvc.has(serviceName)
                   return (
                     <button
                       key={s.id}
                       type="button"
                       aria-pressed={sel}
-                      onClick={() => toggleService(s.name)}
+                      onClick={() => toggleService(serviceName)}
                       className={`cp-svc-card${sel ? ' cp-svc-sel' : ''}`}
                       style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 6 }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7.5, fontWeight: 600, color: sel ? 'var(--accent)' : '#FFFFFF', letterSpacing: '.1em', textTransform: 'uppercase', transition: 'color .25s', lineHeight: 1.2, flex: 1, minWidth: 0 }}>{s.name}</span>
+                        <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 13 : 7.5, fontWeight: 600, color: sel ? 'var(--accent)' : '#FFFFFF', letterSpacing: isAr ? 0 : '.1em', textTransform: isAr ? 'none' : 'uppercase', transition: 'color .25s', lineHeight: 1.2, flex: 1, minWidth: 0 }}>{serviceName}</span>
                         <div style={{ width: 14, height: 14, borderRadius: '50%', border: `1px solid ${sel ? 'var(--accent)' : 'rgba(240,237,234,.15)'}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: sel ? 'var(--accent)' : 'none', transition: 'border-color .25s, background .25s' }}>
                           <svg width="6" height="5" viewBox="0 0 6 5" fill="none" style={{ opacity: sel ? 1 : 0, transition: 'opacity .2s' }}>
                             <path d="M1 2.5l1.5 1.5L5 1" stroke="var(--bg)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -721,7 +759,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                         </div>
                       </div>
                       {s.category && (
-                        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 9.5, fontStyle: 'italic', fontWeight: 300, color: sel ? '#60B89A' : '#C4D4D0', transition: 'color .25s', lineHeight: 1, letterSpacing: '-.01em' }}>{s.category}</span>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 9.5, fontWeight: 500, color: sel ? '#CEF17B' : '#CDEDB3', transition: 'color .25s', lineHeight: 1, letterSpacing: '.01em' }}>{s.category}</span>
                       )}
                     </button>
                   )
@@ -729,16 +767,16 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
 
                 {/* Not sure — spans full width */}
                 {(() => {
-                  const nsel = selectedSvc.has('Not Sure Yet')
+                  const nsel = selectedSvc.has(copy.notSure)
                   return (
                     <button
                       type="button"
                       aria-pressed={nsel}
-                      onClick={() => toggleService('Not Sure Yet')}
+                      onClick={() => toggleService(copy.notSure)}
                       className={`cp-svc-card cp-svc-wide${nsel ? ' cp-svc-sel' : ''}`}
                     >
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7.5, color: nsel ? 'var(--accent)' : '#FFFFFF', letterSpacing: '.1em', textTransform: 'uppercase', transition: 'color .25s', flex: 1 }}>Not sure yet</span>
-                      <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 9, fontStyle: 'italic', fontWeight: 300, color: nsel ? '#60B89A' : '#C4D4D0', transition: 'color .25s' }}>Tell us your goals below</span>
+                      <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 13 : 7.5, color: nsel ? 'var(--accent)' : '#FFFFFF', letterSpacing: isAr ? 0 : '.1em', textTransform: isAr ? 'none' : 'uppercase', transition: 'color .25s', flex: 1 }}>{copy.notSure}</span>
+                      <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-body)', fontSize: isAr ? 12 : 9, fontWeight: 500, color: nsel ? '#CEF17B' : '#CDEDB3', transition: 'color .25s' }}>{copy.goals}</span>
                       <div style={{ width: 14, height: 14, borderRadius: '50%', border: `1px solid ${nsel ? 'var(--accent)' : 'rgba(240,237,234,.15)'}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: nsel ? 'var(--accent)' : 'none', transition: 'border-color .25s, background .25s' }}>
                         <svg width="6" height="5" viewBox="0 0 6 5" fill="none" style={{ opacity: nsel ? 1 : 0, transition: 'opacity .2s' }}>
                           <path d="M1 2.5l1.5 1.5L5 1" stroke="var(--bg)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -751,7 +789,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
 
               {hasSvc && (
                 <div style={{ marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 7, color: 'var(--accent)', letterSpacing: '.14em' }}>
-                  {selectedSvc.size} service{selectedSvc.size !== 1 ? 's' : ''} selected
+                  {selectedSvc.size} {selectedSvc.size === 1 ? copy.selectedSingle : copy.selectedPlural}
                 </div>
               )}
             </div>
@@ -762,18 +800,18 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
               style={{ opacity: stepOpacity(3), transition: reduced ? 'none' : 'opacity .5s cubic-bezier(.16,1,.3,1)', borderBottom: 'none' }}
             >
               <label htmlFor="cp-message" style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'rgba(240,237,234,.75)', letterSpacing: '.18em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-                Describe your vision
+                {copy.visionLabel}
               </label>
               <textarea
                 id="cp-message"
                 rows={2}
-                placeholder="Tell us what you're building…"
-                aria-label="Describe your vision or project"
+                placeholder={copy.visionPlaceholder}
+                aria-label={copy.visionAria}
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 style={{ ...inputStyle, resize: 'none', lineHeight: 1.75, fontSize: 'clamp(18px, 2.2vw, 26px)' }}
               />
-              <div className="cp-underline" style={{ width: hasMsg ? '100%' : 0 }} />
+              <div className="cp-underline" style={{ transform: `scaleX(${hasMsg ? 1 : 0})` }} />
             </div>
           </div>
           </div>{/* end cp-steps-scroll */}
@@ -785,7 +823,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                 type="button"
                 aria-disabled={!isReady || submitting}
                 aria-busy={submitting}
-                aria-label={submitting ? 'Sending your brief, please wait' : 'Submit your brief'}
+                aria-label={submitting ? copy.sendingAria : copy.submitAria}
                 className={`init-btn${isReady ? ' ready' : ''} cp-submit`}
                 onClick={handleSubmit}
                 disabled={submitting}
@@ -808,7 +846,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
                   overflow:      'hidden',
                 }}
               >
-                <span className="btn-txt">{submitting ? 'Sending...' : 'Transmit Brief'}</span>
+                <span className="btn-txt">{submitting ? copy.sending : copy.transmit}</span>
                 {!submitting && (
                   <svg
                     width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -827,7 +865,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'rgba(240,237,234,.5)', letterSpacing: '.1em' }}>{contactEmail}</span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'rgba(240,237,234,.28)', letterSpacing: '.1em' }}>Response within 24h</span>
+                <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 11 : 7, color: 'rgba(240,237,234,.28)', letterSpacing: isAr ? 0 : '.1em' }}>{copy.response}</span>
               </div>
             </div>
 
@@ -843,12 +881,12 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
       </div>
 
       {/* ── Mobile pinned submit bar (replaces bottom rail on this page) ── */}
-      <div className="cp-mob-submit-bar" role="region" aria-label="Submit brief">
+      <div className="cp-mob-submit-bar" role="region" aria-label={copy.submitAria} lang={locale} dir={isAr ? 'rtl' : 'ltr'}>
         <button
           type="button"
           aria-disabled={!isReady || submitting}
           aria-busy={submitting}
-          aria-label={submitting ? 'Sending your brief, please wait' : 'Submit your brief'}
+          aria-label={submitting ? copy.sendingAria : copy.submitAria}
           className={`init-btn${isReady ? ' ready' : ''} cp-submit`}
           onClick={handleSubmit}
           disabled={submitting}
@@ -871,7 +909,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
             cursor:        isReady ? 'pointer' : 'not-allowed',
           }}
         >
-          <span className="btn-txt">{submitting ? 'Sending...' : 'Transmit Brief'}</span>
+          <span className="btn-txt">{submitting ? copy.sending : copy.transmit}</span>
           {!submitting && (
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="cp-submit-arrow">
               <path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
@@ -885,7 +923,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
         </button>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7.5, color: 'rgba(240,237,234,.5)', letterSpacing: '.1em' }}>{contactEmail}</span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 7, color: 'rgba(240,237,234,.25)', letterSpacing: '.1em' }}>Reply within 24h</span>
+          <span style={{ fontFamily: isAr ? 'var(--font-arabic)' : 'var(--font-mono)', fontSize: isAr ? 11 : 7, color: 'rgba(240,237,234,.25)', letterSpacing: isAr ? 0 : '.1em' }}>{copy.reply}</span>
         </div>
         {error && (
           <p role="alert" aria-live="assertive" style={{ position: 'absolute', bottom: 'calc(100% + 4px)', left: 20, right: 20, fontFamily: 'var(--font-mono)', fontSize: 10, color: '#e05555', letterSpacing: '.06em', lineHeight: 1.4, margin: 0 }}>
@@ -915,6 +953,12 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           gap: 16px;
           overflow: hidden;
         }
+        .cp-shell[dir="rtl"] .cp-preview {
+          border-right: 0;
+          border-left: 1px solid var(--border);
+        }
+        .cp-shell[dir="rtl"] .cp-underline { left: auto; right: 0; }
+        .cp-shell[dir="rtl"] .cp-svc-card { text-align: right; }
 
         /* ── Right form column: three-row flex — header / scrollable-steps / pinned-footer ── */
         .cp-form-col {
@@ -934,6 +978,8 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
         .cp-steps-scroll {
           flex: 1;
           overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
           padding: 0 56px;
           scrollbar-width: none;
         }
@@ -961,6 +1007,10 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           border-bottom: 1px solid var(--border);
           position: relative;
         }
+        .cp-step input,
+        .cp-step textarea {
+          min-height: 44px;
+        }
 
         /* ── Accent underline ── */
         .cp-underline {
@@ -969,8 +1019,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           left: 0;
           height: 1.5px;
           background: var(--accent);
-          transition: width .5s cubic-bezier(.16,1,.3,1);
+          width: 100%;
+          transform-origin: left center;
+          transition: transform var(--motion-ui) var(--ease-out);
         }
+        .cp-shell[dir="rtl"] .cp-underline { transform-origin: right center; }
 
         /* ── Autofill override: kill browser blue/yellow background ── */
         .cp-form-col input:-webkit-autofill,
@@ -1025,21 +1078,21 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, rgba(96,184,154,.06) 0%, transparent 60%);
+          background: linear-gradient(135deg, rgba(206, 241, 123,.06) 0%, transparent 60%);
           opacity: 0;
           transition: opacity .25s;
         }
         .cp-svc-card:hover {
-          border-color: rgba(96,184,154,.4) !important;
-          background: rgba(96,184,154,.05) !important;
-          box-shadow: 0 0 0 1px rgba(96,184,154,.08) inset !important;
+          border-color: rgba(206, 241, 123,.4) !important;
+          background: rgba(206, 241, 123,.05) !important;
+          box-shadow: 0 0 0 1px rgba(206, 241, 123,.08) inset !important;
         }
         .cp-svc-card:hover::before { opacity: 1; }
         .cp-svc-card:active { transform: scale(0.98); }
         .cp-svc-sel {
-          border-color: rgba(96,184,154,.55) !important;
-          background: rgba(96,184,154,.09) !important;
-          box-shadow: 0 0 0 1px rgba(96,184,154,.12) inset !important;
+          border-color: rgba(206, 241, 123,.55) !important;
+          background: rgba(206, 241, 123,.09) !important;
+          box-shadow: 0 0 0 1px rgba(206, 241, 123,.12) inset !important;
         }
         .cp-svc-sel::before { opacity: 1; }
         .cp-svc-wide {
@@ -1187,6 +1240,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           padding: 4px 6px 4px 0;
           border-radius: 4px;
           transition: background .15s;
+          min-height: 44px;
         }
         .cp-dial-trigger:hover { background: rgba(255,255,255,.05); }
 
@@ -1197,7 +1251,7 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           width: 300px;
           background: #0a1510 !important;
           background-color: #0a1510 !important;
-          border: 1px solid rgba(96,184,154,.35);
+          border: 1px solid rgba(206, 241, 123,.35);
           box-shadow: 0 32px 80px rgba(0,0,0,.9), 0 8px 24px rgba(0,0,0,.7);
           display: flex;
           flex-direction: column;
@@ -1250,11 +1304,11 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           max-height: 240px;
           background: #0a1510;
           scrollbar-width: thin;
-          scrollbar-color: rgba(96,184,154,.2) transparent;
+          scrollbar-color: rgba(206, 241, 123,.2) transparent;
         }
         .cp-dial-list::-webkit-scrollbar { width: 4px; }
         .cp-dial-list::-webkit-scrollbar-track { background: transparent; }
-        .cp-dial-list::-webkit-scrollbar-thumb { background: rgba(96,184,154,.2); border-radius: 2px; }
+        .cp-dial-list::-webkit-scrollbar-thumb { background: rgba(206, 241, 123,.2); border-radius: 2px; }
 
         /* ── Individual option ── */
         .cp-dial-option {
@@ -1268,8 +1322,8 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           cursor: pointer;
           transition: background .12s;
         }
-        .cp-dial-option:hover { background: rgba(96,184,154,.08) !important; }
-        .cp-dial-selected { background: rgba(96,184,154,.12) !important; }
+        .cp-dial-option:hover { background: rgba(206, 241, 123,.08) !important; }
+        .cp-dial-selected { background: rgba(206, 241, 123,.12) !important; }
       `}</style>
     </>
   )

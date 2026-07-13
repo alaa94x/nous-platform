@@ -27,6 +27,7 @@ interface Field {
   maxChars?: number
   placeholder?: string
   colSpan?: 1 | 2
+  options?: Array<{ value: string; label: string }>
 }
 
 interface Section {
@@ -41,16 +42,143 @@ interface Section {
 const SECTIONS: Section[] = [
   {
     id: 'hero',
-    title: 'Hero Content',
-    description: 'The first thing visitors see. Keep headlines short and punchy.',
+    title: 'Hero Narrative',
+    description: 'English and Arabic are authored independently. Keep the promise specific and the actions direct.',
     fields: [
-      { key: 'hero_headline_en',   label: 'Headline (EN)',        hint: 'Main display text',          placeholder: 'Engineered Intelligence',   maxChars: 80,  colSpan: 2 },
-      { key: 'hero_headline_ar',   label: 'Headline (AR)',        hint: 'Arabic companion',            placeholder: 'نُهندِس الذكاء',            multiline: true, rows: 2, maxChars: 80, rtl: true, colSpan: 2 },
-      { key: 'hero_subtext_en',    label: 'English Subtext',      hint: 'Under 30 words recommended', placeholder: 'Transforming complex...',    multiline: true, maxChars: 300, colSpan: 2 },
-      { key: 'hero_subtext_ar',    label: 'Arabic Subtext (RTL)', hint: 'Mirror in Arabic',            placeholder: 'نحوّل الرؤى...',           multiline: true, maxChars: 300, rtl: true, colSpan: 2 },
-      { key: 'hero_location',      label: 'Location Tag',         hint: 'Shown below system tag',     placeholder: 'Doha, Qatar · 2025' },
-      { key: 'hero_cta_primary',   label: 'Primary CTA Label',    hint: 'Main call-to-action',        placeholder: 'Initialize Project',        maxChars: 30 },
-      { key: 'hero_cta_secondary', label: 'Secondary CTA Label',  hint: 'Ghost link to Works',        placeholder: 'View Selected Works',       maxChars: 30 },
+      { key: 'hero_eyebrow_en', label: 'Eyebrow (EN)', hint: 'Identity + place', placeholder: 'Nous — Digital Systems / Doha', maxChars: 54 },
+      { key: 'hero_eyebrow_ar', label: 'Eyebrow (AR)', hint: 'Arabic transcreation', placeholder: 'نوس — أنظمة رقمية / الدوحة', maxChars: 54, rtl: true },
+      { key: 'hero_headline_en', label: 'Headline (EN)', hint: 'A clear client promise', placeholder: 'We make complex systems feel clear.', maxChars: 84, colSpan: 2 },
+      { key: 'hero_headline_ar', label: 'Headline (AR)', hint: 'Compose for Arabic rhythm—not literal translation', placeholder: 'نحوّل التعقيد إلى أنظمة واضحة.', multiline: true, rows: 2, maxChars: 84, rtl: true, colSpan: 2 },
+      { key: 'hero_subtext_en', label: 'Supporting Copy (EN)', hint: 'One sentence, under 26 words', placeholder: 'Strategy, software and intelligent products...', multiline: true, maxChars: 220, colSpan: 2 },
+      { key: 'hero_subtext_ar', label: 'Supporting Copy (AR)', hint: 'Native RTL editorial line', placeholder: 'استراتيجية وبرمجيات ومنتجات ذكية...', multiline: true, maxChars: 220, rtl: true, colSpan: 2 },
+      { key: 'hero_location_en', label: 'Location (EN)', placeholder: 'Doha · Qatar', maxChars: 32 },
+      { key: 'hero_location_ar', label: 'Location (AR)', placeholder: 'الدوحة · قطر', maxChars: 32, rtl: true },
+      { key: 'hero_cta_primary_en', label: 'Primary CTA (EN)', hint: 'Starts the inquiry', placeholder: 'Bring Us the Hard Problem', maxChars: 36 },
+      { key: 'hero_cta_primary_ar', label: 'Primary CTA (AR)', placeholder: 'اعرض علينا التحدّي', maxChars: 36, rtl: true },
+      { key: 'hero_cta_secondary_en', label: 'Secondary CTA (EN)', hint: 'Jumps to evidence', placeholder: 'See What Shipped', maxChars: 32 },
+      { key: 'hero_cta_secondary_ar', label: 'Secondary CTA (AR)', placeholder: 'شاهد ما أنجزناه', maxChars: 32, rtl: true },
+      { key: 'hero_motion_mode', label: 'Ambient Motion', hint: 'Reduced-motion preference always overrides this', options: [
+        { value: 'standard', label: 'Standard — expressive but calm' },
+        { value: 'calm', label: 'Calm — lower intensity' },
+        { value: 'off', label: 'Off — static composition' },
+      ], colSpan: 2 },
+    ],
+  },
+  {
+    id: 'hero-field',
+    title: 'Hero Living Field',
+    description: 'Short bilingual signals revealed by mouse, touch, and the autonomous lens. Keep each phrase active and memorable.',
+    fields: [
+      { key: 'hero_reveal_1_en', label: 'Signal 1 (EN)', placeholder: 'Find the signal.', maxChars: 34 },
+      { key: 'hero_reveal_1_ar', label: 'Signal 1 (AR)', placeholder: 'نجد الإشارة.', maxChars: 34, rtl: true },
+      { key: 'hero_reveal_2_en', label: 'Signal 2 (EN)', placeholder: 'Shape the system.', maxChars: 34 },
+      { key: 'hero_reveal_2_ar', label: 'Signal 2 (AR)', placeholder: 'نصوغ النظام.', maxChars: 34, rtl: true },
+      { key: 'hero_reveal_3_en', label: 'Signal 3 (EN)', placeholder: 'Make it live.', maxChars: 34 },
+      { key: 'hero_reveal_3_ar', label: 'Signal 3 (AR)', placeholder: 'نطلقه للحياة.', maxChars: 34, rtl: true },
+      { key: 'hero_reveal_hint_en', label: 'Interaction Hint (EN)', placeholder: 'Move through the field to reveal the signal', maxChars: 64 },
+      { key: 'hero_reveal_hint_ar', label: 'Interaction Hint (AR)', placeholder: 'المس المجال لاكتشاف الإشارة', maxChars: 64, rtl: true },
+    ],
+  },
+  {
+    id: 'about',
+    title: 'Why Nous Chapter',
+    description: 'The core positioning story. Keep the lead decisive and use the note for place, team shape, and bilingual context.',
+    fields: [
+      { key: 'about_title_en', label: 'Title (EN)', placeholder: 'Why Nous', maxChars: 40 },
+      { key: 'about_title_ar', label: 'Title (AR)', placeholder: 'لماذا نوس', maxChars: 40, rtl: true },
+      { key: 'about_body_en', label: 'Lead Story (EN)', multiline: true, rows: 4, maxChars: 380, colSpan: 2 },
+      { key: 'about_body_ar', label: 'Lead Story (AR)', multiline: true, rows: 4, maxChars: 380, rtl: true, colSpan: 2 },
+      { key: 'about_note_en', label: 'Context Note (EN)', multiline: true, rows: 3, maxChars: 300, colSpan: 2 },
+      { key: 'about_note_ar', label: 'Context Note (AR)', multiline: true, rows: 3, maxChars: 300, rtl: true, colSpan: 2 },
+    ],
+  },
+  {
+    id: 'capabilities',
+    title: 'Capabilities Chapter',
+    description: 'Introduces the interactive Lens and the services maintained in the Services area.',
+    fields: [
+      { key: 'capabilities_label_en', label: 'Label (EN)', placeholder: '[ THE SYSTEMS ]', maxChars: 34 },
+      { key: 'capabilities_label_ar', label: 'Label (AR)', placeholder: '[ الأنظمة ]', maxChars: 34, rtl: true },
+      { key: 'capabilities_title_en', label: 'Title (EN)', placeholder: 'What We Build', maxChars: 54 },
+      { key: 'capabilities_title_ar', label: 'Title (AR)', placeholder: 'ما نبنيه', maxChars: 54, rtl: true },
+      { key: 'capabilities_subtitle_en', label: 'Introduction (EN)', multiline: true, rows: 3, maxChars: 240, colSpan: 2 },
+      { key: 'capabilities_subtitle_ar', label: 'Introduction (AR)', multiline: true, rows: 3, maxChars: 240, rtl: true, colSpan: 2 },
+    ],
+  },
+  {
+    id: 'process',
+    title: 'Process Chapter',
+    description: 'Sets the tone around the four process stages and the engagement models defined by the site.',
+    fields: [
+      { key: 'process_title_en', label: 'Title (EN)', placeholder: 'How the Work Moves', maxChars: 62 },
+      { key: 'process_title_ar', label: 'Title (AR)', placeholder: 'كيف يتحرّك العمل', maxChars: 62, rtl: true },
+      { key: 'process_subtitle_en', label: 'Introduction (EN)', multiline: true, rows: 3, maxChars: 240, colSpan: 2 },
+      { key: 'process_subtitle_ar', label: 'Introduction (AR)', multiline: true, rows: 3, maxChars: 240, rtl: true, colSpan: 2 },
+      { key: 'process_engagement_title_en', label: 'Engagement Heading (EN)', placeholder: 'Engagement Shapes', maxChars: 48 },
+      { key: 'process_engagement_title_ar', label: 'Engagement Heading (AR)', placeholder: 'أشكال التعاون', maxChars: 48, rtl: true },
+      { key: 'process_engagement_intro_en', label: 'Engagement Introduction (EN)', multiline: true, rows: 2, maxChars: 220, colSpan: 2 },
+      { key: 'process_engagement_intro_ar', label: 'Engagement Introduction (AR)', multiline: true, rows: 2, maxChars: 220, rtl: true, colSpan: 2 },
+    ],
+  },
+  {
+    id: 'works',
+    title: 'Selected Work Chapter',
+    description: 'Controls the Archive introduction. Project titles, summaries, images, and case studies remain in Projects.',
+    fields: [
+      { key: 'works_label_en', label: 'Label (EN)', placeholder: '[ THE ARCHIVE ]', maxChars: 34 },
+      { key: 'works_label_ar', label: 'Label (AR)', placeholder: '[ الأرشيف ]', maxChars: 34, rtl: true },
+      { key: 'works_title_en', label: 'Title (EN)', placeholder: 'Selected Work', maxChars: 54 },
+      { key: 'works_title_ar', label: 'Title (AR)', placeholder: 'أعمال مختارة', maxChars: 54, rtl: true },
+      { key: 'works_intro_en', label: 'Introduction (EN)', multiline: true, rows: 3, maxChars: 240, colSpan: 2 },
+      { key: 'works_intro_ar', label: 'Introduction (AR)', multiline: true, rows: 3, maxChars: 240, rtl: true, colSpan: 2 },
+    ],
+  },
+  {
+    id: 'testimonials',
+    title: 'Testimonials Chapter',
+    description: 'Controls the Pulse chapter heading. Individual bilingual quotes are managed in Testimonials.',
+    fields: [
+      { key: 'testimonials_label_en', label: 'Label (EN)', placeholder: 'What clients experienced', maxChars: 52 },
+      { key: 'testimonials_label_ar', label: 'Label (AR)', placeholder: 'ما اختبره عملاؤنا', maxChars: 52, rtl: true },
+      { key: 'testimonials_title_en', label: 'Title (EN)', placeholder: 'Signals from the Work', maxChars: 58 },
+      { key: 'testimonials_title_ar', label: 'Title (AR)', placeholder: 'أثر العمل', maxChars: 58, rtl: true },
+    ],
+  },
+  {
+    id: 'faq',
+    title: 'FAQ Chapter',
+    description: 'The chapter heading and bilingual questions used on the page and in FAQ structured data.',
+    fields: [
+      { key: 'faq_label_en', label: 'Label (EN)', placeholder: 'Before We Begin', maxChars: 46 },
+      { key: 'faq_label_ar', label: 'Label (AR)', placeholder: 'قبل أن نبدأ', maxChars: 46, rtl: true },
+      { key: 'faq_title_en', label: 'Title (EN)', placeholder: 'Direct Answers', maxChars: 54 },
+      { key: 'faq_title_ar', label: 'Title (AR)', placeholder: 'إجابات مباشرة', maxChars: 54, rtl: true },
+      { key: 'faq_intro_en', label: 'Introduction (EN)', multiline: true, rows: 2, maxChars: 180, colSpan: 2 },
+      { key: 'faq_intro_ar', label: 'Introduction (AR)', multiline: true, rows: 2, maxChars: 180, rtl: true, colSpan: 2 },
+      ...Array.from({ length: 5 }, (_, index) => {
+        const number = index + 1
+        return [
+          { key: `faq_${number}_question_en`, label: `Question ${number} (EN)`, multiline: true, rows: 2, maxChars: 160, colSpan: 2 as const },
+          { key: `faq_${number}_answer_en`, label: `Answer ${number} (EN)`, multiline: true, rows: 3, maxChars: 420, colSpan: 2 as const },
+          { key: `faq_${number}_question_ar`, label: `Question ${number} (AR)`, multiline: true, rows: 2, maxChars: 160, rtl: true, colSpan: 2 as const },
+          { key: `faq_${number}_answer_ar`, label: `Answer ${number} (AR)`, multiline: true, rows: 3, maxChars: 420, rtl: true, colSpan: 2 as const },
+        ]
+      }).flat(),
+    ],
+  },
+  {
+    id: 'contact-chapter',
+    title: 'Final Invitation',
+    description: 'The Convergence chapter that turns the story into a direct, low-friction next step.',
+    fields: [
+      { key: 'contact_title_en', label: 'Title (EN)', placeholder: 'Bring us the hard problem.', maxChars: 72 },
+      { key: 'contact_title_ar', label: 'Title (AR)', placeholder: 'اعرض علينا التحدّي.', maxChars: 72, rtl: true },
+      { key: 'contact_support_en', label: 'Supporting Copy (EN)', multiline: true, rows: 3, maxChars: 260, colSpan: 2 },
+      { key: 'contact_support_ar', label: 'Supporting Copy (AR)', multiline: true, rows: 3, maxChars: 260, rtl: true, colSpan: 2 },
+      { key: 'contact_cta_en', label: 'CTA (EN)', placeholder: 'Start the Conversation', maxChars: 38 },
+      { key: 'contact_cta_ar', label: 'CTA (AR)', placeholder: 'ابدأ الحوار', maxChars: 38, rtl: true },
+      { key: 'contact_response_note_en', label: 'Response Note (EN)', placeholder: 'Reply within 24 hours', maxChars: 48 },
+      { key: 'contact_response_note_ar', label: 'Response Note (AR)', placeholder: 'نرد خلال ٢٤ ساعة', maxChars: 48, rtl: true },
     ],
   },
   {
@@ -130,14 +258,6 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
 
 const mono: React.CSSProperties = { fontFamily: 'ui-monospace, monospace' }
 
-function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <span style={{ ...mono, fontSize: 8, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--text)' }}>
-      {children}
-    </span>
-  )
-}
-
 function Hint({ children }: { children: React.ReactNode }) {
   return (
     <span style={{ ...mono, fontSize: 8, color: 'var(--muted)', opacity: .55, letterSpacing: '.04em' }}>
@@ -187,7 +307,7 @@ function CardWrap({ children, dirty }: { children: React.ReactNode; dirty?: bool
   return (
     <div style={{
       background: 'var(--surface)',
-      border: `1px solid ${dirty ? 'rgba(46,204,113,.4)' : 'var(--border)'}`,
+      border: `1px solid ${dirty ? 'rgba(206, 241, 123,.4)' : 'var(--border)'}`,
       borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s',
     }}>
       {children}
@@ -209,8 +329,8 @@ function CardHeader({ title, description, dirty, onSave, isSaving }: {
           {dirty && (
             <span style={{
               ...mono, fontSize: 8, letterSpacing: '.1em', textTransform: 'uppercase',
-              color: 'var(--accent)', background: 'rgba(46,204,113,.1)',
-              border: '1px solid rgba(46,204,113,.25)', padding: '2px 8px', borderRadius: 4,
+              color: 'var(--accent)', background: 'rgba(206, 241, 123,.1)',
+              border: '1px solid rgba(206, 241, 123,.25)', padding: '2px 8px', borderRadius: 4,
             }}>
               Unsaved
             </span>
@@ -286,7 +406,21 @@ function SectionCard({
                 </div>
               </div>
 
-              {field.multiline === true ? (
+              {field.options ? (
+                <select
+                  id={field.key}
+                  value={val || field.options[0]?.value || ''}
+                  onChange={e => onChangeField(field.key, e.target.value)}
+                  style={{
+                    borderColor: changed ? 'rgba(206, 241, 123,.35)' : undefined,
+                    marginTop: 5,
+                  }}
+                >
+                  {field.options.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              ) : field.multiline === true ? (
                 <textarea
                   id={field.key} value={val}
                   dir={field.rtl === true ? 'rtl' : 'ltr'}
@@ -294,7 +428,7 @@ function SectionCard({
                   rows={field.rows ?? 3}
                   onChange={e => { onChangeField(field.key, e.target.value); autosize(e.target) }}
                   style={{
-                    borderColor: overMax ? 'rgba(231,76,60,.5)' : changed ? 'rgba(46,204,113,.35)' : undefined,
+                    borderColor: overMax ? 'rgba(231,76,60,.5)' : changed ? 'rgba(206, 241, 123,.35)' : undefined,
                     resize: 'none', lineHeight: 1.6,
                     direction: field.rtl === true ? 'rtl' : 'ltr',
                     textAlign: field.rtl === true ? 'right' : 'left',
@@ -306,10 +440,15 @@ function SectionCard({
               ) : (
                 <input
                   id={field.key} type={field.key === 'contact_email' ? 'email' : 'text'}
+                  dir={field.rtl === true ? 'rtl' : 'ltr'}
                   value={val} placeholder={field.placeholder}
                   onChange={e => onChangeField(field.key, e.target.value)}
                   style={{
-                    borderColor: overMax ? 'rgba(231,76,60,.5)' : changed ? 'rgba(46,204,113,.35)' : undefined,
+                    borderColor: overMax ? 'rgba(231,76,60,.5)' : changed ? 'rgba(206, 241, 123,.35)' : undefined,
+                    direction: field.rtl === true ? 'rtl' : 'ltr',
+                    textAlign: field.rtl === true ? 'right' : 'left',
+                    fontFamily: field.rtl === true ? 'var(--font-sans, sans-serif)' : 'ui-monospace, monospace',
+                    fontSize: field.rtl === true ? 12 : 10,
                     marginTop: 5,
                   }}
                 />
@@ -375,8 +514,8 @@ function ContactEditor({
             display: 'grid', gridTemplateColumns: '16px 1fr 1fr 100px 72px 60px 52px',
             gap: 8, alignItems: 'center',
             padding: '10px 12px', borderRadius: 6,
-            background: item.primary ? 'rgba(46,204,113,.05)' : 'transparent',
-            border: `1px solid ${item.primary ? 'rgba(46,204,113,.18)' : 'var(--border)'}`,
+            background: item.primary ? 'rgba(206, 241, 123,.05)' : 'transparent',
+            border: `1px solid ${item.primary ? 'rgba(206, 241, 123,.18)' : 'var(--border)'}`,
           }}>
             {/* Order handle */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -440,7 +579,7 @@ function ContactEditor({
           style={{
             ...mono, fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase',
             padding: '8px 16px', background: 'transparent', color: 'var(--accent)',
-            border: '1px dashed rgba(46,204,113,.35)', borderRadius: 4, cursor: 'pointer',
+            border: '1px dashed rgba(206, 241, 123,.35)', borderRadius: 4, cursor: 'pointer',
             transition: 'border-color .2s', alignSelf: 'flex-start',
           }}
         >
@@ -571,7 +710,7 @@ function SocialEditor({
           style={{
             ...mono, fontSize: 9, letterSpacing: '.12em', textTransform: 'uppercase',
             padding: '8px 16px', background: 'transparent', color: 'var(--accent)',
-            border: '1px dashed rgba(46,204,113,.35)', borderRadius: 4, cursor: 'pointer',
+            border: '1px dashed rgba(206, 241, 123,.35)', borderRadius: 4, cursor: 'pointer',
             alignSelf: 'flex-start',
           }}
         >
@@ -712,13 +851,31 @@ export default function SettingsPage() {
           style={{
             ...mono, fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase',
             padding: '9px 18px', background: 'transparent', color: 'var(--accent)',
-            border: '1px solid rgba(46,204,113,.3)', borderRadius: 4,
+            border: '1px solid rgba(206, 241, 123,.3)', borderRadius: 4,
             whiteSpace: 'nowrap', textDecoration: 'none', flexShrink: 0,
             display: 'inline-flex', alignItems: 'center', minHeight: 36,
           }}
         >
           Preview Site
         </a>
+      </div>
+
+      <div style={{
+        ...mono,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        marginBottom: 14, padding: '12px 14px', borderRadius: 8,
+        background: 'var(--surface)', border: '1px solid var(--border)',
+      }}>
+        <div>
+          <div style={{ fontSize: 9, color: 'var(--text)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 4 }}>Arabic homepage coverage</div>
+          <div style={{ fontSize: 9, color: 'var(--muted)', lineHeight: 1.5 }}>Every Arabic editorial field is tracked across the complete homepage journey.</div>
+        </div>
+        {(() => {
+          const requiredArabic = SECTIONS.flatMap(section => section.fields.map(field => field.key)).filter(key => key.endsWith('_ar'))
+          const translated = requiredArabic.filter(key => Boolean(values[key]?.trim())).length
+          const complete = translated === requiredArabic.length
+          return <span style={{ fontSize: 9, color: complete ? 'var(--accent)' : '#f3c969', border: `1px solid ${complete ? 'rgba(206,241,123,.3)' : 'rgba(243,201,105,.35)'}`, borderRadius: 50, padding: '5px 10px', whiteSpace: 'nowrap' }}>AR {translated}/{requiredArabic.length}</span>
+        })()}
       </div>
 
       {/* Section cards */}
@@ -783,7 +940,7 @@ export default function SettingsPage() {
           font-family: ui-monospace, monospace; font-size: 10px; outline: none;
           box-sizing: border-box; transition: border-color .2s;
         }
-        input:focus, select:focus, textarea:focus { border-color: rgba(46,204,113,.5); }
+        input:focus, select:focus, textarea:focus { border-color: rgba(206, 241, 123,.5); }
       `}</style>
     </div>
   )

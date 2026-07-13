@@ -23,6 +23,8 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
   const wrapRef      = useRef<HTMLDivElement>(null)
   const pillLayerRef = useRef<HTMLDivElement>(null)
   const rafRef       = useRef<number>(0)
+  const tickRef      = useRef<((timestamp: number) => void) | null>(null)
+  const inViewportRef = useRef(true)
   const pillDataRef  = useRef<{
     el: HTMLDivElement
     ring: number
@@ -45,6 +47,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
 
   const clearSatellites = useCallback(() => {
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+    tickRef.current = null
     pillDataRef.current.forEach(s => s.el.parentElement?.removeChild(s.el))
     pillDataRef.current = []
   }, [])
@@ -73,12 +76,12 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
       el.style.cssText =
         'position:absolute;top:0;left:0;will-change:transform;' +
         'font-family:var(--font-mono);font-size:11px;font-weight:400;font-style:normal;' +
-        'color:#7ECFB3;letter-spacing:.08em;text-transform:uppercase;' +
+        'color:#CEF17B;letter-spacing:.08em;text-transform:uppercase;' +
         'border-radius:50px;' +
-        'background:rgba(17,29,26,.95);border:1px solid rgba(96,184,154,.35);' +
+        'background:rgba(17,29,26,.95);border:1px solid rgba(206, 241, 123,.35);' +
         'padding:8px 18px;pointer-events:none;white-space:nowrap;z-index:3;' +
         'opacity:0;' +
-        `transition:opacity .4s ease ${i * 0.06}s;`
+        `transition:opacity var(--motion-ui) var(--ease-out) ${i * 0.06}s;`
       layerEl.appendChild(el)
       requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = '1' }))
 
@@ -88,6 +91,8 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
     pillDataRef.current = satData
 
     const tick = (ts: number) => {
+      rafRef.current = 0
+      if (!inViewportRef.current || document.hidden) return
       satData.forEach(sat => {
         if (!sat.hw) {
           sat.hw = sat.el.offsetWidth  / 2 || 48
@@ -101,7 +106,8 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
       })
       rafRef.current = requestAnimationFrame(tick)
     }
-    rafRef.current = requestAnimationFrame(tick)
+    tickRef.current = tick
+    if (inViewportRef.current && !document.hidden) rafRef.current = requestAnimationFrame(tick)
   }, [clearSatellites, reduced])
 
   useEffect(() => {
@@ -117,11 +123,30 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
   }, [pillsKey])
 
   useEffect(() => {
+    const wrap = wrapRef.current
+    if (!wrap) return
+    const sync = () => {
+      const shouldRun = inViewportRef.current && !document.hidden
+      if (!shouldRun && rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+        rafRef.current = 0
+      } else if (shouldRun && !rafRef.current && tickRef.current) {
+        rafRef.current = requestAnimationFrame(tickRef.current)
+      }
+    }
+    const io = new IntersectionObserver(([entry]) => {
+      inViewportRef.current = entry.isIntersecting
+      sync()
+    }, { threshold: 0 })
+    io.observe(wrap)
     const onVis = () => {
-      if (document.hidden && rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = 0 }
+      sync()
     }
     document.addEventListener('visibilitychange', onVis)
-    return () => document.removeEventListener('visibilitychange', onVis)
+    return () => {
+      io.disconnect()
+      document.removeEventListener('visibilitychange', onVis)
+    }
   }, [])
 
   return (
@@ -160,21 +185,21 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
           {/* Outer circle border + background */}
           <div style={{
             position: 'absolute', inset: 0, borderRadius: '50%',
-            border: '1px solid rgba(10,92,71,.22)',
-            background: 'radial-gradient(circle at 50% 50%, rgba(10,92,71,.08) 0%, transparent 62%)',
+            border: '1px solid rgba(8, 71, 52,.22)',
+            background: 'radial-gradient(circle at 50% 50%, rgba(8, 71, 52,.08) 0%, transparent 62%)',
             overflow: 'hidden',
           }}>
             {/* Spinning outer dashed ring */}
             <div style={{
               position: 'absolute', inset: 3, borderRadius: '50%',
-              border: '1px dashed rgba(10,92,71,.3)',
+              border: '1px dashed rgba(8, 71, 52,.3)',
               animation: reduced ? 'none' : 'orb-spin 52s linear infinite',
               pointerEvents: 'none',
             }} />
             {/* Counter-spinning inner ring */}
             <div style={{
               position: 'absolute', inset: '20%', borderRadius: '50%',
-              border: '1px dashed rgba(10,92,71,.15)',
+              border: '1px dashed rgba(8, 71, 52,.15)',
               animation: reduced ? 'none' : 'orb-spin-rev 34s linear infinite',
               pointerEvents: 'none',
             }} />
@@ -185,9 +210,9 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
               viewBox="0 0 500 500"
               preserveAspectRatio="xMidYMid meet"
             >
-              <circle cx="250" cy="250" r="192" fill="none" stroke="rgba(10,92,71,.1)"  strokeWidth="1" strokeDasharray="3 10" />
-              <circle cx="250" cy="250" r="136" fill="none" stroke="rgba(10,92,71,.08)" strokeWidth="1" strokeDasharray="2 12" />
-              <circle cx="250" cy="250" r="82"  fill="none" stroke="rgba(10,92,71,.06)" strokeWidth="1" strokeDasharray="2 14" />
+              <circle cx="250" cy="250" r="192" fill="none" stroke="rgba(8, 71, 52,.1)"  strokeWidth="1" strokeDasharray="3 10" />
+              <circle cx="250" cy="250" r="136" fill="none" stroke="rgba(8, 71, 52,.08)" strokeWidth="1" strokeDasharray="2 12" />
+              <circle cx="250" cy="250" r="82"  fill="none" stroke="rgba(8, 71, 52,.06)" strokeWidth="1" strokeDasharray="2 14" />
             </svg>
           </div>
 
@@ -206,7 +231,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
               >
-                <div style={{ width: 32, height: 1, background: isIdle ? 'rgba(10,92,71,.25)' : 'rgba(96,184,154,.35)' }} />
+                <div style={{ width: 32, height: 1, background: isIdle ? 'rgba(8, 71, 52,.25)' : 'rgba(206, 241, 123,.35)' }} />
 
                 {isIdle ? (
                   <>
@@ -214,7 +239,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                       fontFamily: 'var(--font-mono)',
                       fontSize: 'clamp(13px, 1.6vw, 20px)',
                       fontWeight: 400,
-                      color: 'rgba(96,184,154,.85)',
+                      color: 'rgba(206, 241, 123,.85)',
                       letterSpacing: '.08em', lineHeight: 1.4,
                       textTransform: 'uppercase',
                     }}>
@@ -223,7 +248,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                     <span style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: 9,
-                      color: 'rgba(96,184,154,.78)',
+                      color: 'rgba(206, 241, 123,.78)',
                       letterSpacing: '.22em', textTransform: 'uppercase',
                     }}>
                       to explore its orbit
@@ -234,7 +259,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                     <span style={{
                       fontFamily: 'var(--font-mono)',
                       fontSize: 8,
-                      color: 'rgba(96,184,154,.5)',
+                      color: 'rgba(206, 241, 123,.5)',
                       letterSpacing: '.24em', textTransform: 'uppercase',
                     }}>
                       {view === 'engineering' ? 'STACK' : 'OUTCOMES'}
@@ -243,7 +268,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                       fontFamily: 'var(--font-mono)',
                       fontSize: 'clamp(13px, 1.6vw, 20px)',
                       fontWeight: 400,
-                      color: '#7ECFB3',
+                      color: '#CEF17B',
                       letterSpacing: '.06em', lineHeight: 1.4,
                       textTransform: 'uppercase',
                       wordBreak: 'break-word',
@@ -253,7 +278,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                   </>
                 )}
 
-                <div style={{ width: 32, height: 1, background: isIdle ? 'rgba(10,92,71,.25)' : 'rgba(96,184,154,.35)' }} />
+                <div style={{ width: 32, height: 1, background: isIdle ? 'rgba(8, 71, 52,.25)' : 'rgba(206, 241, 123,.35)' }} />
               </motion.div>
             </AnimatePresence>
           </div>
@@ -270,7 +295,7 @@ export default function OrbitalVisualizer({ services, activeServiceId, view }: O
                 style={{
                   fontFamily: 'var(--font-mono)', fontSize: 7,
                   letterSpacing: '.2em', textTransform: 'uppercase',
-                  color: 'rgba(96,184,154,.78)', display: 'block', whiteSpace: 'nowrap',
+                  color: 'rgba(206, 241, 123,.78)', display: 'block', whiteSpace: 'nowrap',
                 }}
               >
                 {view === 'engineering' ? '// engineering view' : '// business view'}

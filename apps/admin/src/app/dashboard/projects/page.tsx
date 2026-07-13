@@ -11,6 +11,7 @@ type Project = {
   name: string
   name_ar: string | null
   description: string | null
+  description_ar: string | null
   year: string | null
   tags: string[] | null
   image_url: string | null
@@ -21,20 +22,27 @@ type Project = {
   slug: string | null
   is_case_study: boolean | null
   tagline: string | null
+  tagline_ar: string | null
   external_url: string | null
   overview: string | null
+  overview_ar: string | null
   challenge: string | null
+  challenge_ar: string | null
   solution: string | null
+  solution_ar: string | null
   results: ResultMetric[] | null
+  results_ar: ResultMetric[] | null
   tech: string[] | null
   services: string[] | null
+  services_ar: string[] | null
 }
 
 const EMPTY: Omit<Project, 'id'> = {
-  name: '', name_ar: '', description: '', year: new Date().getFullYear().toString(),
+  name: '', name_ar: '', description: '', description_ar: '', year: new Date().getFullYear().toString(),
   tags: [], image_url: null, url: null, sort_order: 99, active: true,
-  slug: '', is_case_study: false, tagline: '', external_url: null,
-  overview: '', challenge: '', solution: '', results: [], tech: [], services: [],
+  slug: '', is_case_study: false, tagline: '', tagline_ar: '', external_url: null,
+  overview: '', overview_ar: '', challenge: '', challenge_ar: '', solution: '', solution_ar: '',
+  results: [], results_ar: [], tech: [], services: [], services_ar: [],
 }
 
 // Turns "The Seventh Sense" → "the-seventh-sense" for the /work/[slug] route.
@@ -74,7 +82,7 @@ function PillInput({ pills, onChange, placeholder }: { pills: string[]; onChange
       style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--surface)', cursor: 'text', minHeight: 44, alignItems: 'center', transition: 'border-color .2s' }}
     >
       {pills.map((pill, i) => (
-        <span key={`${pill}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: 'ui-monospace, monospace', fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(46,204,113,.08)', border: '1px solid rgba(46,204,113,.22)', padding: '3px 7px 3px 10px', borderRadius: 50 }}>
+        <span key={`${pill}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: 'ui-monospace, monospace', fontSize: 9, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(206, 241, 123,.08)', border: '1px solid rgba(206, 241, 123,.22)', padding: '3px 7px 3px 10px', borderRadius: 50 }}>
           {pill}
           <button
             type="button"
@@ -101,7 +109,7 @@ function PillInput({ pills, onChange, placeholder }: { pills: string[]; onChange
 
 // ── Results repeater (metric / value / note) ────────────────────────────────────
 
-function ResultsEditor({ results, onChange }: { results: ResultMetric[]; onChange: (r: ResultMetric[]) => void }) {
+function ResultsEditor({ results, onChange, rtl = false }: { results: ResultMetric[]; onChange: (r: ResultMetric[]) => void; rtl?: boolean }) {
   const update = (i: number, patch: Partial<ResultMetric>) =>
     onChange(results.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
   const remove = (i: number) => onChange(results.filter((_, idx) => idx !== i))
@@ -110,20 +118,46 @@ function ResultsEditor({ results, onChange }: { results: ResultMetric[]; onChang
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {results.map((r, i) => (
-        <div key={i} className="proj-results-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.4fr 32px', gap: 8, alignItems: 'center' }}>
-          <input value={r.value}  onChange={e => update(i, { value: e.target.value })}  placeholder="6 weeks" />
-          <input value={r.metric} onChange={e => update(i, { metric: e.target.value })} placeholder="Storefront live" />
-          <input value={r.note}   onChange={e => update(i, { note: e.target.value })}   placeholder="from brief to launch" />
+        <div key={i} dir={rtl ? 'rtl' : 'ltr'} className="proj-results-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.4fr 32px', gap: 8, alignItems: 'center' }}>
+          <input value={r.value}  onChange={e => update(i, { value: e.target.value })}  placeholder={rtl ? '٦ أسابيع' : '6 weeks'} />
+          <input value={r.metric} onChange={e => update(i, { metric: e.target.value })} placeholder={rtl ? 'إطلاق المتجر' : 'Storefront live'} />
+          <input value={r.note}   onChange={e => update(i, { note: e.target.value })}   placeholder={rtl ? 'من الموجز إلى الإطلاق' : 'from brief to launch'} />
           <button type="button" onClick={() => remove(i)} className="adm-icon-btn" style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 4, color: 'var(--danger)', cursor: 'pointer', height: 32, fontSize: 14 }}>×</button>
         </div>
       ))}
       <button type="button" onClick={add} className="adm-action-btn" style={{ ...btnStyle('transparent', 'var(--accent)', 'var(--border)'), alignSelf: 'flex-start' }}>
-        + Add result
+        {rtl ? '+ إضافة نتيجة' : '+ Add result'}
       </button>
       <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: 8, color: 'var(--muted)', opacity: .55, lineHeight: 1.6, margin: 0 }}>
-        Columns: value (large number), metric (label), note (small caption). Shown as the results strip on the case study.
+        {rtl ? 'القيمة، المقياس، ثم الوصف المختصر. تظهر كبطاقات النتائج في دراسة الحالة العربية.' : 'Columns: value (large number), metric (label), note (small caption). Shown as the results strip on the case study.'}
       </p>
     </div>
+  )
+}
+
+function TranslationStatus({ project }: { project: Project }) {
+  const fields = project.is_case_study
+    ? [project.name_ar, project.description_ar, project.tagline_ar, project.overview_ar, project.challenge_ar, project.solution_ar]
+    : [project.name_ar, project.description_ar]
+  const complete = fields.filter(value => Boolean(value?.trim())).length
+  const hasArabicResults = !project.is_case_study || (Array.isArray(project.results_ar) && project.results_ar.length > 0)
+  const total = fields.length + (project.is_case_study ? 1 : 0)
+  const score = complete + (hasArabicResults && project.is_case_study ? 1 : 0)
+  const ready = score === total
+
+  return (
+    <span title={`${score} of ${total} Arabic content groups complete`} style={{
+      fontSize: 8,
+      color: ready ? 'var(--accent)' : '#f3c969',
+      border: `1px solid ${ready ? 'rgba(206,241,123,.3)' : 'rgba(243,201,105,.35)'}`,
+      padding: '3px 7px',
+      borderRadius: 50,
+      fontFamily: 'ui-monospace, monospace',
+      letterSpacing: '.08em',
+      textTransform: 'uppercase',
+    }}>
+      AR {score}/{total}
+    </span>
   )
 }
 
@@ -163,10 +197,16 @@ function ProjectForm({
         </div>
       </div>
 
-      {/* Description */}
-      <div>
-        <label style={labelStyle}>Description</label>
-        <input value={buf.description ?? ''} onChange={e => onChange({ description: e.target.value })} placeholder="Brief project description" />
+      {/* Descriptions */}
+      <div className="proj-row-2">
+        <div>
+          <label style={labelStyle}>Description (EN)</label>
+          <input value={buf.description ?? ''} onChange={e => onChange({ description: e.target.value })} placeholder="Brief project description" />
+        </div>
+        <div>
+          <label style={labelStyle}>Description (AR)</label>
+          <input value={buf.description_ar ?? ''} onChange={e => onChange({ description_ar: e.target.value })} placeholder="وصف مختصر للمشروع" dir="rtl" style={rtlInputStyle} />
+        </div>
       </div>
 
       {/* Tags */}
@@ -239,22 +279,28 @@ function ProjectForm({
               </div>
             </div>
 
-            <div>
-              <label style={labelStyle}>Tagline</label>
-              <input value={buf.tagline ?? ''} onChange={e => onChange({ tagline: e.target.value })} placeholder="Premium fashion e-commerce for the Qatar market." />
+            <div className="proj-row-2">
+              <div>
+                <label style={labelStyle}>Tagline (EN)</label>
+                <input value={buf.tagline ?? ''} onChange={e => onChange({ tagline: e.target.value })} placeholder="Premium fashion e-commerce for the Qatar market." />
+              </div>
+              <div>
+                <label style={labelStyle}>Tagline (AR)</label>
+                <input value={buf.tagline_ar ?? ''} onChange={e => onChange({ tagline_ar: e.target.value })} placeholder="تجارة أزياء راقية للسوق القطري" dir="rtl" style={rtlInputStyle} />
+              </div>
             </div>
 
-            <div>
-              <label style={labelStyle}>Overview</label>
-              <textarea value={buf.overview ?? ''} onChange={e => onChange({ overview: e.target.value })} rows={3} placeholder="What the project is and what Nous delivered." style={textareaStyle} />
+            <div className="proj-row-2">
+              <div><label style={labelStyle}>Overview (EN)</label><textarea value={buf.overview ?? ''} onChange={e => onChange({ overview: e.target.value })} rows={4} placeholder="What the project is and what Nous delivered." style={textareaStyle} /></div>
+              <div><label style={labelStyle}>Overview (AR)</label><textarea value={buf.overview_ar ?? ''} onChange={e => onChange({ overview_ar: e.target.value })} rows={4} placeholder="نبذة عن المشروع وما قدمته نوس" dir="rtl" style={{ ...textareaStyle, ...rtlInputStyle }} /></div>
             </div>
-            <div>
-              <label style={labelStyle}>The Challenge</label>
-              <textarea value={buf.challenge ?? ''} onChange={e => onChange({ challenge: e.target.value })} rows={3} placeholder="The problem the client needed solved." style={textareaStyle} />
+            <div className="proj-row-2">
+              <div><label style={labelStyle}>The Challenge (EN)</label><textarea value={buf.challenge ?? ''} onChange={e => onChange({ challenge: e.target.value })} rows={4} placeholder="The problem the client needed solved." style={textareaStyle} /></div>
+              <div><label style={labelStyle}>The Challenge (AR)</label><textarea value={buf.challenge_ar ?? ''} onChange={e => onChange({ challenge_ar: e.target.value })} rows={4} placeholder="التحدي الذي احتاج العميل إلى حله" dir="rtl" style={{ ...textareaStyle, ...rtlInputStyle }} /></div>
             </div>
-            <div>
-              <label style={labelStyle}>Our Solution</label>
-              <textarea value={buf.solution ?? ''} onChange={e => onChange({ solution: e.target.value })} rows={3} placeholder="How Nous approached and built it." style={textareaStyle} />
+            <div className="proj-row-2">
+              <div><label style={labelStyle}>Our Solution (EN)</label><textarea value={buf.solution ?? ''} onChange={e => onChange({ solution: e.target.value })} rows={4} placeholder="How Nous approached and built it." style={textareaStyle} /></div>
+              <div><label style={labelStyle}>Our Solution (AR)</label><textarea value={buf.solution_ar ?? ''} onChange={e => onChange({ solution_ar: e.target.value })} rows={4} placeholder="كيف صممت نوس الحل ونفذته" dir="rtl" style={{ ...textareaStyle, ...rtlInputStyle }} /></div>
             </div>
 
             <div>
@@ -264,13 +310,22 @@ function ProjectForm({
             </div>
 
             <div>
+              <label style={{ ...labelStyle, marginBottom: 7 }}>Services Applied (AR)</label>
+              <PillInput pills={Array.isArray(buf.services_ar) ? buf.services_ar : []} onChange={services_ar => onChange({ services_ar })} placeholder="التجارة الإلكترونية، التصميم والحركة..." />
+            </div>
+
+            <div>
               <label style={{ ...labelStyle, marginBottom: 7 }}>Technologies Used</label>
               <PillInput pills={Array.isArray(buf.tech) ? buf.tech : []} onChange={tech => onChange({ tech })} placeholder="Next.js, Shopify, Figma..." />
             </div>
 
             <div>
-              <label style={{ ...labelStyle, marginBottom: 7 }}>Results</label>
+              <label style={{ ...labelStyle, marginBottom: 7 }}>Results (EN)</label>
               <ResultsEditor results={Array.isArray(buf.results) ? buf.results : []} onChange={results => onChange({ results })} />
+            </div>
+            <div>
+              <label style={{ ...labelStyle, marginBottom: 7 }}>Results (AR)</label>
+              <ResultsEditor rtl results={Array.isArray(buf.results_ar) ? buf.results_ar : []} onChange={results_ar => onChange({ results_ar })} />
             </div>
           </>
         )}
@@ -313,6 +368,7 @@ export default function ProjectsPage() {
       name:          editBuf.name,
       name_ar:       editBuf.name_ar || null,
       description:   editBuf.description,
+      description_ar: editBuf.description_ar || null,
       year:          editBuf.year,
       tags:          Array.isArray(editBuf.tags) ? editBuf.tags : [],
       image_url:     editBuf.image_url || null,
@@ -320,13 +376,19 @@ export default function ProjectsPage() {
       slug:          editBuf.slug || null,
       is_case_study: !!editBuf.is_case_study,
       tagline:       editBuf.tagline || null,
+      tagline_ar:    editBuf.tagline_ar || null,
       external_url:  editBuf.external_url || null,
       overview:      editBuf.overview || null,
+      overview_ar:   editBuf.overview_ar || null,
       challenge:     editBuf.challenge || null,
+      challenge_ar:  editBuf.challenge_ar || null,
       solution:      editBuf.solution || null,
+      solution_ar:   editBuf.solution_ar || null,
       results:       Array.isArray(editBuf.results) ? editBuf.results : [],
+      results_ar:    Array.isArray(editBuf.results_ar) ? editBuf.results_ar : [],
       tech:          Array.isArray(editBuf.tech) ? editBuf.tech : [],
       services:      Array.isArray(editBuf.services) ? editBuf.services : [],
+      services_ar:   Array.isArray(editBuf.services_ar) ? editBuf.services_ar : [],
     }).eq('id', editing)
     await fetchProjects()
     setSaving(false)
@@ -341,6 +403,7 @@ export default function ProjectsPage() {
       name:          newBuf.name,
       name_ar:       newBuf.name_ar || null,
       description:   newBuf.description || null,
+      description_ar: newBuf.description_ar || null,
       year:          newBuf.year,
       tags:          Array.isArray(newBuf.tags) ? newBuf.tags : [],
       image_url:     newBuf.image_url || null,
@@ -350,13 +413,19 @@ export default function ProjectsPage() {
       slug:          newBuf.slug || null,
       is_case_study: !!newBuf.is_case_study,
       tagline:       newBuf.tagline || null,
+      tagline_ar:    newBuf.tagline_ar || null,
       external_url:  newBuf.external_url || null,
       overview:      newBuf.overview || null,
+      overview_ar:   newBuf.overview_ar || null,
       challenge:     newBuf.challenge || null,
+      challenge_ar:  newBuf.challenge_ar || null,
       solution:      newBuf.solution || null,
+      solution_ar:   newBuf.solution_ar || null,
       results:       Array.isArray(newBuf.results) ? newBuf.results : [],
+      results_ar:    Array.isArray(newBuf.results_ar) ? newBuf.results_ar : [],
       tech:          Array.isArray(newBuf.tech) ? newBuf.tech : [],
       services:      Array.isArray(newBuf.services) ? newBuf.services : [],
+      services_ar:   Array.isArray(newBuf.services_ar) ? newBuf.services_ar : [],
     })
     await fetchProjects()
     setSaving(false)
@@ -406,7 +475,7 @@ export default function ProjectsPage() {
 
       {/* New project form */}
       {adding && (
-        <div style={{ background: 'var(--surface)', border: '1px solid rgba(46,204,113,.4)', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid rgba(206, 241, 123,.4)', borderRadius: 8, overflow: 'hidden' }}>
           <ProjectForm
             buf={newBuf}
             onChange={patch => setNewBuf(b => ({ ...b, ...patch }))}
@@ -420,7 +489,7 @@ export default function ProjectsPage() {
 
       {/* Project list */}
       {projects.map(p => (
-        <div key={p.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === p.id ? 'rgba(46,204,113,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
+        <div key={p.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === p.id ? 'rgba(206, 241, 123,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
           {editing === p.id ? (
             <ProjectForm
               buf={editBuf}
@@ -442,6 +511,7 @@ export default function ProjectsPage() {
                   <span style={{ fontSize: 13, color: 'var(--text)', fontFamily: 'ui-monospace, monospace' }}>{p.name}</span>
                   {p.name_ar && <span style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'system-ui, sans-serif', direction: 'rtl' }}>{p.name_ar}</span>}
                   <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'ui-monospace, monospace' }}>{p.year}</span>
+                  <TranslationStatus project={p} />
                 </div>
                 {p.description && (
                   <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 4, lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
@@ -453,7 +523,7 @@ export default function ProjectsPage() {
                 )}
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                   {p.tags?.map(t => (
-                    <span key={t} style={{ fontSize: 8, color: 'var(--accent)', border: '1px solid rgba(46,204,113,.2)', padding: '2px 7px', borderRadius: 50, fontFamily: 'ui-monospace, monospace', letterSpacing: '.07em', textTransform: 'uppercase' }}>{t}</span>
+                    <span key={t} style={{ fontSize: 8, color: 'var(--accent)', border: '1px solid rgba(206, 241, 123,.2)', padding: '2px 7px', borderRadius: 50, fontFamily: 'ui-monospace, monospace', letterSpacing: '.07em', textTransform: 'uppercase' }}>{t}</span>
                   ))}
                 </div>
               </div>
@@ -555,6 +625,14 @@ const textareaStyle: React.CSSProperties = {
   borderRadius: 4,
   padding: '9px 10px',
   outline: 'none',
+}
+
+const rtlInputStyle: React.CSSProperties = {
+  direction: 'rtl',
+  textAlign: 'right',
+  fontFamily: 'system-ui, sans-serif',
+  fontSize: 13,
+  letterSpacing: 0,
 }
 
 function btnStyle(bg: string, color: string, border?: string): React.CSSProperties {

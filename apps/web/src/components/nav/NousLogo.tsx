@@ -11,7 +11,7 @@ interface NousLogoProps {
 export default function NousLogo({
   width = 40,
   height = 40,
-  mint = '#60B89A',
+  mint = '#CEF17B',
   dark = '#122220',
   style,
 }: NousLogoProps) {

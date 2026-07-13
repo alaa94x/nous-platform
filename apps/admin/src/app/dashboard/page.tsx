@@ -40,7 +40,7 @@ async function getRecentContacts() {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new:       '#2ECC71',
+  new:       '#CEF17B',
   in_review: '#F39C12',
   closed:    'rgba(232,237,233,.3)',
 }

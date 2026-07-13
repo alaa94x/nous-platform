@@ -15,7 +15,7 @@ type Contact = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  new:       '#2ECC71',
+  new:       '#CEF17B',
   in_review: '#F39C12',
   closed:    'rgba(232,237,233,.28)',
 }
@@ -50,7 +50,7 @@ function useTapHandler(onTap: () => void) {
       startRef.current = null
     },
     // Keep onClick for mouse/trackpad users; touch users will have already fired via onTouchEnd
-    onClick: (e: React.MouseEvent) => {
+    onClick: () => {
       // Only fire on non-touch pointer events (pointer: fine = mouse/trackpad)
       if (window.matchMedia('(hover: hover)').matches) onTap()
     },
@@ -147,7 +147,7 @@ export default function ContactsPage() {
 
   const filters: Array<{ key: typeof filter; label: string; color?: string }> = [
     { key: 'all',       label: 'All' },
-    { key: 'new',       label: 'New',       color: '#2ECC71' },
+    { key: 'new',       label: 'New',       color: '#CEF17B' },
     { key: 'in_review', label: 'In Review', color: '#F39C12' },
     { key: 'closed',    label: 'Closed' },
   ]
@@ -171,7 +171,7 @@ export default function ContactsPage() {
                 textTransform: 'uppercase',
                 fontFamily: 'ui-monospace, monospace',
                 border: `1px solid ${filter === f.key ? (f.color ?? 'var(--accent)') : 'var(--border)'}`,
-                background: filter === f.key ? `${f.color ?? 'rgba(46,204,113'},.08)` : 'transparent',
+                background: filter === f.key ? `${f.color ?? 'rgba(206, 241, 123'},.08)` : 'transparent',
                 color: filter === f.key ? (f.color ?? 'var(--accent)') : 'var(--muted)',
                 borderRadius: 4,
                 cursor: 'pointer',
@@ -272,7 +272,7 @@ export default function ContactsPage() {
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
                             {(c.services ?? []).length > 0
                               ? (c.services ?? []).map(s => (
-                                <span key={s} style={{ fontSize: 9, color: 'var(--accent)', border: '1px solid rgba(46,204,113,.25)', padding: '3px 10px', borderRadius: 3, fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>{s}</span>
+                                <span key={s} style={{ fontSize: 9, color: 'var(--accent)', border: '1px solid rgba(206, 241, 123,.25)', padding: '3px 10px', borderRadius: 3, fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>{s}</span>
                               ))
                               : <span style={{ fontSize: 10, color: 'var(--muted)' }}>None selected</span>
                             }
@@ -307,7 +307,7 @@ export default function ContactsPage() {
                           <a
                             href={`mailto:${c.email}?subject=Re: Your Nous inquiry`}
                             className="adm-action-btn"
-                            style={{ padding: '8px 16px', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace', border: '1px solid rgba(46,204,113,.35)', background: 'rgba(46,204,113,.06)', color: 'var(--accent)', borderRadius: 4, textDecoration: 'none', minHeight: 36, display: 'inline-flex', alignItems: 'center' }}
+                            style={{ padding: '8px 16px', fontSize: 9, letterSpacing: '.14em', textTransform: 'uppercase', fontFamily: 'ui-monospace, monospace', border: '1px solid rgba(206, 241, 123,.35)', background: 'rgba(206, 241, 123,.06)', color: 'var(--accent)', borderRadius: 4, textDecoration: 'none', minHeight: 36, display: 'inline-flex', alignItems: 'center' }}
                           >
                             Reply by email
                           </a>

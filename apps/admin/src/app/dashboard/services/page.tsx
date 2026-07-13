@@ -22,6 +22,7 @@ type Service = {
   business_outcomes: string[] | null
   engineering_stack: string[] | null
   business_subtext: string | null
+  business_subtext_ar: string | null
   sort_order: number | null
   active: boolean | null
 }
@@ -32,7 +33,7 @@ const EMPTY: Omit<Service, 'id'> = {
   tech_pills: [], business_pills: [],
   business_tags: [], engineering_tags: [],
   business_outcomes: [], engineering_stack: [],
-  business_subtext: '',
+  business_subtext: '', business_subtext_ar: '',
   sort_order: 99, active: true,
 }
 
@@ -40,7 +41,7 @@ const EMPTY: Omit<Service, 'id'> = {
 
 function PillInput({
   pills, onChange, placeholder,
-  color = 'var(--accent)', bg = 'rgba(46,204,113,.08)', border = 'rgba(46,204,113,.22)',
+  color = 'var(--accent)', bg = 'rgba(206, 241, 123,.08)', border = 'rgba(206, 241, 123,.22)',
 }: {
   pills: string[]
   onChange: (p: string[]) => void
@@ -95,9 +96,9 @@ function CategoryInput({ value, onChange }: { value: string; onChange: (v: strin
       {parts.map((p, i) => (
         <span key={`${p}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           {i > 0 && <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 10, color: 'var(--muted)', opacity: .4 }}>·</span>}
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'ui-monospace,monospace', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(46,204,113,.75)', background: 'rgba(46,204,113,.06)', border: '1px solid rgba(46,204,113,.18)', padding: '2px 6px 2px 9px', borderRadius: 4 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontFamily: 'ui-monospace,monospace', fontSize: 9, letterSpacing: '.1em', textTransform: 'uppercase', color: 'rgba(206, 241, 123,.75)', background: 'rgba(206, 241, 123,.06)', border: '1px solid rgba(206, 241, 123,.18)', padding: '2px 6px 2px 9px', borderRadius: 4 }}>
             {p}
-            <button type="button" onClick={e => { e.stopPropagation(); remove(i) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(46,204,113,.6)', padding: '2px 4px', fontSize: 12, lineHeight: 1, minWidth: 22, minHeight: 22 }}>×</button>
+            <button type="button" onClick={e => { e.stopPropagation(); remove(i) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(206, 241, 123,.6)', padding: '2px 4px', fontSize: 12, lineHeight: 1, minWidth: 22, minHeight: 22 }}>×</button>
           </span>
         </span>
       ))}
@@ -205,9 +206,15 @@ function ServiceForm({ buf, onChange, onSave, onCancel, saving, isNew }: {
       </div>
 
       {/* ── Optional subtext override ── */}
-      <div>
-        <label style={L}>Business Subtext Override <span style={hint}>optional — overrides default header subtext in Business View</span></label>
-        <input value={buf.business_subtext ?? ''} onChange={e => onChange({ business_subtext: e.target.value })} placeholder="Leave blank to use default subtext" style={{ width: '100%', boxSizing: 'border-box' }} />
+      <div className="svc-pills-grid">
+        <div>
+          <label style={L}>Business Subtext (EN) <span style={hint}>optional override</span></label>
+          <input value={buf.business_subtext ?? ''} onChange={e => onChange({ business_subtext: e.target.value })} placeholder="Leave blank to use default subtext" style={{ width: '100%', boxSizing: 'border-box' }} />
+        </div>
+        <div>
+          <label style={L}>Business Subtext (AR) <span style={hint}>optional override</span></label>
+          <input value={buf.business_subtext_ar ?? ''} onChange={e => onChange({ business_subtext_ar: e.target.value })} placeholder="اتركه فارغاً لاستخدام النص الافتراضي" dir="rtl" style={{ width: '100%', boxSizing: 'border-box', textAlign: 'right', fontFamily: 'system-ui,sans-serif', fontSize: 13 }} />
+        </div>
       </div>
 
       {/* ── Actions ── */}
@@ -260,6 +267,7 @@ export default function ServicesPage() {
     business_outcomes: b.business_outcomes ?? [],
     engineering_stack: b.engineering_stack ?? [],
     business_subtext:  b.business_subtext || null,
+    business_subtext_ar: b.business_subtext_ar || null,
   })
 
   const saveEdit = async () => {
@@ -310,14 +318,14 @@ export default function ServicesPage() {
 
       {/* New service form */}
       {adding && (
-        <div style={{ background: 'var(--surface)', border: '1px solid rgba(46,204,113,.4)', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid rgba(206, 241, 123,.4)', borderRadius: 8, overflow: 'hidden' }}>
           <ServiceForm buf={newBuf} onChange={p => setNewBuf(b => ({ ...b, ...p }))} onSave={saveNew} onCancel={() => { setAdding(false); setNewBuf({ ...EMPTY }) }} saving={saving} isNew />
         </div>
       )}
 
       {/* Service list */}
       {services.map(s => (
-        <div key={s.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === s.id ? 'rgba(46,204,113,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
+        <div key={s.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === s.id ? 'rgba(206, 241, 123,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
           {editing === s.id ? (
             <ServiceForm buf={editBuf} onChange={p => setEditBuf(b => ({ ...b, ...p }))} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
           ) : (
@@ -331,12 +339,15 @@ export default function ServicesPage() {
                     <Badge color="rgba(96,184,154,.5)">BIZ</Badge>
                     <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 12, color: 'var(--text)' }}>{s.name}</span>
                     {s.name_ar && <span style={{ fontSize: 12, color: 'var(--muted)', direction: 'rtl', fontFamily: 'system-ui,sans-serif' }}>{s.name_ar}</span>}
+                    <span title="Arabic translation completeness" style={{ fontFamily: 'ui-monospace,monospace', fontSize: 8, color: s.name_ar && s.name_tech_ar ? 'var(--accent)' : '#f3c969', border: `1px solid ${s.name_ar && s.name_tech_ar ? 'rgba(206,241,123,.3)' : 'rgba(243,201,105,.35)'}`, padding: '3px 7px', borderRadius: 50, letterSpacing: '.08em' }}>
+                      AR {[s.name_ar, s.name_tech_ar].filter(Boolean).length}/2
+                    </span>
                   </div>
 
                   {/* Engineering row */}
                   {(s.name_tech || s.name_tech_ar) && (
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
-                      <Badge color="rgba(46,204,113,.5)">ENG</Badge>
+                      <Badge color="rgba(206, 241, 123,.5)">ENG</Badge>
                       {s.name_tech && <span style={{ fontFamily: 'ui-monospace,monospace', fontSize: 11, color: 'var(--muted)' }}>{s.name_tech}</span>}
                       {s.name_tech_ar && <span style={{ fontSize: 11, color: 'var(--muted)', direction: 'rtl', opacity: .7, fontFamily: 'system-ui,sans-serif' }}>{s.name_tech_ar}</span>}
                     </div>
@@ -345,13 +356,13 @@ export default function ServicesPage() {
                   {/* Tags preview */}
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 5 }}>
                     <PillRow label="BIZ TAGS" pills={s.business_tags} color="rgba(96,184,154,.7)" bg="rgba(96,184,154,.07)" border="rgba(96,184,154,.18)" />
-                    <PillRow label="ENG TAGS" pills={s.engineering_tags} color="rgba(46,204,113,.7)" bg="rgba(46,204,113,.07)" border="rgba(46,204,113,.18)" />
+                    <PillRow label="ENG TAGS" pills={s.engineering_tags} color="rgba(206, 241, 123,.7)" bg="rgba(206, 241, 123,.07)" border="rgba(206, 241, 123,.18)" />
                   </div>
 
                   {/* Outcomes + Stack preview */}
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                     <PillRow label="OUTCOMES" pills={s.business_outcomes} color="rgba(96,184,154,.6)" bg="rgba(96,184,154,.05)" border="rgba(96,184,154,.14)" />
-                    <PillRow label="STACK" pills={s.engineering_stack} color="rgba(46,204,113,.6)" bg="rgba(46,204,113,.05)" border="rgba(46,204,113,.14)" />
+                    <PillRow label="STACK" pills={s.engineering_stack} color="rgba(206, 241, 123,.6)" bg="rgba(206, 241, 123,.05)" border="rgba(206, 241, 123,.14)" />
                   </div>
                 </div>
 

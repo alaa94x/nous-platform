@@ -1,15 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Space_Mono, IBM_Plex_Sans_Arabic } from 'next/font/google'
+import { Alexandria, IBM_Plex_Sans_Arabic, Instrument_Sans, Space_Mono } from 'next/font/google'
 import './globals.css'
 import AnalyticsInit from '@/components/analytics/AnalyticsInit'
 import WebVitals from '@/components/WebVitals'
 
-// Fraunces is a variable font — drop `weight` when specifying custom axes
-const fraunces = Fraunces({
+const instrumentSans = Instrument_Sans({
   subsets: ['latin'],
-  variable: '--font-fraunces',
+  variable: '--font-instrument-sans',
   display: 'swap',
-  axes: ['SOFT', 'WONK', 'opsz'],
   style: ['normal', 'italic'],
 })
 
@@ -21,7 +19,13 @@ const spaceMono = Space_Mono({
   style: ['normal', 'italic'],
 })
 
-// Geometric modern Arabic — matches the mechanical precision of Space Mono
+const alexandria = Alexandria({
+  subsets: ['arabic', 'latin'],
+  variable: '--font-alexandria',
+  display: 'swap',
+})
+
+// Highly readable Arabic body face; Alexandria carries the display voice.
 const ibmPlexArabic = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
   variable: '--font-ibm-arabic',
@@ -51,9 +55,6 @@ export const metadata: Metadata = {
     url: 'https://nous.qa',
     siteName: 'Nous',
     locale: 'en_US',
-    // TODO: once dedicated /ar routes ship, set this dynamically per-locale
-    // instead of listing it sitewide (see hreflang links below for the
-    // equivalent HTML-level signal already in place).
     alternateLocale: ['ar_QA'],
     type: 'website',
   },
@@ -138,17 +139,19 @@ const organizationJsonLd = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#F9F8F6',
+  themeColor: '#07110E',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${spaceMono.variable} ${ibmPlexArabic.variable}`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${instrumentSans.variable} ${alexandria.variable} ${spaceMono.variable} ${ibmPlexArabic.variable}`}
+    >
       <head>
-        {/* hreflang — tells search engines which language version is canonical for each locale.
-            TODO: the ar-QA target below (/ar) does not exist as a real route yet, the site is
-            English-only with inline Arabic content. Once dedicated /ar pages ship, point this
-            at real localized routes and add matching alternates.languages entries per page. */}
+        {/* Homepage language alternates. Deeper Arabic routes are added only
+            when their translated content is ready, avoiding hreflang 404s. */}
         <link rel="alternate" hrefLang="en" href="https://nous.qa" />
         <link rel="alternate" hrefLang="ar-QA" href="https://nous.qa/ar" />
         <link rel="alternate" hrefLang="x-default" href="https://nous.qa" />
@@ -159,12 +162,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
-        {/* Service Worker registration */}
-        <script dangerouslySetInnerHTML={{ __html: `
+        {/* Development bundles use transient asset names. Never let a service
+            worker cache them, otherwise a phone can receive cached HTML whose
+            CSS and JavaScript no longer exist after the next rebuild. */}
+        <script dangerouslySetInnerHTML={{ __html: process.env.NODE_ENV === 'production' ? `
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', () =>
-              navigator.serviceWorker.register('/sw.js').catch(() => {})
+              navigator.serviceWorker
+                .register('/sw.js', { updateViaCache: 'none' })
+                .then(registration => registration.update())
+                .catch(() => {})
             )
+          }
+        ` : `
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations =>
+              Promise.all(registrations.map(registration => registration.unregister()))
+            ).catch(() => {})
+          }
+          if ('caches' in window) {
+            caches.keys().then(keys =>
+              Promise.all(keys.filter(key => key.startsWith('nous-')).map(key => caches.delete(key)))
+            ).catch(() => {})
           }
         ` }} />
       </head>

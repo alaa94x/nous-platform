@@ -24,8 +24,8 @@ export function ContactNotification({
       <Body style={{ background: '#F9F8F6', margin: 0, padding: 0, fontFamily: "'Courier New', monospace" }}>
         <Container style={{ maxWidth: 560, margin: '48px auto', padding: '0 16px' }}>
           {/* Header bar */}
-          <Section style={{ background: '#0A5C47', padding: '20px 32px', borderRadius: '4px 4px 0 0' }}>
-            <Text style={{ margin: 0, fontSize: 9, letterSpacing: '0.22em', color: '#a8d5c4', textTransform: 'uppercase' }}>
+          <Section style={{ background: '#084734', padding: '20px 32px', borderRadius: '4px 4px 0 0' }}>
+            <Text style={{ margin: 0, fontSize: 9, letterSpacing: '0.22em', color: '#CDEDB3', textTransform: 'uppercase' }}>
               [ NOUS, NEW BRIEF ]
             </Text>
           </Section>

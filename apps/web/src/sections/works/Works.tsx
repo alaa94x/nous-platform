@@ -1,16 +1,14 @@
-'use client'
-
-import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useReducedMotion } from 'motion/react'
-import { useReveal } from '@/components/useReveal'
+import { getDictionary } from '@/i18n/dictionaries'
+import type { Locale } from '@/i18n/config'
 
 interface Project {
   id: string
   name: string
   name_ar?: string | null
   description: string | null
+  description_ar?: string | null
   year: string | null
   tags: string[] | null
   image_url: string | null
@@ -21,346 +19,125 @@ interface Project {
 
 interface WorksProps {
   projects: Project[]
+  locale?: Locale
+  label?: string
+  title?: string
+  intro?: string
 }
 
-// ── Tilt physics hook ─────────────────────────────────────────────────────
-function useCardTilt(reduced: boolean) {
-  const cardRef    = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
-  const lineRef    = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (reduced) return
-    const isMouse = window.matchMedia('(hover:hover) and (pointer:fine)').matches
-    if (!isMouse) return
-
-    const card    = cardRef.current
-    const content = contentRef.current
-    const line    = lineRef.current
-    if (!card) return
-
-    let trx = 0, tryY = 0, crx = 0, cry = 0
-    let hovering = false, raf = 0
-    let cachedRect: DOMRect | null = null
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-
-    const tick = () => {
-      crx  = lerp(crx,  trx,  0.09)
-      cry  = lerp(cry,  tryY, 0.09)
-      card.style.transform = `rotateX(${crx}deg) rotateY(${cry}deg)`
-      card.style.boxShadow = hovering
-        ? `${cry * -3}px ${crx * 3}px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(96,184,154,.18)`
-        : '0 4px 24px rgba(0,0,0,.3)'
-      const still = Math.abs(crx - trx) < 0.01 && Math.abs(cry - tryY) < 0.01
-      if (!hovering && still) {
-        crx = 0; cry = 0
-        card.style.transform = ''
-        card.style.boxShadow = '0 4px 24px rgba(0,0,0,.3)'
-        raf = 0
-      } else { raf = requestAnimationFrame(tick) }
-    }
-
-    const onEnter = () => {
-      hovering = true
-      cachedRect = card.getBoundingClientRect()  // measure once on enter, not on every mousemove
-      card.style.willChange = 'transform'
-      if (content) content.style.transform = 'translateZ(50px)'
-      if (line)    line.style.transform    = 'scaleX(1)'
-      if (!raf)    raf = requestAnimationFrame(tick)
-    }
-    const onMove = (e: MouseEvent) => {
-      const r = cachedRect ?? card.getBoundingClientRect()
-      trx  = -((e.clientY - (r.top  + r.height / 2)) / (r.height / 2)) * 9
-      tryY =  ((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2)) * 9
-    }
-    const onLeave = () => {
-      hovering = false; trx = 0; tryY = 0
-      cachedRect = null
-      if (content) content.style.transform = 'translateZ(0)'
-      if (line)    line.style.transform    = 'scaleX(0)'
-      if (!raf)    raf = requestAnimationFrame(tick)
-      setTimeout(() => { if (card) card.style.willChange = 'auto' }, 800)
-    }
-
-    card.addEventListener('mouseenter', onEnter)
-    card.addEventListener('mousemove',  onMove)
-    card.addEventListener('mouseleave', onLeave)
-    return () => {
-      card.removeEventListener('mouseenter', onEnter)
-      card.removeEventListener('mousemove',  onMove)
-      card.removeEventListener('mouseleave', onLeave)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [reduced])
-
-  return { cardRef, contentRef, lineRef }
-}
-
-// ── Single card — always same height, always equal ────────────────────────
-function ProjectCard({ proj, index, reduced, priority }: { proj: Project; index: number; reduced: boolean; priority?: boolean }) {
-  const { cardRef, contentRef, lineRef } = useCardTilt(reduced)
-  const idx = String(index + 1).padStart(2, '0')
-  // An internal case-study page takes precedence over an external client-site
-  // link, so the card opens the /work/[slug] story rather than leaving the site.
-  const caseHref = proj.is_case_study && proj.slug ? `/work/${proj.slug}` : null
-  const hasLink  = Boolean(caseHref || proj.url)
-
-  const cardEl = (
-    <div
-      ref={cardRef}
-      className="proj-card reveal"
-      style={{
-        position: 'relative',
-        height: '100%',
-        border: '1px solid rgba(255,255,255,.08)',
-        overflow: 'hidden',
-        transformStyle: 'preserve-3d',
-        boxShadow: '0 4px 24px rgba(0,0,0,.3)',
-        transition: 'box-shadow .5s, border-color .3s',
-        cursor: hasLink ? 'pointer' : 'default',
-        background: '#0D1A17',
-      }}
-    >
-      {/* Photo — next/image for automatic WebP/AVIF + srcset */}
-      {proj.image_url && (
-        <Image
-          src={proj.image_url}
-          alt={proj.name}
-          fill
-          priority={priority}
-          sizes="(max-width: 900px) 100vw, 33vw"
-          className="proj-img"
-          style={{
-            objectFit: 'cover',
-            filter: 'brightness(.52) saturate(.82)',
-            transition: 'filter .5s, transform .6s',
-          }}
-        />
-      )}
-
-      {/* Grid texture fallback when no image */}
-      {!proj.image_url && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: 'linear-gradient(145deg, #0D1A17 0%, #111D1A 100%)' }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
-          }} />
-        </div>
-      )}
-
-      {/* Gradient scrim */}
-      <div style={{
-        position: 'absolute', inset: 0, zIndex: 1,
-        background: 'linear-gradient(to top, rgba(8,16,13,.96) 0%, rgba(8,16,13,.18) 55%, transparent 100%)',
-      }} />
-
-      {/* Top meta */}
-      <div style={{
-        position: 'absolute', top: 20, left: 24, right: 24,
-        display: 'flex', justifyContent: 'space-between', zIndex: 2,
-      }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)', letterSpacing: '.12em' }}>
-          {proj.year}
-        </span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 8, color: '#60B89A', letterSpacing: '.12em' }}>
-          {idx}
-        </span>
+function ProjectArchiveCard({ project, index, locale }: { project: Project; index: number; locale: Locale }) {
+  const isAr = locale === 'ar'
+  const name = isAr ? project.name_ar || project.name : project.name
+  const description = isAr ? project.description_ar || project.description : project.description
+  const internal = project.is_case_study && project.slug ? `${isAr ? '/ar' : ''}/work/${project.slug}` : null
+  const href = internal || project.url
+  const content = (
+    <article className={`archive-card archive-card--${index === 0 ? 'featured' : 'standard'}`}>
+      <div className="archive-media">
+        {project.image_url ? (
+          <Image src={project.image_url} alt="" fill priority={index === 0} sizes={index === 0 ? '(max-width: 900px) 100vw, 60vw' : '(max-width: 900px) 100vw, 40vw'} style={{ objectFit: 'cover' }} />
+        ) : (
+          <div className="archive-placeholder" aria-hidden="true"><i /><i /><i /><span>{String(index + 1).padStart(2, '0')}</span></div>
+        )}
+        <div className="archive-scrim" />
       </div>
-
-      {/* Visit arrow — shown whenever the card links somewhere */}
-      {hasLink && (
-        <div className="proj-arrow" style={{
-          position: 'absolute', bottom: 24, right: 24, zIndex: 4,
-          width: 34, height: 34, borderRadius: '50%',
-          border: '1px solid rgba(96,184,154,.38)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: '#60B89A', fontSize: 13,
-          transition: 'background .3s, border-color .3s',
-        }}>↗</div>
-      )}
-
-      {/* Content footer */}
-      <div
-        ref={contentRef}
-        style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          padding: '24px 24px 24px',
-          zIndex: 3,
-          transformStyle: 'preserve-3d',
-          transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
-        }}
-      >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
-          {(proj.tags ?? []).slice(0, 3).map(tag => (
-            <span key={tag} style={{
-              fontFamily: 'var(--font-mono)', fontSize: 7,
-              color: '#60B89A', letterSpacing: '.13em', textTransform: 'uppercase',
-              border: '1px solid rgba(96,184,154,.25)',
-              background: 'rgba(26,43,39,.9)',
-              padding: '3px 8px', borderRadius: 50,
-            }}>{tag}</span>
-          ))}
-        </div>
-
-        <h3 style={{
-          fontFamily: 'var(--font-fraunces)',
-          fontSize: 'clamp(18px, 1.8vw, 28px)',
-          fontWeight: 300, fontStyle: 'italic',
-          color: '#F0EDEA', lineHeight: 1.18, letterSpacing: '-.01em',
-          marginBottom: 5,
-        }}>
-          {proj.name}
-          {proj.name_ar && (
-            <span lang="ar" dir="rtl" style={{
-              fontFamily: 'var(--font-arabic)',
-              fontSize: 'max(13px, .54em)', color: 'rgba(240,237,234,.52)',
-              marginRight: 9,
-            }}> {proj.name_ar}</span>
-          )}
-        </h3>
-
-        <p style={{
-          fontFamily: 'var(--font-mono)', fontSize: 8.5,
-          color: 'var(--muted)', letterSpacing: '.03em',
-          lineHeight: 1.75, marginBottom: 12,
-        }}>{proj.description}</p>
-
-        <div ref={lineRef} style={{
-          height: 1.5, background: '#60B89A',
-          // Stop short of the visit-arrow circle (34px + gap) so the reveal
-          // line doesn't run underneath/through it on hover.
-          width: hasLink ? 'calc(100% - 50px)' : '100%',
-          transform: 'scaleX(0)', transformOrigin: 'left',
-          transition: 'transform .5s cubic-bezier(.16,1,.3,1)',
-        }} />
+      <div className="archive-meta">
+        <span>{project.year || '—'}</span>
+        <span>NOUS / {String(index + 1).padStart(2, '0')}</span>
       </div>
-    </div>
+      <div className="archive-copy">
+        <div className="archive-tags">{(project.tags ?? []).slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}</div>
+        <h3>{name}</h3>
+        {description && <p>{description}</p>}
+      </div>
+      {href && <span className="archive-open" aria-hidden="true">↗</span>}
+      <div className="archive-trace" aria-hidden="true" />
+    </article>
   )
 
-  if (caseHref) {
-    return (
-      <Link href={caseHref} style={{ display: 'block', height: '100%', textDecoration: 'none' }}>
-        {cardEl}
-      </Link>
-    )
-  }
-  if (proj.url) {
-    return (
-      <a href={proj.url} target="_blank" rel="noopener noreferrer"
-        style={{ display: 'block', height: '100%', textDecoration: 'none' }}>
-        {cardEl}
-      </a>
-    )
-  }
-  return <div style={{ height: '100%' }}>{cardEl}</div>
+  if (!href) return content
+  if (internal) return <Link href={internal} className="archive-link" aria-label={name}>{content}</Link>
+  return <a href={href} className="archive-link" target="_blank" rel="noopener noreferrer" aria-label={name}>{content}</a>
 }
 
-// ── Section ───────────────────────────────────────────────────────────────
-export default function Works({ projects }: WorksProps) {
-  const reduced    = !!useReducedMotion()
-  const sectionRef = useRef<HTMLElement>(null)
-
-  useReveal(sectionRef)
-
-  // Grid columns: 1 card = 1 col, 2 = 2 col, 3+ = 3 col (wraps naturally)
-  const cols = projects.length === 1 ? 1 : projects.length === 2 ? 2 : 3
+export default function Works({ projects, locale = 'en', label, title, intro }: WorksProps) {
+  const dictionary = getDictionary(locale)
+  const isAr = locale === 'ar'
 
   return (
-    <section
-      ref={sectionRef}
-      id="works"
-      aria-label="Selected Works"
-      className="relative z-10"
-      style={{ padding: '80px 56px 64px', borderTop: '1px solid rgba(255,255,255,.08)' }}
-    >
-      <div style={{ marginBottom: 48 }} className="reveal">
-        <span style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 8,
-          color: 'var(--accent)',
-          letterSpacing: '.24em',
-          textTransform: 'uppercase',
-          display: 'block',
-          marginBottom: 14,
-        }}>
-          [ THE ART ]
-        </span>
-        <h2 style={{
-          fontFamily: 'var(--font-fraunces)',
-          fontSize: 'clamp(26px, 4.5vw, 54px)',
-          fontWeight: 300, color: 'var(--text)',
-          lineHeight: 1.08, letterSpacing: '-.025em',
-        }}>
-          Nous Masterpieces
-        </h2>
+    <section id="works" aria-label={title ?? dictionary.works.title} lang={locale} dir={dictionary.direction} className="works-chapter">
+      <div className="works-shell">
+        <header className="works-heading" data-reveal={isAr ? 'rtl' : 'copy'}>
+          <div className="works-heading-meta"><span>05</span><i /><span>{isAr ? 'الأرشيف' : 'Archive'}</span></div>
+          <div className="works-heading-copy">
+            <div><span>{label ?? dictionary.works.label}</span><h2>{title ?? dictionary.works.title}</h2></div>
+            <p>{intro ?? (isAr ? 'مشاريع حقيقية، تُعرض من خلال التحدّي والتدخّل والنتيجة.' : 'Real work, shown through the challenge, the intervention and the outcome.')}</p>
+          </div>
+        </header>
+
+        {projects.length === 0 ? (
+          <div className="archive-empty"><span>00</span><p>{dictionary.works.empty}</p></div>
+        ) : (
+          <div className="archive-grid" data-reveal-group>
+            {projects.map((project, index) => <ProjectArchiveCard project={project} index={index} locale={locale} key={project.id} />)}
+          </div>
+        )}
       </div>
 
-      {projects.length === 0 ? (
-        <div className="reveal" style={{
-          border: '1px dashed rgba(255,255,255,.1)', padding: '80px 40px', textAlign: 'center',
-        }}>
-          <p style={{ fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)', letterSpacing: '.14em', textTransform: 'uppercase' }}>
-            Projects coming soon
-          </p>
-        </div>
-      ) : (
-        <div
-          id="works-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${cols}, 1fr)`,
-            gap: 16,
-            perspective: 1400,
-            // Fixed card height — same for all cards always
-            gridAutoRows: '420px',
-          }}
-        >
-          {projects.map((proj, i) => (
-            <ProjectCard key={proj.id} proj={proj} index={i} reduced={reduced} priority={i < 3} />
-          ))}
-        </div>
-      )}
-
       <style>{`
-        .proj-card:hover .proj-img {
-          filter: brightness(.72) saturate(1.05) !important;
-          transform: scale(1.04);
-        }
-        .proj-card:hover .proj-arrow {
-          background: rgba(96,184,154,.15) !important;
-          border-color: rgba(96,184,154,.7) !important;
-        }
-        .proj-card:hover {
-          border-color: rgba(96,184,154,.28) !important;
-        }
-
-        /* Mobile: horizontal scroll-snap carousel instead of a vertical stack —
-           swipe between cards, with a peek of the next one as an affordance.
-           overflow-x lives on #works-grid itself so this never leaks into a
-           page-level horizontal scroll. */
+        .works-chapter { position: relative; z-index: 10; padding: clamp(92px,11vw,158px) clamp(24px,5vw,72px); color: var(--pine-800); background: var(--tea-100); }
+        .works-shell { width: min(100%,1480px); margin: 0 auto; }
+        .works-heading-meta { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: rgba(6,59,43,.48); }
+        .works-heading-meta i { height: 1px; background: rgba(8,71,52,.2); }
+        .works-heading-meta span:last-child { color: var(--pine-700); }
+        .works-heading-copy { display: grid; grid-template-columns: minmax(0,1fr) minmax(300px,.65fr); align-items: end; gap: clamp(42px,7vw,112px); margin-top: clamp(30px,4vw,54px); }
+        .works-heading-copy > div > span { display: block; margin-bottom: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pine-600); }
+        .works-heading h2 { margin: 0; white-space: nowrap; font-family: var(--font-display); font-size: clamp(46px,4.8vw,72px); font-weight: 560; line-height: .94; letter-spacing: -.06em; }
+        [dir="rtl"] .works-heading h2 { font-family: var(--font-display-ar); line-height: 1.08; letter-spacing: -.035em; }
+        .works-heading-copy > p { max-width: 48ch; margin: 0 0 8px; font-size: 17px; line-height: 1.65; color: rgba(6,59,43,.68); }
+        [dir="rtl"] .works-heading-copy > p { font-family: var(--font-arabic); font-size: 18px; line-height: 1.85; }
+        .archive-grid { display: grid; grid-template-columns: repeat(12,1fr); grid-auto-flow: dense; gap: 16px; margin-top: clamp(70px,9vw,126px); }
+        .archive-link { display: block; min-width: 0; color: inherit; }
+        .archive-link:nth-child(1) { grid-column: span 7; grid-row: span 2; }
+        .archive-link:nth-child(2), .archive-link:nth-child(3) { grid-column: span 5; }
+        .archive-link:nth-child(n+4) { grid-column: span 4; }
+        .archive-card { position: relative; min-height: 302px; height: 100%; overflow: hidden; color: var(--paper-100); border: 1px solid rgba(8,71,52,.22); background: #0c1a16; }
+        .archive-card--featured { min-height: 620px; }
+        .archive-media, .archive-scrim { position: absolute; inset: 0; }
+        .archive-media img { filter: saturate(.8) brightness(.72); transition: transform 900ms var(--ease-out), filter 500ms ease; }
+        .archive-scrim { background: linear-gradient(180deg, rgba(7,17,14,.2), rgba(7,17,14,.08) 35%, rgba(7,17,14,.92) 100%); }
+        .archive-placeholder { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, var(--pine-800), var(--ink-950)); }
+        .archive-placeholder::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(205,237,179,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(205,237,179,.08) 1px,transparent 1px); background-size: 48px 48px; }
+        .archive-placeholder i { position: absolute; width: 45%; aspect-ratio: 1; border: 1px solid rgba(206,241,123,.16); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+        .archive-placeholder i:nth-child(2) { width: 31%; }.archive-placeholder i:nth-child(3) { width: 17%; border-color: rgba(206,241,123,.34); }
+        .archive-placeholder span { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: var(--font-mono); color: var(--lime-300); }
+        .archive-meta { position: absolute; z-index: 2; top: 18px; left: 18px; right: 18px; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(242,245,236,.58); }
+        .archive-copy { position: absolute; z-index: 2; left: 22px; right: 58px; bottom: 22px; }
+        .archive-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .archive-tags span { font-family: var(--font-mono); font-size: 7px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--lime-300); }
+        .archive-copy h3 { margin: 0; font-family: var(--font-display); font-size: clamp(25px,2.5vw,42px); font-weight: 560; line-height: 1; letter-spacing: -.045em; }
+        [dir="rtl"] .archive-copy h3 { font-family: var(--font-display-ar); line-height: 1.35; letter-spacing: -.02em; }
+        .archive-card--standard .archive-copy h3 { font-size: clamp(22px,1.9vw,31px); }
+        .archive-copy p { max-width: 54ch; margin: 10px 0 0; font-size: 14px; line-height: 1.55; color: rgba(242,245,236,.62); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        [dir="rtl"] .archive-copy p { font-family: var(--font-arabic); font-size: 15px; line-height: 1.75; }
+        .archive-open { position: absolute; z-index: 3; right: 18px; bottom: 20px; width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(206,241,123,.35); color: var(--lime-300); }
+        [dir="rtl"] .archive-open { right: auto; left: 18px; }
+        .archive-trace { position: absolute; z-index: 3; left: 0; bottom: 0; width: 0; height: 3px; background: var(--lime-300); transition: width 700ms var(--ease-out); }
+        [dir="rtl"] .archive-trace { left: auto; right: 0; }
+        @media (hover:hover) and (pointer:fine) { .archive-link:hover .archive-media img { transform: scale(1.035); filter: saturate(1) brightness(.82); }.archive-link:hover .archive-trace { width: 100%; } }
+        .archive-empty { margin-top: 72px; min-height: 300px; display: grid; place-items: center; border: 1px dashed rgba(8,71,52,.22); text-align: center; }
+        .archive-empty span { font-family: var(--font-mono); color: var(--pine-700); }.archive-empty p { font-size: 17px; color: rgba(6,59,43,.62); }
         @media (max-width: 900px) {
-          #works { padding: 64px 0 64px 24px !important; }
-          #works-grid {
-            display: flex !important;
-            overflow-x: auto !important;
-            scroll-snap-type: x mandatory !important;
-            -webkit-overflow-scrolling: touch !important;
-            gap: 12px !important;
-            padding-right: 24px !important;
-            scrollbar-width: none !important;
-          }
-          #works-grid::-webkit-scrollbar { display: none; }
-          #works-grid > * {
-            flex: 0 0 85% !important;
-            scroll-snap-align: start !important;
-            height: 340px !important;
-          }
-        }
-        @media (max-width: 480px) {
-          #works { padding: 56px 0 56px 20px !important; }
-          #works-grid { padding-right: 20px !important; }
-          #works-grid > * { flex-basis: 88% !important; height: 300px !important; }
+          .works-chapter { padding: 88px 20px; }
+          .works-heading-copy { grid-template-columns: 1fr; gap: 34px; }
+          .works-heading h2 { font-size: clamp(29px,8vw,42px); }
+          .archive-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 70px; }
+          .archive-link { width: 100%; }
+          .archive-card, .archive-card--featured { min-height: 360px; }
+          .archive-link:not(:first-child) .archive-card { min-height: 300px; }
+          .archive-copy { left: 18px; bottom: 18px; }
+          .archive-copy h3, .archive-card--standard .archive-copy h3 { font-size: 28px; }
+          .archive-copy p { font-size: 14px; }
         }
       `}</style>
     </section>

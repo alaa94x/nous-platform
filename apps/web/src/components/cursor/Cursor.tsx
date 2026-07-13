@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useReducedMotion } from 'motion/react'
 
-type CursorState = 'default' | 'magnetic' | 'project'
+type CursorState = 'default' | 'magnetic' | 'project' | 'plus' | 'minus' | 'arrow'
 
 export default function Cursor() {
   const reduced = !!useReducedMotion()
@@ -14,6 +14,7 @@ export default function Cursor() {
   const innerRef = useRef<HTMLDivElement>(null)
   const textRef  = useRef<HTMLSpanElement>(null)
   const orbRef   = useRef<HTMLDivElement>(null)
+  const tickRef  = useRef<() => void>(() => {})
 
   // Physics state — kept outside React to avoid re-renders
   const state = useRef({
@@ -56,33 +57,64 @@ export default function Cursor() {
     // Only update ring styles when state actually changed
     if (ring && inn && dot && ctxt && s.curState !== s.prevState) {
       s.prevState = s.curState
+      ring.style.boxShadow = 'none'
+      ctxt.style.fontSize = '15px'
+      ctxt.style.lineHeight = '1'
+      ctxt.style.color = '#063B2B'
+      ctxt.textContent = ''
       switch (s.curState) {
         case 'default':
-          ring.style.width = ring.style.height = '40px'
+          ring.style.width = ring.style.height = '34px'
           ring.style.background = 'transparent'
           inn.style.borderStyle = 'dashed'
-          inn.style.opacity = '1'
+          inn.style.opacity = '.9'
           dot.style.opacity = '1'
           ctxt.style.opacity = '0'
           ring.style.mixBlendMode = 'difference'
+          if (orb) orb.style.width = orb.style.height = '20vw'
           break
         case 'magnetic':
-          ring.style.width = ring.style.height = '70px'
+          ring.style.width = ring.style.height = '48px'
           ring.style.background = 'transparent'
           inn.style.borderStyle = 'solid'
           inn.style.opacity = '1'
           dot.style.opacity = '0'
           ctxt.style.opacity = '0'
           ring.style.mixBlendMode = 'difference'
+          if (orb) orb.style.width = orb.style.height = '11vw'
           break
         case 'project':
           ring.style.width = ring.style.height = '80px'
-          ring.style.background = '#60B89A'
+          ring.style.background = '#CEF17B'
           inn.style.opacity = '0'
           dot.style.opacity = '0'
           ctxt.style.opacity = '1'
+          ctxt.style.fontSize = '6px'
+          ctxt.style.lineHeight = '1.55'
+          ctxt.textContent = 'VIEW\nPROJECT'
           ring.style.mixBlendMode = 'normal'
+          ring.style.boxShadow = '0 8px 26px rgba(6,59,43,.2)'
+          if (orb) orb.style.width = orb.style.height = '10vw'
           break
+        case 'plus':
+        case 'minus':
+        case 'arrow': {
+          const isArrow = s.curState === 'arrow'
+          ring.style.width = ring.style.height = isArrow ? '50px' : '46px'
+          ring.style.background = isArrow ? '#063B2B' : '#CEF17B'
+          inn.style.opacity = '0'
+          dot.style.opacity = '0'
+          ctxt.style.opacity = '1'
+          ctxt.style.color = isArrow ? '#CEF17B' : '#063B2B'
+          ctxt.style.fontSize = isArrow ? '17px' : '19px'
+          ctxt.textContent = s.curState === 'plus' ? '+' : s.curState === 'minus' ? '−' : '↗'
+          ring.style.mixBlendMode = 'normal'
+          ring.style.boxShadow = isArrow
+            ? '0 8px 24px rgba(3,12,9,.24), inset 0 0 0 1px rgba(206,241,123,.2)'
+            : '0 8px 24px rgba(6,59,43,.18), inset 0 0 0 1px rgba(255,255,255,.22)'
+          if (orb) orb.style.width = orb.style.height = '9vw'
+          break
+        }
       }
     }
 
@@ -100,15 +132,19 @@ export default function Cursor() {
     const orbSettled    = Math.abs(s.ox - s.otx) < 0.1 && Math.abs(s.oy - s.oty) < 0.1
     if (!cursorSettled || !orbSettled || s.dirty) {
       s.dirty = false
-      s.rafId = requestAnimationFrame(tick)
+      s.rafId = requestAnimationFrame(tickRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    tickRef.current = tick
+  }, [tick])
 
   useEffect(() => {
     if (reduced) return
 
     const s = state.current
-    s.isMouse = window.matchMedia('(hover:hover) and (pointer:fine)').matches
+    s.isMouse = window.innerWidth > 900 && window.matchMedia('(hover:hover) and (pointer:fine)').matches
     if (!s.isMouse) return
 
     // Hide system cursor now that the custom cursor is ready
@@ -124,42 +160,50 @@ export default function Cursor() {
       if (!s.rafId) s.rafId = requestAnimationFrame(tick)
     }
 
+    const updateCursorState = (x: number, y: number) => {
+      const hit = document.elementFromPoint(x, y)
+      const card = hit?.closest('[data-card], .proj-card')
+      const contextual = hit?.closest<HTMLElement>('[data-cursor]')?.dataset['cursor']
+      const link = hit?.closest('a, button, [data-magnetic-btn]')
+      if (card || contextual === 'view') s.curState = 'project'
+      else if (contextual === 'toggle') s.curState = hit?.closest('details')?.hasAttribute('open') ? 'minus' : 'plus'
+      else if (contextual === 'plus') s.curState = 'plus'
+      else if (contextual === 'minus') s.curState = 'minus'
+      else if (contextual === 'arrow') s.curState = 'arrow'
+      else if (link) s.curState = 'magnetic'
+      else s.curState = 'default'
+      s.magTarget = null
+    }
+
     const onMove = (e: MouseEvent) => {
       s.tx = e.clientX; s.ty = e.clientY
       s.otx = e.clientX; s.oty = e.clientY
       s.dirty = true
-      // Detect what's under the cursor. Work cards get the "VIEW PROJECT"
-      // state; any link or button gets the enlarged magnetic ring. This works
-      // on every page (service pages included), not just where an author
-      // remembered to tag an element.
-      const hit  = document.elementFromPoint(e.clientX, e.clientY)
-      const card = hit?.closest('[data-card], .proj-card')
-      const link = hit?.closest('a, button, [data-magnetic-btn]')
-      if (card)      { s.curState = 'project';  s.magTarget = null }
-      else if (link) { s.curState = 'magnetic'; s.magTarget = null }
-      else           { s.curState = 'default';  s.magTarget = null }
+      updateCursorState(e.clientX, e.clientY)
       scheduleRaf()
     }
     document.addEventListener('mousemove', onMove)
 
-    // Orb constrict on hover targets
-    const constrict = (small: boolean) => {
-      const orb = orbRef.current
-      if (!orb) return
-      orb.style.width = orb.style.height = small ? '12vw' : '30vw'
+    // A click may replace + with − without moving the pointer. Re-read the
+    // target after React commits so the cursor always reflects the next action.
+    const onClick = () => {
+      requestAnimationFrame(() => {
+        updateCursorState(s.tx, s.ty)
+        s.dirty = true
+        scheduleRaf()
+      })
     }
-    document.querySelectorAll('a, button, [data-magnetic-btn]').forEach(el => {
-      el.addEventListener('mouseenter', () => constrict(true))
-      el.addEventListener('mouseleave', () => constrict(false))
-    })
+    document.addEventListener('click', onClick)
 
     // Kick off initial frame to position elements
     scheduleRaf()
 
     return () => {
       document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('click', onClick)
       if (s.rafId) cancelAnimationFrame(s.rafId)
       document.body.style.cursor = 'auto'
+      document.querySelectorAll<HTMLElement>('a, button').forEach(el => { el.style.cursor = '' })
     }
   }, [reduced, tick])
 
@@ -171,11 +215,11 @@ export default function Cursor() {
       <div
         ref={dotRef}
         aria-hidden="true"
-        className="fixed top-0 left-0 pointer-events-none z-9999"
+        className="nous-custom-cursor fixed top-0 left-0 pointer-events-none z-9999"
         style={{
           width: 4, height: 4,
           borderRadius: '50%',
-          background: '#60B89A',
+          background: '#F2F5EC',
           willChange: 'transform',
           transform: 'translate(-40px,-40px)',
           mixBlendMode: 'difference',
@@ -185,7 +229,7 @@ export default function Cursor() {
       {/* Cursor ring */}
       <div
         ref={wrapRef}
-        className="fixed top-0 left-0 pointer-events-none z-9999"
+        className="nous-custom-cursor fixed top-0 left-0 pointer-events-none z-9999"
         style={{ willChange: 'transform', transform: 'translate(-40px,-40px)' }}
       >
         <div
@@ -193,9 +237,9 @@ export default function Cursor() {
           className="absolute top-0 left-0 flex items-center justify-center overflow-hidden"
           style={{
             transform: 'translate(-50%,-50%)',
-            width: 40, height: 40,
+            width: 34, height: 34,
             borderRadius: '50%',
-            transition: 'width .3s cubic-bezier(.34,1.56,.64,1), height .3s cubic-bezier(.34,1.56,.64,1), background .25s',
+            transition: 'width 180ms var(--ease-out), height 180ms var(--ease-out), background-color 160ms ease, box-shadow 160ms ease',
           }}
         >
           <div
@@ -203,7 +247,7 @@ export default function Cursor() {
             className="absolute inset-0"
             style={{
               borderRadius: '50%',
-              border: '1.5px dashed #60B89A',
+              border: '1.25px dashed #F2F5EC',
               animation: 'spin-cw 8s linear infinite',
               transition: 'border-style .2s, opacity .2s',
               mixBlendMode: 'difference',
@@ -214,18 +258,16 @@ export default function Cursor() {
             className="relative z-10 text-center"
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 6,
+              fontSize: 15,
               fontWeight: 700,
-              color: '#F9F8F6',
+              color: '#063B2B',
               letterSpacing: '.05em',
               lineHeight: 1.55,
               opacity: 0,
               transition: 'opacity .2s',
-              whiteSpace: 'nowrap',
+              whiteSpace: 'pre-line',
             }}
-          >
-            VIEW<br />PROJECT
-          </span>
+          />
         </div>
       </div>
 
@@ -233,15 +275,16 @@ export default function Cursor() {
       <div
         ref={orbRef}
         id="amb-orb"
-        className="fixed top-0 left-0 pointer-events-none z-1"
+        className="nous-custom-cursor fixed top-0 left-0 pointer-events-none z-1"
         style={{
-          width: '30vw', height: '30vw',
+          width: '20vw', height: '20vw',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(10,92,71,.15) 0%, rgba(249,248,246,0) 70%)',
-          filter: 'blur(60px)',
-          mixBlendMode: 'multiply',
+          background: 'radial-gradient(circle, rgba(206,241,123,.22) 0%, rgba(8,71,52,.1) 34%, rgba(249,248,246,0) 70%)',
+          filter: 'blur(46px)',
+          mixBlendMode: 'soft-light',
+          opacity: .82,
           willChange: 'transform',
-          transition: 'width .7s ease, height .7s ease',
+          transition: 'width .42s var(--ease-out), height .42s var(--ease-out)',
         }}
       />
     </>

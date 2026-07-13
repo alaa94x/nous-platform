@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function NotFound() {
   return (
     <main
@@ -46,7 +48,7 @@ export default function NotFound() {
       >
         The page you are looking for does not exist or has been moved.
       </p>
-      <a
+      <Link
         href="/"
         style={{
           fontFamily: 'var(--font-mono)',
@@ -62,7 +64,7 @@ export default function NotFound() {
         }}
       >
         Return home
-      </a>
+      </Link>
     </main>
   )
 }

@@ -69,7 +69,7 @@ export default async function WorkCaseStudy(
     <>
       <Cursor />
       <Noise />
-      <Nav siteName={chrome.siteName} />
+      <Nav siteName={chrome.siteName} showLanguageSwitch />
       <main id="main-content">
         <script
           type="application/ld+json"

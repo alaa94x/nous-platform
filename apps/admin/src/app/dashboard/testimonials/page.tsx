@@ -6,15 +6,18 @@ import { supabase } from '@/lib/supabase'
 type Testimonial = {
   id: string
   quote: string
+  quote_ar: string | null
   author: string
+  author_ar: string | null
   role: string | null
+  role_ar: string | null
   initials: string | null
   sort_order: number | null
   active: boolean | null
 }
 
 const EMPTY: Omit<Testimonial, 'id'> = {
-  quote: '', author: '', role: '', initials: '', sort_order: 99, active: true,
+  quote: '', quote_ar: '', author: '', author_ar: '', role: '', role_ar: '', initials: '', sort_order: 99, active: true,
 }
 
 // ── Testimonial form ─────────────────────────────────────────────────────────
@@ -39,13 +42,26 @@ function TestimonialForm({
 
       {/* Quote */}
       <div>
-        <label style={labelStyle}>Quote <span style={hint}>max 3 lines recommended on the live site</span></label>
+        <label style={labelStyle}>Quote (EN) <span style={hint}>max 3 lines recommended on the live site</span></label>
         <textarea
           value={buf.quote ?? ''}
           onChange={e => onChange({ quote: e.target.value })}
           placeholder="What the client said..."
           rows={4}
           style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', fontFamily: 'ui-monospace, monospace', fontSize: 11, lineHeight: 1.6 }}
+        />
+      </div>
+
+      <div>
+        <label style={labelStyle}>Quote (AR) <span style={hint}>native transcreation, not a literal translation</span></label>
+        <textarea
+          value={buf.quote_ar ?? ''}
+          onChange={e => onChange({ quote_ar: e.target.value })}
+          placeholder="ما قاله العميل..."
+          rows={4}
+          dir="rtl"
+          lang="ar"
+          style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical', fontSize: 13, lineHeight: 1.8, textAlign: 'right' }}
         />
       </div>
 
@@ -63,6 +79,18 @@ function TestimonialForm({
           <label style={labelStyle}>Initials <span style={hint}>avatar letter</span></label>
           <input value={buf.initials ?? ''} onChange={e => onChange({ initials: e.target.value.slice(0, 2) })} placeholder="S" maxLength={2} />
         </div>
+      </div>
+
+      <div className="test-row-3">
+        <div>
+          <label style={labelStyle}>Author (AR)</label>
+          <input dir="rtl" lang="ar" value={buf.author_ar ?? ''} onChange={e => onChange({ author_ar: e.target.value })} placeholder="المؤسِّسة" style={{ textAlign: 'right' }} />
+        </div>
+        <div>
+          <label style={labelStyle}>Company / Role (AR)</label>
+          <input dir="rtl" lang="ar" value={buf.role_ar ?? ''} onChange={e => onChange({ role_ar: e.target.value })} placeholder="ستيتشد" style={{ textAlign: 'right' }} />
+        </div>
+        <div aria-hidden="true" />
       </div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -100,8 +128,11 @@ export default function TestimonialsPage() {
     setSaving(true)
     await supabase.from('testimonials').update({
       quote:    editBuf.quote,
+      quote_ar: editBuf.quote_ar || null,
       author:   editBuf.author,
+      author_ar: editBuf.author_ar || null,
       role:     editBuf.role || null,
+      role_ar:  editBuf.role_ar || null,
       initials: editBuf.initials || null,
     }).eq('id', editing)
     await fetchTestimonials()
@@ -115,8 +146,11 @@ export default function TestimonialsPage() {
     setSaving(true)
     await supabase.from('testimonials').insert({
       quote:      newBuf.quote,
+      quote_ar:   newBuf.quote_ar || null,
       author:     newBuf.author,
+      author_ar:  newBuf.author_ar || null,
       role:       newBuf.role || null,
+      role_ar:    newBuf.role_ar || null,
       initials:   newBuf.initials || null,
       sort_order: testimonials.length + 1,
       active:     true,
@@ -169,7 +203,7 @@ export default function TestimonialsPage() {
 
       {/* New testimonial form */}
       {adding && (
-        <div style={{ background: 'var(--surface)', border: '1px solid rgba(46,204,113,.4)', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid rgba(206, 241, 123,.4)', borderRadius: 8, overflow: 'hidden' }}>
           <TestimonialForm
             buf={newBuf}
             onChange={patch => setNewBuf(b => ({ ...b, ...patch }))}
@@ -183,7 +217,7 @@ export default function TestimonialsPage() {
 
       {/* Testimonial list */}
       {testimonials.map(t => (
-        <div key={t.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === t.id ? 'rgba(46,204,113,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
+        <div key={t.id} style={{ background: 'var(--surface)', border: `1px solid ${editing === t.id ? 'rgba(206, 241, 123,.35)' : 'var(--border)'}`, borderRadius: 8, overflow: 'hidden', transition: 'border-color .2s' }}>
           {editing === t.id ? (
             <TestimonialForm
               buf={editBuf}
@@ -197,7 +231,7 @@ export default function TestimonialsPage() {
               {/* Avatar */}
               <div style={{
                 width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(46,204,113,.08)', border: '1px solid rgba(46,204,113,.25)',
+                background: 'rgba(206, 241, 123,.08)', border: '1px solid rgba(206, 241, 123,.25)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'ui-monospace, monospace', fontSize: 13, color: 'var(--accent)',
               }}>
@@ -211,6 +245,9 @@ export default function TestimonialsPage() {
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 12, color: 'var(--text)', fontFamily: 'ui-monospace, monospace' }}>{t.author}</span>
                   {t.role && <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'ui-monospace, monospace' }}>{t.role}</span>}
+                </div>
+                <div style={{ marginTop: 7, fontSize: 9, color: t.quote_ar ? 'var(--accent)' : '#f3c969', fontFamily: 'ui-monospace, monospace', letterSpacing: '.08em' }}>
+                  {t.quote_ar && t.author_ar ? 'AR complete' : 'AR translation needed'}
                 </div>
               </div>
 

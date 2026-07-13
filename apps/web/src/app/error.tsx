@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
 
@@ -80,7 +82,7 @@ export default function Error({
         >
           Try again
         </button>
-        <a
+        <Link
           href="/"
           style={{
             fontFamily: 'var(--font-mono)',
@@ -94,7 +96,7 @@ export default function Error({
           }}
         >
           Return home
-        </a>
+        </Link>
       </div>
     </main>
   )
