@@ -1,4 +1,10 @@
+function hasValidSentryDsn() {
+  const dsn = process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN
+  return Boolean(dsn && !dsn.includes('...'))
+}
+
 export async function register() {
+  if (!hasValidSentryDsn()) return
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     await import('../sentry.server.config')
   }
@@ -12,6 +18,7 @@ export async function onRequestError(
   request: { path: string; method: string; headers: Record<string, string | string[] | undefined> },
   context: { routerKind: string; routePath: string; routeType: string },
 ) {
+  if (!hasValidSentryDsn()) return
   const { captureRequestError } = await import('@sentry/nextjs')
   captureRequestError(err, request, context)
 }

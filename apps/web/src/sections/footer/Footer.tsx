@@ -4,7 +4,7 @@ import {
   XLogo, TiktokLogo, YoutubeLogo, GithubLogo, BehanceLogo, DribbbleLogo,
   FacebookLogo, TelegramLogo, ThreadsLogo,
 } from '@phosphor-icons/react/dist/ssr'
-import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
+import type { Locale } from '@/i18n/config'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +37,7 @@ export interface FooterProps {
   socialItems?:     SocialItem[]
   companyName?:     string
   footerCopyright?: string
+  locale?:         Locale
 }
 
 // ── Site-map navigation ─────────────────────────────────────────────────────
@@ -118,17 +119,60 @@ export default function Footer({
   contactItems    = DEFAULT_CONTACT_ITEMS,
   socialItems     = DEFAULT_SOCIAL_ITEMS,
   footerCopyright,
+  locale           = 'en',
 }: FooterProps) {
+  const isAr = locale === 'ar'
+  const home = isAr ? '/ar' : '/'
   const year      = new Date().getFullYear()
-  const primary   = contactItems.filter(c => c.enabled && c.primary)
-  const secondary = contactItems.filter(c => c.enabled && !c.primary)
   // Admin can override the copyright line verbatim; otherwise auto-generate it
   // so the year stays current without anyone having to edit it each January.
-  const copyright = footerCopyright?.trim() || `© ${year} ${companyName}. All Rights Reserved.`
+  const copyright = footerCopyright?.trim() || (isAr
+    ? `© ${year} ${companyName}. جميع الحقوق محفوظة.`
+    : `© ${year} ${companyName}. All Rights Reserved.`)
+  const footerNav = isAr ? [
+    {
+      title: 'الخدمات',
+      links: [
+        { label: 'الذكاء الاصطناعي والأتمتة', href: '/ar/services/ai' },
+        { label: 'المنصات الرقمية', href: '/ar/services/full-stack' },
+        { label: 'تطبيقات الجوال', href: '/ar/services/mobile' },
+        { label: 'التجارة الإلكترونية', href: '/ar/services/ecommerce' },
+        { label: 'السحابة والتوسع', href: '/ar/services/cloud' },
+        { label: 'التصميم والحركة', href: '/ar/services/design' },
+      ],
+    },
+    {
+      title: 'أعمال مختارة',
+      links: [
+        { label: 'ستيتشد', href: '/ar/work/stitched' },
+        { label: 'إيليت كوليكشنز', href: '/ar/work/elite-collections' },
+        { label: 'الحاسة السابعة', href: '/ar/work/the-seventh-sense' },
+      ],
+    },
+    {
+      title: 'نوس',
+      links: [
+        { label: 'الرئيسية', href: '/ar' },
+        { label: 'ابدأ مشروعك', href: '/ar/contact' },
+      ],
+    },
+  ] : FOOTER_NAV
+
+  const localizedContactItems = isAr
+    ? contactItems.map(item => ({
+        ...item,
+        label: item.icon === 'phone' ? 'اتصل بنا' : item.icon === 'whatsapp' ? 'واتساب' : item.label,
+      }))
+    : contactItems
+  const primary   = localizedContactItems.filter(c => c.enabled && c.primary)
+  const secondary = localizedContactItems.filter(c => c.enabled && !c.primary)
 
   return (
     <footer
       aria-label="Site footer"
+      lang={locale}
+      dir={isAr ? 'rtl' : 'ltr'}
+      className="footer-light"
       style={{
         position: 'relative',
         zIndex: 10,
@@ -148,7 +192,7 @@ export default function Footer({
             textTransform: 'uppercase',
             marginBottom: 16,
           }}>
-            Get in touch
+            {isAr ? 'تواصل معنا' : 'Get in touch'}
           </p>
 
           {/* Secondary pills — grid of equal columns */}
@@ -167,7 +211,7 @@ export default function Footer({
                     key={item.id}
                     href={item.href}
                     {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                    className="footer-contact-pill"
+                    className="footer-contact-pill pressable"
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                       fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--text)',
@@ -192,7 +236,7 @@ export default function Footer({
                 key={item.id}
                 href={item.href}
                 {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                className="footer-contact-pill footer-contact-primary"
+                className="footer-contact-pill footer-contact-primary pressable"
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
                   width: '100%', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 600,
@@ -223,7 +267,7 @@ export default function Footer({
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="footer-social-link"
+                  className="footer-social-link pressable"
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     fontFamily: 'var(--font-mono)', fontSize: 9, color: 'var(--muted)',
@@ -246,14 +290,14 @@ export default function Footer({
           className="footer-nav"
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${FOOTER_NAV.length}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${footerNav.length}, minmax(0, 1fr))`,
             gap: 24,
             paddingTop: 28,
             paddingBottom: 28,
             borderBottom: '1px solid var(--border)',
           }}
         >
-          {FOOTER_NAV.map(group => (
+          {footerNav.map(group => (
             <div key={group.title} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <span style={{
                 fontFamily: 'var(--font-mono)', fontSize: 8, color: 'var(--muted)',
@@ -264,7 +308,7 @@ export default function Footer({
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {group.links.map(link => (
                   <li key={link.href}>
-                    <Link href={link.href} className="footer-nav-link" style={{
+                    <Link href={link.href} className="footer-nav-link pressable arrow-feedback" style={{
                       fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text)',
                       letterSpacing: '.04em', textDecoration: 'none', transition: 'color .2s',
                     }}>
@@ -283,14 +327,14 @@ export default function Footer({
           gap: 24, paddingTop: 28, width: '100%',
         }}>
           <div className="footer-brand-row" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <Link href="/" aria-label={`${companyName}, return to homepage`}
+            <Link href={home} className="pressable" aria-label={isAr ? `${companyName}، العودة إلى الرئيسية` : `${companyName}, return to homepage`}
               style={{ display: 'flex', alignItems: 'center', gap: 12 }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/nous-logo.svg" alt="" aria-hidden="true"
                 width={48} height={48} style={{ width: 48, height: 48 }} />
-              <span style={{
-                fontFamily: 'var(--font-fraunces)', fontSize: 24, fontWeight: 700,
+              <span dir="ltr" style={{
+                fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 650,
                 letterSpacing: '-.02em', color: 'var(--text)',
               }}>
                 {siteName}
@@ -311,17 +355,29 @@ export default function Footer({
       </div>
 
       <style>{`
-        .footer-social-link:hover    { color: var(--accent) !important; }
-        .footer-contact-pill:hover   { border-color: var(--accent) !important; color: var(--accent) !important; }
+        .footer-light {
+          --bg: var(--tea-100);
+          --text: var(--pine-800);
+          --muted: rgba(6,59,43,.62);
+          --border: rgba(8,71,52,.2);
+          --accent: var(--pine-700);
+          color: var(--text);
+        }
+        .footer-social-link:hover    { color: var(--pine-600) !important; }
+        .footer-contact-pill:hover   { border-color: var(--pine-600) !important; color: var(--pine-600) !important; }
         .footer-contact-primary:hover { opacity: .82 !important; color: var(--bg) !important; border-color: var(--accent) !important; }
-        .footer-nav-link:hover       { color: var(--accent) !important; }
+        .footer-nav-link:hover       { color: var(--pine-600) !important; }
         @media (max-width: 768px) {
           .footer-body { padding: 40px 24px 36px !important; }
           .footer-nav  { grid-template-columns: 1fr 1fr !important; row-gap: 28px !important; }
           .footer-brand-row { flex-wrap: wrap !important; gap: 12px !important; }
+          .footer-contact-pill { min-height: 44px; }
+          .footer-social-link { min-width: 44px; min-height: 44px; align-items: center; }
+          .footer-nav-link { display: inline-flex; min-width: 44px; min-height: 44px; align-items: center; font-size: 11px !important; line-height: 1.4; }
         }
         @media (max-width: 480px) {
           .footer-body { padding: 36px 20px 32px !important; }
+          .footer-social-link { min-height: 44px; }
         }
       `}</style>
     </footer>

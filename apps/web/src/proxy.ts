@@ -56,10 +56,14 @@ const CSP = [
   `base-uri 'self'`,
   `form-action 'self'`,
   `frame-ancestors 'none'`,
-  `upgrade-insecure-requests`,
+  // Production is HTTPS, so mixed-content upgrades are useful there. On a
+  // physical phone the dev site is served over plain HTTP from a LAN IP;
+  // upgrading its relative CSS, JS, and image requests to HTTPS makes every
+  // asset fail and leaves only the raw HTML visible.
+  ...(process.env.NODE_ENV === 'production' ? [`upgrade-insecure-requests`] : []),
 ].join('; ')
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const ip       = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
   const { pathname } = req.nextUrl
   const { method }   = req

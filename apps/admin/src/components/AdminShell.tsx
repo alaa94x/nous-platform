@@ -83,7 +83,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 borderRadius: 6,
                 fontSize: 12,
                 color: active ? 'var(--accent)' : 'var(--muted)',
-                background: active ? 'rgba(46,204,113,.08)' : 'transparent',
+                background: active ? 'rgba(206, 241, 123,.08)' : 'transparent',
                 transition: 'background .15s, color .15s',
                 letterSpacing: '.03em',
                 textDecoration: 'none',
@@ -304,11 +304,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             background: rgba(22,28,25,.93);
             backdrop-filter: blur(28px) saturate(160%);
             -webkit-backdrop-filter: blur(28px) saturate(160%);
-            border: 1px solid rgba(46,204,113,.15);
+            border: 1px solid rgba(206, 241, 123,.15);
             border-radius: 22px;
             box-shadow:
               0 10px 48px rgba(0,0,0,.6),
-              0 2px 12px rgba(46,204,113,.07),
+              0 2px 12px rgba(206, 241, 123,.07),
               inset 0 1px 0 rgba(255,255,255,.05);
             z-index: 100;
             padding: 0 6px;
@@ -365,12 +365,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             transform: translateX(-50%);
             width: 42px;
             height: 40px;
-            background: rgba(46,204,113,.12);
-            border: 1px solid rgba(46,204,113,.1);
+            background: rgba(206, 241, 123,.12);
+            border: 1px solid rgba(206, 241, 123,.1);
             border-radius: 13px;
           }
-          .adm-tab--active .adm-tab-icon { color: #2ECC71; }
-          .adm-tab--active .adm-tab-label { color: rgba(46,204,113,.7); }
+          .adm-tab--active .adm-tab-icon { color: #CEF17B; }
+          .adm-tab--active .adm-tab-label { color: rgba(206, 241, 123,.7); }
         }
 
         /* Sidebar hover states — only on pointer devices */

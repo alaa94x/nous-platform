@@ -1,4 +1,5 @@
-const hasSentry = !!(process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN)
+const sentryDsn = process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN
+const hasSentry = Boolean(sentryDsn && !sentryDsn.includes('...'))
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs' && hasSentry) {

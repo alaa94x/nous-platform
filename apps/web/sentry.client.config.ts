@@ -1,7 +1,10 @@
 import * as Sentry from '@sentry/nextjs'
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const configuredDsn = process.env.NEXT_PUBLIC_SENTRY_DSN
+const dsn = configuredDsn && !configuredDsn.includes('...') ? configuredDsn : undefined
+
+if (dsn) Sentry.init({
+  dsn,
 
   // Trace 10% of transactions in production to keep quota in check
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
@@ -18,5 +21,5 @@ Sentry.init({
   ],
 
   // Suppress in dev unless DSN is explicitly set
-  enabled: !!process.env.NEXT_PUBLIC_SENTRY_DSN,
+  enabled: true,
 })
