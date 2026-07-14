@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
 import type { Locale } from '@/i18n/config'
 
@@ -13,8 +13,24 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const lensRef = useRef<HTMLSpanElement>(null)
   const focusRef = useRef<HTMLSpanElement>(null)
+  const activePhraseRef = useRef(0)
+  const manualPauseUntilRef = useRef(0)
   const [activePhrase, setActivePhrase] = useState(0)
   const reduced = !!useReducedMotion()
+
+  const commitPhrase = useCallback((index: number, manual = false) => {
+    if (manual) manualPauseUntilRef.current = Date.now() + 8000
+    activePhraseRef.current = index
+    setActivePhrase(index)
+  }, [])
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      if (document.hidden || Date.now() < manualPauseUntilRef.current) return
+      commitPhrase((activePhraseRef.current + 1) % phrases.length)
+    }, 5000)
+    return () => window.clearInterval(interval)
+  }, [commitPhrase, phrases.length])
 
   useEffect(() => {
     const root = rootRef.current
@@ -34,26 +50,12 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
     let visible = true
     let pointerActiveUntil = 0
     let hasInteracted = false
-    let phraseIndex = 0
-    let lastAutoPhrase = performance.now()
     let lastPointerPhrase = 0
     const coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches
 
     const setPhrase = (index: number) => {
-      if (index === phraseIndex) return
-      phraseIndex = index
-      setActivePhrase(index)
-      window.requestAnimationFrame(() => {
-        root.querySelectorAll<HTMLElement>('.nous-signal-reveal__ghost, .nous-signal-reveal__focus').forEach(element => {
-          element.animate(
-            [
-              { opacity: .45, filter: 'blur(2px)', transform: 'translateY(4px)' },
-              { opacity: 1, filter: 'blur(0)', transform: 'translateY(0)' },
-            ],
-            { duration: 360, easing: 'cubic-bezier(.23,1,.32,1)' },
-          )
-        })
-      })
+      if (index === activePhraseRef.current) return
+      commitPhrase(index)
     }
 
     const renderPosition = () => {
@@ -79,6 +81,9 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
 
     const updateFromPointer = (event: PointerEvent) => {
       bounds = surface.getBoundingClientRect()
+      // Mobile touch belongs to the fluid field. Phrase changes are controlled
+      // by the three stable signal points instead of a roaming focus lens.
+      if (bounds.width < 760) return
       const localX = event.clientX - bounds.left
       const localY = event.clientY - bounds.top
       if (localX < 0 || localX > bounds.width || localY < 0 || localY > bounds.height) return
@@ -90,7 +95,7 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
       const normalized = Math.min(.999, Math.max(0, localY / bounds.height))
       const nextPhrase = normalized < .31 ? 0 : normalized < .64 ? 1 : 2
       const now = performance.now()
-      if (nextPhrase !== phraseIndex && now - lastPointerPhrase > 260) {
+      if (nextPhrase !== activePhraseRef.current && now - lastPointerPhrase > 260) {
         lastPointerPhrase = now
         setPhrase(nextPhrase)
       }
@@ -122,10 +127,6 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
         }
         root.dataset.engaged = 'false'
 
-        if (time - lastAutoPhrase > (mobile ? 5200 : 6400)) {
-          lastAutoPhrase = time
-          setPhrase((phraseIndex + 1) % phrases.length)
-        }
       }
 
       const follow = pointerEngaged ? (coarse ? 0.16 : 0.12) : hasInteracted ? 0.08 : 0.026
@@ -177,17 +178,16 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
       surface.removeEventListener('pointerleave', releasePointer)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [locale, phrases, reduced])
+  }, [commitPhrase, locale, phrases, reduced])
 
   return (
     <div
       ref={rootRef}
       className="nous-signal-reveal"
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      aria-hidden="true"
       data-engaged="false"
     >
-      <div className="nous-signal-reveal__copy">
+      <div className="nous-signal-reveal__copy" aria-hidden="true">
         <span className="nous-signal-reveal__ghost">
           {phrases[activePhrase]}
         </span>
@@ -195,8 +195,26 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
           {phrases[activePhrase]}
         </span>
       </div>
-      <span ref={lensRef} className="nous-signal-reveal__lens"><i /></span>
-      <span className="nous-signal-reveal__index" dir="ltr">0{activePhrase + 1} / 03</span>
+      <span ref={lensRef} className="nous-signal-reveal__lens" aria-hidden="true"><i /></span>
+      <span className="nous-signal-reveal__index" dir="ltr" aria-hidden="true">0{activePhrase + 1} / 03</span>
+      <div className="nous-signal-reveal__mobile-console">
+        <div className="nous-signal-reveal__mobile-copy" role="status" aria-live="polite" aria-atomic="true">
+          <strong key={`${locale}-${activePhrase}`}>{phrases[activePhrase]}</strong>
+        </div>
+        <div className="nous-signal-reveal__steps" role="group" aria-label={locale === 'ar' ? 'عبارات الإشارة' : 'Signal statements'}>
+          {phrases.map((phrase, index) => (
+            <button
+              key={phrase}
+              type="button"
+              aria-label={locale === 'ar' ? `اعرض العبارة ${index + 1}: ${phrase}` : `Show statement ${index + 1}: ${phrase}`}
+              aria-pressed={activePhrase === index}
+              onClick={() => commitPhrase(index, true)}
+            >
+              <i aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+      </div>
 
       <style>{`
         .nous-signal-reveal {
@@ -298,6 +316,7 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
           color: rgba(206,241,123,.82);
         }
         .nous-signal-reveal[dir="rtl"] .nous-signal-reveal__index { left: auto; right: 61%; }
+        .nous-signal-reveal__mobile-console { display: none; }
         @keyframes nous-signal-copy-in {
           from { opacity: 0; filter: blur(4px); transform: translateY(10px); }
           to { opacity: 1; filter: blur(0); transform: translateY(0); }
@@ -305,32 +324,82 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
         @keyframes nous-signal-orbit { to { transform: rotate(360deg); } }
 
         @media (max-width: 900px) {
-          .nous-signal-reveal__copy {
-            left: 20px;
-            right: 20px;
-            top: 17%;
-            width: auto;
-            min-height: 2.2em;
-            font-size: clamp(42px, 13vw, 62px);
-            text-align: center;
+          .nous-signal-reveal { z-index: 4; }
+          .nous-signal-reveal__copy,
+          .nous-signal-reveal__index { display: none; }
+          .nous-signal-reveal__lens { display: none; }
+          .nous-signal-reveal__mobile-console {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            top: 21%;
+            z-index: 4;
+            min-height: 110px;
+            display: grid;
+            grid-template-rows: 62px 48px;
+            pointer-events: auto;
+            touch-action: manipulation;
+            color: var(--tea-100);
           }
-          .nous-signal-reveal[dir="rtl"] .nous-signal-reveal__copy {
-            left: 20px;
-            right: 20px;
-            font-size: clamp(40px, 11.5vw, 56px);
-            text-align: center;
+          .nous-signal-reveal__mobile-copy {
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
           }
-          .nous-signal-reveal__ghost { color: rgba(205,237,179,.15); }
-          .nous-signal-reveal__focus { color: rgba(235,248,211,.88); }
-          .nous-signal-reveal__lens { width: 112px; opacity: .72; }
-          .nous-signal-reveal__index,
-          .nous-signal-reveal[dir="rtl"] .nous-signal-reveal__index {
-            left: 20px;
-            right: 20px;
-            top: calc(17% - 22px);
-            text-align: center;
-            font-size: 8px;
+          .nous-signal-reveal__mobile-copy > strong {
+            min-width: 0;
+            white-space: nowrap;
+            font-family: var(--font-display);
+            font-size: clamp(29px, 8.4vw, 38px);
+            font-weight: 550;
+            line-height: .95;
+            letter-spacing: -.052em;
+            color: rgba(235,248,211,.98);
+            text-shadow: 0 0 34px rgba(206,241,123,.2), 0 1px 1px rgba(4,13,10,.72);
+            animation: nous-signal-copy-in 360ms var(--ease-out) both;
           }
+          .nous-signal-reveal[dir="rtl"] .nous-signal-reveal__mobile-copy > strong {
+            font-family: var(--font-display-ar);
+            font-size: clamp(28px, 8.1vw, 36px);
+            line-height: 1.08;
+            letter-spacing: -.025em;
+          }
+          .nous-signal-reveal__steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+          }
+          .nous-signal-reveal__steps button {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 999px;
+            color: rgba(205,237,179,.38);
+            transition: color 180ms ease, transform 140ms var(--ease-out);
+            -webkit-tap-highlight-color: transparent;
+          }
+          .nous-signal-reveal__steps button:active { transform: scale(.96); }
+          .nous-signal-reveal__steps button i {
+            width: 5px;
+            height: 5px;
+            margin: 0 auto;
+            border: 1px solid currentColor;
+            border-radius: 50%;
+            background: transparent;
+            transition: width 220ms var(--ease-out), background-color 180ms ease, box-shadow 180ms ease;
+          }
+          .nous-signal-reveal__steps button[aria-pressed="true"] { color: var(--lime-300); }
+          .nous-signal-reveal__steps button[aria-pressed="true"] i {
+            width: 20px;
+            border-radius: 999px;
+            background: currentColor;
+            box-shadow: 0 0 14px rgba(206,241,123,.48);
+          }
+          .nous-signal-reveal__steps button:focus-visible { outline: 2px solid var(--lime-300); outline-offset: -4px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -338,6 +407,8 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
           .nous-signal-reveal__focus,
           .nous-signal-reveal__lens::after { animation: none; }
           .nous-signal-reveal__lens { opacity: .48; }
+          .nous-signal-reveal__steps button,
+          .nous-signal-reveal__steps button i { transition: none; }
         }
       `}</style>
     </div>

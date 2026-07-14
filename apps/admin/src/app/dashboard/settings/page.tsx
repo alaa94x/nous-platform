@@ -55,8 +55,8 @@ const SECTIONS: Section[] = [
       { key: 'hero_location_ar', label: 'Location (AR)', placeholder: 'الدوحة · قطر', maxChars: 32, rtl: true },
       { key: 'hero_cta_primary_en', label: 'Primary CTA (EN)', hint: 'Starts the inquiry', placeholder: 'Bring Us the Hard Problem', maxChars: 36 },
       { key: 'hero_cta_primary_ar', label: 'Primary CTA (AR)', placeholder: 'اعرض علينا التحدّي', maxChars: 36, rtl: true },
-      { key: 'hero_cta_secondary_en', label: 'Secondary CTA (EN)', hint: 'Jumps to evidence', placeholder: 'See What Shipped', maxChars: 32 },
-      { key: 'hero_cta_secondary_ar', label: 'Secondary CTA (AR)', placeholder: 'شاهد ما أنجزناه', maxChars: 32, rtl: true },
+      { key: 'hero_cta_secondary_en', label: 'WhatsApp CTA (EN)', hint: 'Uses the enabled WhatsApp URL from Footer contact items', placeholder: 'Talk to us on WhatsApp', maxChars: 32 },
+      { key: 'hero_cta_secondary_ar', label: 'WhatsApp CTA (AR)', hint: 'Uses the enabled WhatsApp URL from Footer contact items', placeholder: 'تحدث معنا عبر واتساب', maxChars: 32, rtl: true },
       { key: 'hero_motion_mode', label: 'Ambient Motion', hint: 'Reduced-motion preference always overrides this', options: [
         { value: 'standard', label: 'Standard — expressive but calm' },
         { value: 'calm', label: 'Calm — lower intensity' },

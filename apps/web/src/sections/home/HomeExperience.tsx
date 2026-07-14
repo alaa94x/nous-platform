@@ -50,6 +50,12 @@ export default function HomeExperience({ locale, data }: HomeExperienceProps) {
   } catch {
     // Invalid admin JSON should never take down the public homepage.
   }
+  const whatsappHref = contactItems.find(item => item.enabled && item.icon === 'whatsapp')?.href
+    ?? 'https://wa.me/97477484004'
+  const secondarySetting = localizedSetting('hero_cta_secondary', dictionary.hero.secondary)
+  const secondaryCta = ['See What Shipped', 'View Selected Works', 'شاهد ما أنجزناه'].includes(secondarySetting)
+    ? (locale === 'ar' ? 'تحدث معنا عبر واتساب' : 'Talk to us on WhatsApp')
+    : secondarySetting
 
   const faqJsonLd = {
     '@context': 'https://schema.org',
@@ -82,7 +88,8 @@ export default function HomeExperience({ locale, data }: HomeExperienceProps) {
             subtextEn={localizedSetting('hero_subtext', dictionary.hero.subtext)}
             subtextAr={localizedSetting('hero_subtext', dictionary.hero.subtext)}
             ctaPrimary={localizedSetting('hero_cta_primary', dictionary.hero.primary)}
-            ctaSecondary={localizedSetting('hero_cta_secondary', dictionary.hero.secondary)}
+            ctaSecondary={secondaryCta}
+            whatsappHref={whatsappHref}
             location={localizedSetting('hero_location', dictionary.hero.location)}
             revealPhrases={revealPhrases}
             revealHint={localizedSetting('hero_reveal_hint', locale === 'ar' ? 'المس المجال لاكتشاف الإشارة' : 'Move through the field to reveal the signal')}

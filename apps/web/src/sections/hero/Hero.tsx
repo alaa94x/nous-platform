@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { WhatsappLogo } from '@phosphor-icons/react'
 import NebulaFluid from './NebulaFluid'
 import SignalReveal from './SignalReveal'
 import type { FieldMotionMode } from './AssemblyField'
@@ -17,6 +18,7 @@ interface HeroProps {
   subtextAr?: ReactNode
   ctaPrimary?: string
   ctaSecondary?: string
+  whatsappHref?: string
   location?: string
   revealPhrases?: [string, string, string]
   revealHint?: string
@@ -43,7 +45,8 @@ export default function Hero({
   subtextEn = 'Strategy, software and intelligent products built by a senior Doha team—from first decision to live system.',
   subtextAr = 'استراتيجية وبرمجيات ومنتجات ذكية يبنيها فريق خبير في الدوحة — من القرار الأول حتى النظام العامل.',
   ctaPrimary = 'Bring Us the Hard Problem',
-  ctaSecondary = 'See What Shipped',
+  ctaSecondary = 'Talk to us on WhatsApp',
+  whatsappHref = 'https://wa.me/97477484004',
   location: locationProp,
   revealPhrases,
   revealHint,
@@ -62,7 +65,6 @@ export default function Hero({
     ? 'المس المجال لاكتشاف الإشارة'
     : 'Move through the field to reveal the signal')
   const contactHref = locale === 'ar' ? '/ar/contact' : '/contact'
-  const worksHref = locale === 'ar' ? '/ar#works' : '/#works'
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
@@ -117,7 +119,7 @@ export default function Hero({
 
       <div className="nous-hero__frame">
         <div className="nous-hero__topline" aria-hidden="true">
-          <span>NOUS / 01</span>
+          <span className="nous-hero__chapter">NOUS / 01</span>
           <span className="nous-hero__topline-rule" />
           <span>{location}</span>
           <span className="nous-hero__status"><i />{dictionary.hero.signal}</span>
@@ -129,7 +131,10 @@ export default function Hero({
               <svg viewBox="0 0 32 16" aria-hidden="true">
                 <path d="M2 8c4.2-7 9.1-7 14 0s9.8 7 14 0M2 8c4.2 7 9.1 7 14 0s9.8-7 14 0" />
               </svg>
-              <span>{eyebrow}</span>
+              <span className="nous-hero__eyebrow-full">{eyebrow}</span>
+              <span className="nous-hero__eyebrow-mobile">
+                {locale === 'ar' ? 'أنظمة رقمية / الدوحة' : 'Digital systems / Doha'}
+              </span>
             </div>
 
             <h1 className="nous-hero__title">{headline}</h1>
@@ -144,9 +149,15 @@ export default function Hero({
                 <span>{ctaPrimary}</span>
                 <span className="nous-hero__arrow" aria-hidden="true">↗</span>
               </Link>
-              <a href={worksHref} className="nous-hero__secondary" data-magnetic-btn>
+              <a
+                href={whatsappHref}
+                className="nous-hero__secondary"
+                target="_blank"
+                rel="noreferrer"
+                data-magnetic-btn
+              >
                 <span>{ctaSecondary}</span>
-                <span aria-hidden="true">↓</span>
+                <WhatsappLogo size={18} weight="regular" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -154,7 +165,7 @@ export default function Hero({
 
         <div className="nous-hero__handoff" aria-hidden="true">
           <span className="nous-hero__handoff-long"><i />{interactionHint}</span>
-          <span className="nous-hero__handoff-short"><i />{locale === 'ar' ? 'المس المجال' : 'Touch the field'}</span>
+          <span className="nous-hero__handoff-short"><i />{dictionary.hero.scroll}<em>↓</em></span>
           <b>{dictionary.hero.scroll}<i>↓</i></b>
         </div>
       </div>
@@ -177,6 +188,18 @@ export default function Hero({
           height: 108%;
           pointer-events: none;
           will-change: transform, opacity;
+        }
+        .nous-hero__field::after {
+          content: '';
+          display: none;
+          position: absolute;
+          inset: -12% -28%;
+          pointer-events: none;
+          background:
+            radial-gradient(ellipse 28% 34% at 24% 36%, rgba(206,241,123,.15), transparent 72%),
+            radial-gradient(ellipse 36% 42% at 76% 52%, rgba(24,129,91,.28), transparent 74%);
+          opacity: .72;
+          transform: translate3d(-3%,0,0) scale(.98);
         }
         .nous-fluid,
         .nous-field {
@@ -243,6 +266,7 @@ export default function Hero({
           color: rgba(242,245,236,.5);
         }
         .nous-hero__topline-rule { height: 1px; background: rgba(205,237,179,.18); }
+        .nous-hero__chapter { animation: nous-chapter-signal 3.8s linear infinite; }
         .nous-hero__status { display: inline-flex; align-items: center; gap: 8px; color: var(--lime-300); }
         .nous-hero__status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 16px rgba(206,241,123,.65); animation: nous-status 2.8s ease-in-out infinite; }
         .nous-hero__composition {
@@ -260,6 +284,7 @@ export default function Hero({
           animation: nous-enter .75s var(--ease-out) .05s both;
         }
         .nous-hero__eyebrow svg { width: 32px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.2; flex: 0 0 auto; }
+        .nous-hero__eyebrow-mobile { display: none; }
         .nous-hero__title {
           max-width: 12ch;
           margin: 22px 0 0;
@@ -337,6 +362,7 @@ export default function Hero({
         .nous-hero__handoff span,
         .nous-hero__handoff b { display: inline-flex; align-items: center; gap: 10px; }
         .nous-hero__handoff span i { width: 5px; height: 5px; border-radius: 50%; background: var(--lime-300); box-shadow: 0 0 14px rgba(206,241,123,.55); }
+        .nous-hero__handoff span em { font-size: 12px; font-style: normal; }
         .nous-hero__handoff-short { display: none !important; }
         .nous-hero__handoff b { color: var(--lime-300); font-weight: 700; }
         .nous-hero__handoff b i { font-size: 13px; font-style: normal; }
@@ -349,6 +375,15 @@ export default function Hero({
         @keyframes nous-enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
         @keyframes nous-title-enter { from { opacity: 0; transform: translateY(28px); clip-path: inset(0 0 100% 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
         @keyframes nous-status { 50% { opacity: .4; box-shadow: 0 0 0 7px rgba(206,241,123,0); } }
+        @keyframes nous-chapter-signal {
+          0%, 70%, 82%, 100% { opacity: .52; color: inherit; text-shadow: none; }
+          73%, 79% { opacity: 1; color: var(--lime-300); text-shadow: 0 0 12px rgba(206,241,123,.38); }
+          76% { opacity: .34; }
+        }
+        @keyframes nous-mobile-current {
+          from { transform: translate3d(-3%,-1%,0) scale(.98); opacity: .52; }
+          to { transform: translate3d(4%,2%,0) scale(1.05); opacity: .78; }
+        }
 
         @media (max-width: 1120px) {
           .nous-hero__copy { width: min(67vw, 760px); }
@@ -357,52 +392,78 @@ export default function Hero({
 
         @media (max-width: 900px) {
           .nous-hero__field { height: 100%; opacity: .9 !important; }
+          .nous-hero__field::after { display: block; animation: nous-mobile-current 14s var(--ease-in-out) infinite alternate; }
           .nous-hero__atmosphere {
             background:
-              linear-gradient(180deg, rgba(5,15,11,.2) 0%, rgba(5,15,11,.34) 28%, rgba(5,15,11,.88) 65%, #06100c 100%),
-              radial-gradient(ellipse 120% 76% at 50% 22%, transparent 25%, rgba(5,15,11,.35) 78%);
+              linear-gradient(180deg, rgba(5,15,11,.1) 0%, rgba(5,15,11,.18) 34%, rgba(5,15,11,.5) 68%, #06100c 94%),
+              radial-gradient(ellipse 125% 82% at 50% 24%, transparent 22%, rgba(5,15,11,.22) 80%);
           }
           .nous-hero__grid { background-size: 58px 58px; opacity: .045; mask-image: linear-gradient(180deg, transparent 7%, #000 20%, #000 48%, transparent 78%); }
-          .nous-hero__frame { padding: 90px 20px calc(88px + env(safe-area-inset-bottom, 0px)); }
-          .nous-hero__topline { grid-template-columns: auto 1fr auto; gap: 12px; font-size: 9px; }
+          .nous-hero__frame { padding: 80px 20px calc(82px + env(safe-area-inset-bottom, 0px)); }
+          .nous-hero__topline { grid-template-columns: auto auto; justify-content: space-between; gap: 18px; font-size: 9px; }
+          .nous-hero__topline-rule { display: none; }
           .nous-hero__status { display: none; }
-          .nous-hero__composition { align-items: flex-end; padding: clamp(108px, 15vh, 142px) 0 30px; }
+          .nous-hero__composition { align-items: flex-end; padding: clamp(188px, 27vh, 250px) 0 38px; }
           .nous-hero__copy { width: 100%; max-width: none; }
-          .nous-hero__title { max-width: 11ch; margin-top: 16px; font-size: clamp(49px, 13.6vw, 68px); line-height: .94; letter-spacing: -.056em; }
-          [dir="rtl"] .nous-hero__title { max-width: 10ch; font-size: clamp(44px, 12vw, 61px); line-height: 1.08; }
-          .nous-hero__eyebrow { font-size: 9px; letter-spacing: .1em; }
-          .nous-hero__deck { grid-template-columns: 18px minmax(0, 1fr); gap: 10px; margin-top: 23px; }
-          .nous-hero__deck p { max-width: 36ch; font-size: 16px; line-height: 1.55; }
-          [dir="rtl"] .nous-hero__deck p { font-size: 17px; line-height: 1.75; }
-          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 25px 0 0; }
-          .nous-hero__actions a { min-width: 0; min-height: 50px; gap: 12px; padding: 0 14px; font-size: 9px; }
-          .nous-hero__handoff { padding-top: 14px; font-size: 8px; letter-spacing: .1em; }
+          .nous-hero__title {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+          }
+          .nous-hero__eyebrow { width: 100%; justify-content: center; gap: 10px; font-size: 9px; letter-spacing: .1em; text-align: center; }
+          .nous-hero__eyebrow svg { width: 28px; height: 14px; }
+          .nous-hero__eyebrow-full { display: none; }
+          .nous-hero__eyebrow-mobile { display: inline; }
+          .nous-hero__deck {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+          }
+          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin: 18px 0 0; }
+          .nous-hero__actions a { min-width: 0; min-height: 50px; gap: 12px; padding: 0 16px; font-size: 9px; }
+          .nous-hero__primary { width: 100%; border-radius: 999px; }
+          .nous-hero__secondary { align-self: stretch; min-height: 48px !important; padding-inline: 18px !important; border: 1px solid rgba(228,245,212,.42) !important; border-radius: 999px; background: rgba(7,17,14,.44); backdrop-filter: blur(12px); }
+          .nous-hero__secondary svg { flex: 0 0 auto; color: var(--lime-300); }
+          .nous-hero__handoff { min-height: 30px; justify-content: center; padding-top: 11px; font-size: 8px; letter-spacing: .1em; }
           .nous-hero__handoff-long { display: none !important; }
           .nous-hero__handoff-short { display: inline-flex !important; }
           .nous-hero__handoff b { display: none; }
         }
 
         @media (max-width: 430px) {
-          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { grid-template-columns: 1fr; }
           .nous-hero__actions a { width: 100%; }
+          .nous-hero__secondary { width: 100% !important; }
           .nous-hero__handoff span { max-width: 28ch; }
         }
 
         @media (max-height: 740px) and (max-width: 900px) {
-          .nous-hero__frame { padding-top: 82px; }
-          .nous-hero__composition { padding-top: 78px; }
-          .nous-hero__title { font-size: clamp(44px, 12vw, 56px); }
-          .nous-hero__deck { margin-top: 18px; }
-          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { margin-top: 20px; }
+          .nous-hero__frame { padding-top: 74px; }
+          .nous-hero__composition { padding-top: 160px; padding-bottom: 26px; }
+          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { margin-top: 18px; }
+          .nous-hero__handoff { display: none; }
         }
 
         @media (prefers-reduced-motion: reduce) {
           .nous-hero__status i,
+          .nous-hero__chapter,
           .nous-hero__eyebrow,
           .nous-hero__title,
           .nous-hero__deck,
           .nous-hero__actions { animation: none !important; opacity: 1; transform: none; clip-path: none; }
           .nous-hero__field { transform: none !important; opacity: .82 !important; }
+          .nous-hero__field::after { animation: none !important; opacity: .42; transform: none; }
         }
 
         @supports not (backdrop-filter: blur(1px)) {
