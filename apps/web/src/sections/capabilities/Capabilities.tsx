@@ -160,6 +160,7 @@ function MobileOrb({ index }: { index: string }) {
 
 export default function Capabilities({ services, locale = 'en', label, title, subtitle }: CapabilitiesProps) {
   const reduced = !!useReducedMotion()
+  const chapterRef = useRef<HTMLElement>(null)
   const dictionary = getDictionary(locale)
   const isAr = locale === 'ar'
   const [view, setView] = useState<ViewMode>('business')
@@ -217,8 +218,17 @@ export default function Capabilities({ services, locale = 'en', label, title, su
     selector.scrollBy({ left: horizontalDelta, behavior: reduced ? 'auto' : 'smooth' })
   }, [activeId, reduced])
 
+  useEffect(() => {
+    const chapter = chapterRef.current
+    if (!chapter) return
+    const screenLongEdge = Math.max(window.screen.width, window.screen.height)
+    const shortMobile = window.innerWidth <= 940 && (screenLongEdge <= 760 || window.innerHeight < 600)
+    chapter.dataset['shortMobile'] = shortMobile ? 'true' : 'false'
+    return () => { delete chapter.dataset['shortMobile'] }
+  }, [])
+
   return (
-    <section id="capabilities" aria-label={title ?? dictionary.capabilities.title} lang={locale} dir={dictionary.direction} className="cap-chapter">
+    <section ref={chapterRef} id="capabilities" aria-label={title ?? dictionary.capabilities.title} lang={locale} dir={dictionary.direction} className="cap-chapter">
       <div className="cap-shell">
         <header className="cap-heading" data-reveal={isAr ? 'rtl' : 'copy'}>
           <div className="cap-heading-code">
@@ -580,11 +590,11 @@ export default function Capabilities({ services, locale = 'en', label, title, su
           [dir="rtl"] .cap-heading h2 { word-spacing:normal; }
           .cap-heading-main > p { max-width:38ch;font-size:14px;line-height:1.5; }
           [dir="rtl"] .cap-heading-main > p { font-size:15px;line-height:1.65; }
-          .cap-toggle { width:100%;margin:18px 0 14px; }
+          .cap-toggle { width:100%;margin:14px 0 10px; }
           .cap-toggle button { min-height:44px;padding-inline:8px; }
           .cap-desktop { display:none; }
           .cap-mobile { display:block; }
-          .cap-mobile-selector { display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scroll-padding-inline:16px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain; }
+          .cap-mobile-selector { display:flex;gap:8px;overflow-x:auto;margin:8px -16px 0;padding:0 16px 4px;scroll-padding-inline:16px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain; }
           .cap-mobile-selector::-webkit-scrollbar { display:none; }
           .cap-mobile-selector button { position:relative;flex:0 0 min(44vw,172px);min-height:54px;display:grid;grid-template-columns:22px minmax(0,1fr) 6px;align-items:center;gap:7px;padding:0 11px;scroll-snap-align:center;border:1px solid rgba(8,71,52,.15);border-radius:12px;background:rgba(247,253,241,.54);box-shadow:inset 0 1px 0 rgba(255,255,255,.7);text-align:start;color:rgba(6,59,43,.62);transition:transform 160ms var(--ease-out),background-color 180ms ease,border-color 180ms ease; }
           .cap-mobile-selector button:active { transform:scale(.98); }
@@ -596,10 +606,10 @@ export default function Capabilities({ services, locale = 'en', label, title, su
           [dir="rtl"] .cap-mobile-selector button[aria-selected="true"] { box-shadow:0 14px 30px rgba(6,59,43,.08),inset -3px 0 0 var(--lime-300); }
           .cap-mobile-selector button[aria-selected="true"] > i { background:var(--lime-300);box-shadow:0 0 11px rgba(125,174,58,.52); }
           .cap-mobile-card { overflow:hidden;border:1px solid rgba(8,71,52,.34);border-radius:18px;color:var(--paper-100);background:#071711;box-shadow:0 22px 46px rgba(6,59,43,.15),inset 0 1px 0 rgba(255,255,255,.06);touch-action:pan-y; }
-          .cap-mobile-card__visual { min-height:104px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 17px 11px;overflow:hidden;background-image:radial-gradient(circle at 78% 48%,rgba(55,151,105,.24),transparent 38%),linear-gradient(rgba(205,237,179,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(205,237,179,.05) 1px,transparent 1px);background-size:auto,28px 28px,28px 28px;border-bottom:1px solid rgba(205,237,179,.12); }
+          .cap-mobile-card__visual { min-height:92px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 17px 9px;overflow:hidden;background-image:radial-gradient(circle at 78% 48%,rgba(55,151,105,.24),transparent 38%),linear-gradient(rgba(205,237,179,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(205,237,179,.05) 1px,transparent 1px);background-size:auto,28px 28px,28px 28px;border-bottom:1px solid rgba(205,237,179,.12); }
           .cap-mobile-card__visual > div:first-child { display:flex;flex-direction:column;gap:7px;font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(242,245,236,.68); }
           .cap-mobile-card__visual > div:first-child b { font-size:9px;color:var(--lime-300); }
-          .cap-mobile-orb { position:relative;flex:0 0 78px;aspect-ratio:1;display:grid;place-items:center;transform-style:preserve-3d; }
+          .cap-mobile-orb { position:relative;flex:0 0 70px;aspect-ratio:1;display:grid;place-items:center;transform-style:preserve-3d; }
           .cap-mobile-orb::before { content:'';position:absolute;inset:15%;border:1px dashed rgba(206,241,123,.17);border-radius:50%;animation:lens-spin 24s linear infinite; }
           .cap-mobile-orb__ring { position:absolute;left:50%;top:50%;width:100%;height:38%;border:1px solid rgba(206,241,123,.24);border-radius:50%; }
           .cap-mobile-orb__ring--one { animation:lens-mobile-orbit-one 15s linear infinite; }
@@ -628,17 +638,10 @@ export default function Capabilities({ services, locale = 'en', label, title, su
           .cap-mobile-selector button { flex-basis:min(46vw,172px); }
         }
 
-        @media (max-width:940px) and (max-height:830px) {
-          .cap-toggle { margin-top:14px;margin-bottom:10px; }
-          .cap-mobile-card__visual { min-height:92px;padding-top:10px;padding-bottom:9px; }
-          .cap-mobile-orb { flex-basis:70px; }
-          .cap-mobile-selector { margin-top:8px; }
-        }
-
-        @media (max-width:940px) and (max-height:760px) {
-          .cap-chapter { padding-top:28px; }
-          .cap-heading-main { gap:0;margin-top:14px; }
-          .cap-heading-main > p {
+        @media (max-width:940px) {
+          .cap-chapter[data-short-mobile='true'] { padding-top:28px; }
+          .cap-chapter[data-short-mobile='true'] .cap-heading-main { gap:0;margin-top:14px; }
+          .cap-chapter[data-short-mobile='true'] .cap-heading-main > p {
             position:absolute;
             width:1px;
             height:1px;

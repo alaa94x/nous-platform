@@ -73,6 +73,15 @@ export default function Hero({
   const fieldOpacity = useTransform(scrollYProgress, [0, .84], [1, .32])
 
   useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+    const screenLongEdge = Math.max(window.screen.width, window.screen.height)
+    const shortMobile = window.innerWidth <= 900 && (screenLongEdge <= 740 || window.innerHeight < 540)
+    section.dataset['shortMobile'] = shortMobile ? 'true' : 'false'
+    return () => { delete section.dataset['shortMobile'] }
+  }, [])
+
+  useEffect(() => {
     if (reduced || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return
     const section = sectionRef.current
     if (!section) return
@@ -391,6 +400,8 @@ export default function Hero({
         }
 
         @media (max-width: 900px) {
+          .nous-hero,
+          .nous-hero__frame { min-height:100svh; }
           .nous-hero__field { height: 100%; opacity: .9 !important; }
           .nous-hero__field::after { display: block; animation: nous-mobile-current 14s var(--ease-in-out) infinite alternate; }
           .nous-hero__atmosphere {
@@ -403,7 +414,7 @@ export default function Hero({
           .nous-hero__topline { grid-template-columns: auto auto; justify-content: space-between; gap: 18px; font-size: 9px; }
           .nous-hero__topline-rule { display: none; }
           .nous-hero__status { display: none; }
-          .nous-hero__composition { align-items: flex-end; padding: clamp(188px, 27vh, 250px) 0 38px; }
+          .nous-hero__composition { align-items: flex-end; padding: clamp(188px, 27svh, 250px) 0 38px; }
           .nous-hero__copy { width: 100%; max-width: none; }
           .nous-hero__title {
             position: absolute;
@@ -448,11 +459,11 @@ export default function Hero({
           .nous-hero__handoff span { max-width: 28ch; }
         }
 
-        @media (max-height: 740px) and (max-width: 900px) {
-          .nous-hero__frame { padding-top: 74px; }
-          .nous-hero__composition { padding-top: 160px; padding-bottom: 26px; }
-          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { margin-top: 18px; }
-          .nous-hero__handoff { display: none; }
+        @media (max-width: 900px) {
+          .nous-hero[data-short-mobile='true'] .nous-hero__frame { padding-top: 74px; }
+          .nous-hero[data-short-mobile='true'] .nous-hero__composition { padding-top: 160px; padding-bottom: 26px; }
+          .nous-hero[data-short-mobile='true'] .nous-hero__actions { margin-top: 18px; }
+          .nous-hero[data-short-mobile='true'] .nous-hero__handoff { display: none; }
         }
 
         @media (prefers-reduced-motion: reduce) {
