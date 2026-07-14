@@ -165,7 +165,7 @@ This pass addresses the final real-device navigation problems: abrupt state chan
 - Synchronized the top brand bar and bottom rail through one navigation state controller so they enter and leave as one coordinated system.
 - Stabilized mobile hero sizing on `100svh` and replaced live `max-height` layout switching with a device-height profile captured once on mount. Browser chrome expanding or collapsing no longer changes section typography, spacing, or component scale mid-scroll.
 - Applied the same stable device-height profile to the mobile capability chapter, removing toolbar-sensitive height media queries that could recompose the card during a swipe.
-- Replaced the legacy infinity-orbit canvas fallback with a lightweight fluid-gradient fallback. iPhone Safari, denied WebGL contexts, and reduced-motion mode now retain the current emerald fluid art direction instead of revealing the retired hero background.
+- Replaced the legacy infinity-orbit canvas fallback with an always-mounted lightweight fluid-gradient layer. iPhone and iPad now show the emerald fluid direction immediately, crossfade to WebGL only after its first successful frame, and return to the fluid fallback automatically if Safari loses its GPU context. Reduced-motion mode keeps the same art direction without positional movement.
 - Verified at 390 × 844 that one downward gesture compacts the rail, one upward gesture restores it, the hero remains exactly 844px high in both directions, a single compact-link tap reaches its destination, horizontal overflow remains false, and the browser error log remains empty.
 
 ### Supporting routes

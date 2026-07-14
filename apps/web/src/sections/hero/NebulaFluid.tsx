@@ -386,10 +386,11 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
   const retryCountRef = useRef(0)
   const reduced = !!useReducedMotion()
   const [fallback, setFallback] = useState(false)
+  const [webglReady, setWebglReady] = useState(false)
   const [initializationAttempt, setInitializationAttempt] = useState(0)
 
   useEffect(() => {
-    if (reduced || mode === 'off') return
+    if (reduced || mode === 'off' || fallback) return
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -640,12 +641,17 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       blit(dye.write); dye.swap()
     }
 
+    let readyAnnounced = false
     const render = (t: number) => {
       progs.display.bind(gl)
       gl.uniform1i(progs.display.uniforms.uTexture, dye.read.attach(gl, 0))
       gl.uniform1f(progs.display.uniforms.uTime, t / 1000)
       gl.uniform2f(progs.display.uniforms.uResolution, canvas.width, canvas.height)
       blit(null)
+      if (!readyAnnounced) {
+        readyAnnounced = true
+        setWebglReady(true)
+      }
     }
 
     const tick = (t: number) => {
@@ -672,6 +678,20 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
 
     const start = () => { if (!raf && running) { lastT = performance.now(); raf = requestAnimationFrame(tick) } }
     const stop  = () => { if (raf) { cancelAnimationFrame(raf); raf = 0 } }
+
+    const onContextLost = (event: Event) => {
+      event.preventDefault()
+      running = false
+      stop()
+      setWebglReady(false)
+    }
+    const onContextRestored = () => {
+      retryCountRef.current = 0
+      setWebglReady(false)
+      setInitializationAttempt(attempt => attempt + 1)
+    }
+    canvas.addEventListener('webglcontextlost', onContextLost)
+    canvas.addEventListener('webglcontextrestored', onContextRestored)
 
     // Seed the nebula so it isn't empty on first paint
     for (let i = 0; i < (mobileField ? 7 : 8); i++) idleSplat()
@@ -701,33 +721,56 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerDown)
       window.removeEventListener('pointerleave', onPointerLeave)
+      canvas.removeEventListener('webglcontextlost', onContextLost)
+      canvas.removeEventListener('webglcontextrestored', onContextRestored)
       // Do not force-loss here. During a Next.js language transition the old
       // canvas can unmount immediately before the new route requests WebGL;
       // explicitly losing the context in that narrow window can make Safari
       // and Chromium expose the legacy fallback until a hard refresh.
     }
-  }, [mode, reduced, initializationAttempt])
+  }, [mode, reduced, initializationAttempt, fallback])
 
-  // Safari can temporarily deny a WebGL context (and reduced-motion users may
-  // opt out of it entirely). Keep the same fluid art direction in that state;
-  // never reveal the retired infinity-orbit Assembly field on mobile.
-  if (reduced || fallback || mode === 'off') {
-    return <FluidFallback staticField={reduced || mode === 'off'} />
-  }
+  const showCanvas = !reduced && !fallback && mode !== 'off'
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="nous-fluid"
+    <div
+      className="nous-fluid-stack"
+      data-webgl-ready={showCanvas && webglReady ? 'true' : 'false'}
       aria-hidden="true"
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        display: 'block',
-        background: '#0A1510',
-      }}
-    />
+    >
+      <FluidFallback staticField={reduced || mode === 'off'} />
+      {showCanvas ? (
+        <canvas
+          ref={canvasRef}
+          className="nous-fluid"
+        />
+      ) : null}
+      <style>{`
+        .nous-fluid-stack {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          background: #06100c;
+        }
+        .nous-fluid-stack > .nous-fluid {
+          position: absolute;
+          inset: 0;
+          z-index: 3;
+          display: block;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          background: #0a1510;
+          transition: opacity 700ms cubic-bezier(.23,1,.32,1);
+          will-change: opacity;
+        }
+        .nous-fluid-stack[data-webgl-ready='true'] > .nous-fluid {
+          opacity: 1;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .nous-fluid-stack > .nous-fluid { transition: none; }
+        }
+      `}</style>
+    </div>
   )
 }
