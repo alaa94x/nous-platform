@@ -155,6 +155,19 @@ This pass removes the last competing mobile hero elements and rebuilds “What W
 - Reproduced the capability-06 failure: after selecting `Design & Brand`, `scrollX` remains `0`, vertical reading position remains unchanged, and only the horizontal rail advances to the selected item.
 - Verified English and Arabic mobile layouts, six selectable tabs, RTL fit, zero horizontal overflow, no repeated generic card description, and no bottom-navigation overlap.
 
+### Mobile stabilization — scroll and navigation continuity
+
+This pass addresses the final real-device navigation problems: abrupt state changes, the compact rail consuming the first tap, and mobile browser chrome causing the page composition to resize during one swipe.
+
+- Replaced scale-based top and bottom navigation state changes with a controlled translate-and-fade transition. The main movement runs for 280ms on the interface ease curve, while opacity settles in 210ms, so the controls retain their physical size throughout the transition.
+- Added asymmetric scroll intent thresholds—42px down and 32px up—with a 260ms state hold. This prevents a single finger gesture or browser-toolbar bounce from rapidly reversing the navigation state.
+- Separated pointer input from keyboard focus. A compact-menu link now follows its destination on the first touch; only genuine keyboard tab focus requests the expanded labeled rail.
+- Synchronized the top brand bar and bottom rail through one navigation state controller so they enter and leave as one coordinated system.
+- Stabilized mobile hero sizing on `100svh` and replaced live `max-height` layout switching with a device-height profile captured once on mount. Browser chrome expanding or collapsing no longer changes section typography, spacing, or component scale mid-scroll.
+- Applied the same stable device-height profile to the mobile capability chapter, removing toolbar-sensitive height media queries that could recompose the card during a swipe.
+- Replaced the legacy infinity-orbit canvas fallback with a lightweight fluid-gradient fallback. iPhone Safari, denied WebGL contexts, and reduced-motion mode now retain the current emerald fluid art direction instead of revealing the retired hero background.
+- Verified at 390 × 844 that one downward gesture compacts the rail, one upward gesture restores it, the hero remains exactly 844px high in both directions, a single compact-link tap reaches its destination, horizontal overflow remains false, and the browser error log remains empty.
+
 ### Supporting routes
 
 - Rebuilt service pages in the Lens system.
