@@ -79,7 +79,14 @@ export default function Nav({
     }
     const setNavigationState = (nextCompact: boolean, force = false) => {
       const now = performance.now()
-      if (!force && (nextCompact === compact || now - lastStateChange < 260)) return
+      if (nextCompact === compact) {
+        if (force) {
+          setCompact(nextCompact)
+          setLogoHidden(nextCompact)
+        }
+        return
+      }
+      if (!force && now - lastStateChange < 260) return
       compact = nextCompact
       lastStateChange = now
       setCompact(nextCompact)

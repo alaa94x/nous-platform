@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
-import AssemblyField, { type FieldMotionMode } from './AssemblyField'
+import type { FieldMotionMode } from './AssemblyField'
 
 // ── Nebula Fluid ──────────────────────────────────────────────────────────────
 // The interactive hero: a GPU fluid simulation where the cursor stirs luminous
@@ -293,6 +293,92 @@ function getRes(gl: WebGL2RenderingContext, base: number) {
 
 interface NebulaFluidProps {
   mode?: FieldMotionMode
+}
+
+function FluidFallback({ staticField = false }: { staticField?: boolean }) {
+  return (
+    <div
+      className="nous-fluid-fallback"
+      data-static={staticField ? 'true' : 'false'}
+      aria-hidden="true"
+    >
+      <i className="nous-fluid-fallback__veil nous-fluid-fallback__veil--a" />
+      <i className="nous-fluid-fallback__veil nous-fluid-fallback__veil--b" />
+      <style>{`
+        .nous-fluid-fallback {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          isolation: isolate;
+          background:
+            radial-gradient(ellipse 86% 68% at 54% 28%, rgba(8,71,52,.42), transparent 72%),
+            linear-gradient(152deg, #06100c 0%, #071711 52%, #08231a 100%);
+        }
+        .nous-fluid-fallback::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 26% 36%, rgba(206,241,123,.055), transparent 28%),
+            radial-gradient(circle at 74% 46%, rgba(35,145,101,.08), transparent 34%);
+          opacity: .9;
+        }
+        .nous-fluid-fallback__veil {
+          position: absolute;
+          inset: -22%;
+          z-index: 1;
+          display: block;
+          pointer-events: none;
+          opacity: .62;
+          filter: blur(28px);
+          will-change: transform, opacity;
+          transform: translate3d(0,0,0) scale(1.02);
+        }
+        .nous-fluid-fallback__veil--a {
+          background:
+            radial-gradient(ellipse 26% 38% at 28% 42%, rgba(33,132,92,.68), transparent 74%),
+            radial-gradient(ellipse 34% 28% at 72% 35%, rgba(12,92,63,.72), transparent 76%);
+          animation: nous-fallback-current-a 18s cubic-bezier(.45,0,.35,1) infinite alternate;
+        }
+        .nous-fluid-fallback__veil--b {
+          opacity: .46;
+          background:
+            radial-gradient(ellipse 24% 32% at 66% 72%, rgba(57,152,91,.48), transparent 76%),
+            radial-gradient(ellipse 20% 26% at 40% 64%, rgba(206,241,123,.2), transparent 78%);
+          animation: nous-fallback-current-b 24s cubic-bezier(.45,0,.35,1) infinite alternate;
+        }
+        @keyframes nous-fallback-current-a {
+          from { transform: translate3d(-4%,-2%,0) scale(1.01) rotate(-1deg); opacity: .54; }
+          to { transform: translate3d(5%,3%,0) scale(1.09) rotate(2deg); opacity: .68; }
+        }
+        @keyframes nous-fallback-current-b {
+          from { transform: translate3d(4%,4%,0) scale(1.08) rotate(1deg); opacity: .38; }
+          to { transform: translate3d(-5%,-3%,0) scale(1.01) rotate(-2deg); opacity: .52; }
+        }
+        .nous-fluid-fallback[data-static='true'] .nous-fluid-fallback__veil {
+          animation: none !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .nous-fluid-fallback__veil { animation: none !important; }
+        }
+        @media (max-width: 900px) {
+          .nous-fluid-fallback__veil { inset: -16% -36%; filter: blur(22px); }
+          .nous-fluid-fallback__veil--a {
+            background:
+              radial-gradient(ellipse 34% 28% at 38% 28%, rgba(31,134,91,.72), transparent 76%),
+              radial-gradient(ellipse 38% 34% at 68% 54%, rgba(9,91,62,.76), transparent 78%);
+          }
+          .nous-fluid-fallback__veil--b {
+            background:
+              radial-gradient(ellipse 32% 26% at 42% 68%, rgba(75,156,94,.44), transparent 78%),
+              radial-gradient(ellipse 24% 22% at 72% 30%, rgba(206,241,123,.15), transparent 80%);
+          }
+        }
+      `}</style>
+    </div>
+  )
 }
 
 export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
@@ -622,10 +708,12 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     }
   }, [mode, reduced, initializationAttempt])
 
-  // Reduced motion or no capable GPU: the Assembly field (which itself renders
-  // a static frame under reduced motion) — same graceful ladder as the
-  // reference site's GPU-gated loader.
-  if (reduced || fallback || mode === 'off') return <AssemblyField mode={mode} />
+  // Safari can temporarily deny a WebGL context (and reduced-motion users may
+  // opt out of it entirely). Keep the same fluid art direction in that state;
+  // never reveal the retired infinity-orbit Assembly field on mobile.
+  if (reduced || fallback || mode === 'off') {
+    return <FluidFallback staticField={reduced || mode === 'off'} />
+  }
 
   return (
     <canvas
