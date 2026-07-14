@@ -96,6 +96,65 @@ The conclusion was to avoid a collage of fashionable effects. Nous needed one id
 - **Before We Begin:** editable bilingual FAQ with structured data support.
 - **Contact / Convergence:** high-contrast final action with response expectation and ambient convergence field.
 
+### Mobile mastery — Phase 1 hero hierarchy
+
+The first device-led refinement pass responds directly to the iPhone 17 Pro Chrome and Samsung S23 Ultra Samsung Internet captures. This phase intentionally changes only the hero hierarchy; the living-field tuning and floating adaptive navigation remain separate phases so they can be judged independently on real phones.
+
+- Removed the long supporting paragraph from the visible mobile composition while retaining it as screen-reader content. Desktop keeps the complete editorial deck unchanged.
+- Replaced the repeated mobile eyebrow with the localized compact identity `Digital systems / Doha` and its Arabic equivalent.
+- Reduced the autonomous signal phrase to a 36–46px supporting moment and the stable headline to a 43–52px range, restoring one clear primary focal point.
+- Rebuilt the mobile actions as a 50px lime capsule plus a borderless 44px secondary action instead of two heavy full-width panels.
+- Replaced “Touch the field” with the localized scroll cue and tightened short-height behavior without reducing touch targets.
+- Simplified the mobile topline to two anchored labels and removed its decorative rule.
+- Verified English at 360 × 780 and 390 × 844, Arabic at 390 × 844, and desktop English at 1440 × 900. There is no horizontal overflow, the action group clears the fixed rail, Arabic remains native RTL, and the desktop deck remains visible and unchanged.
+- TypeScript, ESLint, Git diff validation, and browser runtime diagnostics pass for this phase.
+
+### Mobile mastery — Phase 2 living field
+
+The second device-led pass turns the open middle of the simplified hero into an intentional living stage while keeping navigation unchanged for separate evaluation.
+
+- Removed the roaming mobile focus circle. Desktop retains the original interactive lens; mobile touch now belongs exclusively to the fluid field.
+- Replaced the bordered signal card with a borderless 110px phrase stage embedded directly in the fluid field. The active phrase is a single 29–38px line with no visible numbering and three unnumbered dot controls beneath it.
+- Removed “Sentient Logic” from the visual mobile hierarchy so the rotating signal is the sole large statement. The original H1 remains as a one-pixel semantic heading for search engines and assistive technology; desktop keeps the complete headline treatment.
+- Added three stable 44 × 44px signal controls with explicit labels and pressed states. Selecting a phrase updates immediately and pauses automatic progression for eight seconds.
+- Moved automatic phrase progression to an independent five-second timer, so it continues even if canvas rendering pauses or reduced-motion preferences disable spatial animation.
+- Increased mobile fluid visibility by opening the atmosphere mask, distributing autonomous currents through the upper and middle field, and adding a slow transform/opacity ambient current.
+- Calibrated the WebGL mobile simulation to 30fps on coarse/low-power devices, a 1.5 DPR ceiling, 96px simulation buffers, 512px dye buffers, bounded touch forces, seven restrained seed currents, and slightly stronger mobile dye energy.
+- Touch creates a controlled fluid disturbance, dragging influences velocity without moving the phrase, and work pauses while the hero or document is not visible.
+- Existing Assembly Field fallback remains animated when WebGL is unavailable; reduced motion freezes spatial motion and preserves a complete, readable composition.
+- Verified English at 360 × 780 and 390 × 844, Arabic phrase selection at 390 × 844, and desktop English at 1440 × 900. Mobile has no roaming lens or horizontal overflow, all signal targets are 44px, desktop keeps its lens and complete deck, and no browser runtime errors were observed.
+- Compared viewport captures 2.2 seconds apart after pausing the phrase state. Their image hashes and byte sizes differ, confirming that the rendered fluid field itself changes over time rather than only the copy.
+
+### Mobile mastery — Phase 3 adaptive navigation
+
+The third mobile pass replaces the heavy framed navigation with a lighter two-state floating system inspired by compact social-app navigation behavior without copying its visual language.
+
+- Rebuilt the top mobile brand strip as a 50px rounded glass capsule with tighter padding, a softer edge, and a slightly denser scrolled material state.
+- Enlarged and rebuilt the compact language target as a 46px layered control with a clearer locale mark, lime status signal, stronger edge, and proper press/focus feedback.
+- Rebuilt the expanded bottom rail as a 60px floating capsule with two icon-and-label destinations and one 48px circular lime project action.
+- Added a separate 196 × 50px compact icon rail. The two material states crossfade and translate using only opacity and transforms; the interface does not animate layout width.
+- The rail remains expanded within the first 48px, compacts after 30px of deliberate downward travel, and restores after 18px of upward travel. Small browser-toolbar scroll noise does not switch the state.
+- The top brand/language strip now slides and fades out on deliberate downward travel, then returns on upward intent, focus, or proximity to the top. It uses transforms and opacity only, and reduced-motion users receive an immediate state change.
+- Keyboard focus always restores the expanded state. Compact visual duplicates are excluded from the accessibility tree, while the persistent labeled links remain available and become visible on focus.
+- Active-section signals update in both expanded and compact layers. Every compact destination remains 44 × 44px and the project action remains visually distinct.
+- Reduced-motion and reduced-transparency fallbacks cover both navigation materials.
+- Verified expanded-to-compact and compact-to-expanded transitions at 390 × 844, English and Arabic direction/controls, 360 × 780 compact fit, and desktop navigation at 1440 × 900. No horizontal overflow or browser runtime errors were observed.
+
+### Mobile mastery — Phase 4 focused hero and capability viewport
+
+This pass removes the last competing mobile hero elements and rebuilds “What We Build” around one complete, swipeable viewport.
+
+- Centered `Digital systems / Doha` and its Arabic equivalent immediately above the primary action, then converted the secondary action to a bordered WhatsApp capsule with the proper WhatsApp icon.
+- The hero WhatsApp action reuses the enabled WhatsApp URL in the admin-managed footer contact items. Its bilingual label remains editable through the existing secondary CTA fields, now relabeled as WhatsApp CTA fields in the admin portal.
+- Added a restrained two-pulse signal blink to `NOUS / 01`; reduced-motion preferences disable it.
+- Removed the generic capabilities subtitle fallback from desktop record cards and the mobile active card. Unique per-service descriptions still appear when explicitly authored in the admin.
+- Moved the six mobile capability tabs beneath the active card as a compact horizontal snap rail. Tapping a tab updates the card and recenters only the rail—never the document.
+- Added horizontal touch swiping on the active card to move to the previous or next capability while preserving native vertical page scrolling.
+- Compressed the mobile instrument, outcomes, action, selector, and surrounding rhythm so the complete section fits in one normal phone viewport. Height-aware steps preserve the full layout at 375 × 812 and visually hide only the section subtitle below 760px while retaining it for assistive technology.
+- Added bottom safe-area protection and verified selector clearance above the floating navigation: 21px at 390 × 844, 24.5px at 375 × 812, and 11.8px at 375 × 740.
+- Reproduced the capability-06 failure: after selecting `Design & Brand`, `scrollX` remains `0`, vertical reading position remains unchanged, and only the horizontal rail advances to the selected item.
+- Verified English and Arabic mobile layouts, six selectable tabs, RTL fit, zero horizontal overflow, no repeated generic card description, and no bottom-navigation overlap.
+
 ### Supporting routes
 
 - Rebuilt service pages in the Lens system.
@@ -235,13 +294,40 @@ This pass tightened the light-canvas chapters without changing the approved hero
 | TypeScript — web | Pass |
 | ESLint — web | Pass |
 | Git whitespace/error check | Pass after final cleanup |
-| Production build retry | Code compilation was not reached because the restricted environment could not fetch Alexandria, IBM Plex Sans Arabic, Instrument Sans, or Space Mono from Google Fonts; the elevated network retry was unavailable under the current Codex usage allowance |
+| Production build — web | Pass; optimized compilation completed and 31 routes were generated/validated |
+
+### Premium Capability Observatory revamp
+
+The refined Lens was subsequently rebuilt as a complete Capability Observatory rather than a dark graphic placed beside a conventional accordion.
+
+- The Green Tea chapter now has dimensional lighting, a restrained technical grid, depth rings, and soft tonal variation while preserving the approved `#E4F5D4` foundation.
+- The desktop capability navigation is a raised system dock. Each capability is a layered module with a dimensional status node, a circular disclosure control, a focused elevation state, outcome modules, and an integrated service action.
+- Hover previews the selected capability in the Observatory, while the expanded system remains visually unambiguous. Leaving the dock restores the expanded capability as the active reference.
+- The Observatory contains one shaded primary sphere, three animated orbital paths, three secondary spheres, rotating surface detail, slow aurora drift, stationary axes, outcome callouts, and a moving input-to-output signal. Motion is deliberately slow and transform/opacity based.
+- Pointer movement adds shallow spring-like perspective on fine-pointer devices. Touch devices do not inherit desktop pointer tracking.
+- Mobile no longer renders or compresses the desktop Observatory. It uses a horizontal scroll-snap capability selector and one focused dark card with a compact dimensional signal, localized description, two-column outcomes, and a 50px service action.
+- The complete desktop visual is hidden on mobile, so its heavier ambient animations do not run behind the phone composition.
+- English and Arabic were verified at 1440 × 1000 and 390 × 844 with no horizontal overflow. RTL reverses the system dock and Observatory naturally, all six records remain visible, mobile targets remain at least 44px, and reduced-motion rules stop every decorative orbit/drift animation.
+- This revamp consumes the existing service names, tags, outcomes, descriptions, and routes. It requires no additional admin fields or production database migration.
+
+### Accessibility and normal-zoom visibility pass
+
+The Capability Observatory no longer expects users to reduce browser zoom to understand the complete composition.
+
+- The type hierarchy now uses a restrained 52px laptop heading, 16–18px supporting copy, 23px capability names, and stronger 9–10px technical labels. Low-contrast metadata was lifted while the visual hierarchy remains quiet.
+- Desktop layouts respond to viewport height as well as width. At heights up to 1050px, and again at 850px or less, space is removed from padding, row chrome, and the observatory stage while readable text sizes and 44px actions are preserved.
+- At 1723 × 813, the full English capability rail ends at 753px and the Observatory at 730px. Arabic ends at 745px and 738px respectively. Both fit at 100% zoom with no horizontal overflow.
+- At a 862px-wide zoom-equivalent viewport, the desktop instrument reflows to the touch-first mobile composition instead of compressing its copy or overflowing sideways.
+- English and Arabic mobile views were rechecked at 390 × 844. They retain 15–16px body copy, 50px primary actions, 84px capability tabs, native RTL, and no horizontal overflow.
+- `:focus-visible` treatments were added to view toggles, capability disclosures, service links, mobile tabs, and mobile actions. Semantic pressed, expanded, tab, selected, and tabpanel states remain exposed to assistive technology.
+- The Arabic mobile tab interaction was exercised in-browser: selecting the second tab updates both `aria-selected` and the visible tabpanel heading. No page runtime errors were observed.
+- TypeScript, ESLint, the Git whitespace/error check, and the production web build all pass after this accessibility pass; the build generated and validated 31 routes.
 
 ## Launch checklist
 
 These are deployment/content actions, not unfinished interface implementation:
 
-- [ ] Apply migrations 010–013 to the production Supabase database.
+- [ ] Apply migrations 010–014 to the production Supabase database.
 - [ ] Review and publish Arabic service, project, testimonial, FAQ, and homepage copy in the admin portal.
 - [ ] Replace the current database hero copy if “Sentient Logic” is no longer desired. Existing Supabase values correctly override code defaults and were intentionally not overwritten.
 - [ ] Confirm whether `nouslab@icould.com` is intentional. It appears consistently in the existing project; do not change it to `icloud.com` without owner confirmation.

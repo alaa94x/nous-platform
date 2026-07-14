@@ -380,6 +380,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     retryCountRef.current = 0
 
     const coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches
+    const mobileField = window.innerWidth < 768
     const lowPower = coarse || (navigator.hardwareConcurrency ?? 8) <= 4
     const pressureIterations = lowPower ? 10 : mode === 'calm' ? 14 : PRESSURE_ITERATIONS
     const minFrameDuration = lowPower ? 1000 / 30 : mode === 'calm' ? 1000 / 45 : 0
@@ -387,9 +388,8 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     // Buffers
     let dye: DoubleFBO, velocity: DoubleFBO, divergence: FBO, curlFBO: FBO, pressure: DoubleFBO
     const initBuffers = () => {
-      const mobile = window.innerWidth < 768
-      const simRes = getRes(gl, mobile ? 96 : SIM_RES)
-      const dyeRes = getRes(gl, mobile ? 512 : DYE_RES)
+      const simRes = getRes(gl, mobileField ? 96 : SIM_RES)
+      const dyeRes = getRes(gl, mobileField ? 512 : DYE_RES)
       dye        = createDoubleFBO(gl, dyeRes.w, dyeRes.h, gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT, gl.LINEAR)
       velocity   = createDoubleFBO(gl, simRes.w, simRes.h, gl.RG16F, gl.RG, gl.HALF_FLOAT, gl.LINEAR)
       divergence = createFBO(gl, simRes.w, simRes.h, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST)
@@ -399,7 +399,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect()
-      const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 768 ? 1.5 : 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, mobileField ? 1.5 : 2)
       const w = Math.round(rect.width * dpr)
       const h = Math.round(rect.height * dpr)
       // React Strict Mode reconnects passive effects in development. On the
@@ -441,8 +441,10 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       const x = (e.clientX - rect.left) / rect.width
       const y = 1 - (e.clientY - rect.top) / rect.height
       if (px >= 0) {
-        const dx = (x - px) * SPLAT_FORCE
-        const dy = (y - py) * SPLAT_FORCE
+        const rawDx = (x - px) * SPLAT_FORCE
+        const rawDy = (y - py) * SPLAT_FORCE
+        const dx = coarse ? Math.max(-720, Math.min(720, rawDx)) : rawDx
+        const dy = coarse ? Math.max(-720, Math.min(720, rawDy)) : rawDy
         if (Math.abs(dx) + Math.abs(dy) > 0.5) {
           const now = performance.now()
           if (now - lastColorAt > 900) { pointerColor = pickDye(); lastColorAt = now }
@@ -457,7 +459,10 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return
       const x = (e.clientX - rect.left) / rect.width
       const y = 1 - (e.clientY - rect.top) / rect.height
-      const color = pickDye()
+      const picked = pickDye()
+      const color: [number, number, number] = e.pointerType === 'touch'
+        ? [picked[0] * 1.18, picked[1] * 1.18, picked[2] * 1.18]
+        : picked
       splat(x, y, 120 - Math.random() * 240, 120 - Math.random() * 240, color, e.pointerType === 'touch' ? 3.2 : 2.2)
       px = x
       py = y
@@ -471,19 +476,20 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     let idlePhase = Math.random() * Math.PI * 2
     const idleSplat = () => {
       idlePhase += 0.72 + Math.random() * 0.18
-      const x = 0.5 + Math.cos(idlePhase * 0.83) * 0.3
-      const y = 0.5 + Math.sin(idlePhase * 1.17) * 0.27
+      const x = 0.5 + Math.cos(idlePhase * 0.83) * (mobileField ? 0.34 : 0.3)
+      const y = (mobileField ? 0.62 : 0.5) + Math.sin(idlePhase * 1.17) * (mobileField ? 0.22 : 0.27)
       const angle = idlePhase + Math.PI * 0.42
-      const force = 340 + Math.random() * 260
+      const force = (mobileField ? 300 : 340) + Math.random() * (mobileField ? 210 : 260)
       const c = pickDye()
+      const energy = mobileField ? 0.9 : 0.72
       splat(x, y, Math.cos(angle) * force, Math.sin(angle) * force,
-        [c[0] * 0.72, c[1] * 0.72, c[2] * 0.72], 3.4)
+        [c[0] * energy, c[1] * energy, c[2] * energy], mobileField ? 3.8 : 3.4)
 
       // A quieter counter-current stops the field from collapsing into one
       // focal blob and makes portrait/mobile canvases feel spatially active.
-      if (Math.floor(idlePhase * 10) % 3 === 0) {
+      if (Math.floor(idlePhase * 10) % (mobileField ? 2 : 3) === 0) {
         splat(1 - x * 0.82, 1 - y * 0.82, -Math.sin(angle) * force * 0.42, Math.cos(angle) * force * 0.42,
-          [c[0] * 0.34, c[1] * 0.34, c[2] * 0.34], 2.7)
+          [c[0] * (mobileField ? 0.46 : 0.34), c[1] * (mobileField ? 0.46 : 0.34), c[2] * (mobileField ? 0.46 : 0.34)], mobileField ? 3.15 : 2.7)
       }
     }
 
@@ -567,7 +573,8 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       const dt = Math.min((t - lastT) / 1000, 1 / 60)
       lastT = t
       resize()
-      const idleInterval = mode === 'calm' ? IDLE_SPLAT_EVERY_MS * 1.55 : IDLE_SPLAT_EVERY_MS
+      const baseIdleInterval = mobileField ? IDLE_SPLAT_EVERY_MS * 0.9 : IDLE_SPLAT_EVERY_MS
+      const idleInterval = mode === 'calm' ? baseIdleInterval * 1.55 : baseIdleInterval
       if (t - lastIdleSplat > idleInterval) {
         lastIdleSplat = t + Math.random() * 420
         idleSplat()
@@ -581,7 +588,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     const stop  = () => { if (raf) { cancelAnimationFrame(raf); raf = 0 } }
 
     // Seed the nebula so it isn't empty on first paint
-    for (let i = 0; i < 8; i++) idleSplat()
+    for (let i = 0; i < (mobileField ? 7 : 8); i++) idleSplat()
 
     let inViewport = true
     const io = new IntersectionObserver(([entry]) => {

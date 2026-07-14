@@ -13,6 +13,16 @@ interface NavProps {
   showLanguageSwitch?: boolean
 }
 
+function MobileNavIcon({ section }: { section: 'capabilities' | 'works' | 'contact' }) {
+  if (section === 'capabilities') {
+    return <svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="6" cy="6" r="2" /><circle cx="14" cy="6" r="2" /><circle cx="6" cy="14" r="2" /><circle cx="14" cy="14" r="2" /></svg>
+  }
+  if (section === 'works') {
+    return <svg aria-hidden="true" viewBox="0 0 20 20"><rect x="4" y="5" width="11" height="9" rx="1.5" /><path d="M7 3h9.5A1.5 1.5 0 0 1 18 4.5V12" /></svg>
+  }
+  return <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M5 15 15 5M8 5h7v7" /></svg>
+}
+
 // Absolute-path anchors — these must resolve correctly from any route, not
 // just the homepage. A bare "#capabilities" href does nothing on /work/* or
 // /services/* pages since no matching element exists there.
@@ -23,7 +33,8 @@ export default function Nav({
   showLanguageSwitch = false,
 }: NavProps = {}) {
   const navRef    = useRef<HTMLElement>(null)
-  const railRef   = useRef<HTMLDivElement>(null)   // mobile rail inner div
+  const railRef   = useRef<HTMLElement>(null)
+  const mobileLogoRef = useRef<HTMLDivElement>(null)
   const dictionary = getDictionary(locale)
   const home = locale === 'ar' ? '/ar' : '/'
   const NAV_LINKS = [
@@ -43,6 +54,70 @@ export default function Nav({
     apply()
     window.addEventListener('scroll', apply, { passive: true })
     return () => window.removeEventListener('scroll', apply)
+  }, [])
+
+  // ── Mobile navigation material — expand on intent, compact on progress ──
+  useEffect(() => {
+    const rail = railRef.current
+    const logo = mobileLogoRef.current
+    if (!rail || !logo) return
+
+    let lastY = window.scrollY
+    let direction: 'up' | 'down' | '' = ''
+    let travel = 0
+    let frame = 0
+
+    const setCompact = (compact: boolean) => {
+      rail.dataset['compact'] = compact ? 'true' : 'false'
+    }
+    const setLogoHidden = (hidden: boolean) => {
+      logo.dataset['hidden'] = hidden ? 'true' : 'false'
+    }
+    const apply = () => {
+      frame = 0
+      const currentY = Math.max(0, window.scrollY)
+      const delta = currentY - lastY
+      logo.dataset['scrolled'] = currentY > 18 ? 'true' : 'false'
+
+      if (currentY < 48) {
+        setCompact(false)
+        setLogoHidden(false)
+        direction = ''
+        travel = 0
+      } else if (Math.abs(delta) >= 2) {
+        const nextDirection = delta > 0 ? 'down' : 'up'
+        if (nextDirection !== direction) {
+          direction = nextDirection
+          travel = 0
+        }
+        travel += Math.abs(delta)
+        if (direction === 'down' && travel >= 30) {
+          setCompact(true)
+          setLogoHidden(true)
+        }
+        if (direction === 'up' && travel >= 18) {
+          setCompact(false)
+          setLogoHidden(false)
+        }
+      }
+      lastY = currentY
+    }
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(apply)
+    }
+    const onFocus = () => setCompact(false)
+    const onLogoFocus = () => setLogoHidden(false)
+
+    apply()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    rail.addEventListener('focusin', onFocus)
+    logo.addEventListener('focusin', onLogoFocus)
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', onScroll)
+      rail.removeEventListener('focusin', onFocus)
+      logo.removeEventListener('focusin', onLogoFocus)
+    }
   }, [])
 
   // ── Active section — DOM-direct rail indicator updates ──────────────────
@@ -169,6 +244,7 @@ export default function Nav({
 
       {/* ── MOBILE FLOATING LOGO ─────────────────────────────── */}
       <div
+        ref={mobileLogoRef}
         className="mobile-logo-strip"
         style={{
           display: 'flex',
@@ -180,7 +256,6 @@ export default function Nav({
           alignItems: 'center',
           justifyContent: 'space-between',
           pointerEvents: 'auto',
-          opacity: 1,
         }}
       >
         <Link
@@ -207,8 +282,10 @@ export default function Nav({
 
       {/* ── MOBILE BOTTOM RAIL ──────────────────────────────── */}
       <nav
+        ref={railRef}
         aria-label="Mobile navigation"
         className="mobile-rail"
+        data-compact="false"
         style={{
           position: 'fixed',
           bottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
@@ -216,17 +293,12 @@ export default function Nav({
           right: 12,
           zIndex: 300,
           display: 'none',
-          /* Dense glass keeps hero ornaments from competing with navigation labels. */
-          background: 'rgba(7, 17, 14, 0.94)',
-          backdropFilter: 'blur(28px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(28px) saturate(160%)',
-          border: '1px solid rgba(255,255,255,.13)',
-          /* Inner highlight edge to sell the glass material */
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
-          padding: 4,
+          background: 'transparent',
+          border: 0,
+          padding: 0,
         }}
       >
-        <div ref={railRef} className="mobile-rail__grid">
+        <div className="mobile-rail__grid">
           {NAV_LINKS.map((link, i) => (
             <a
               key={link.href}
@@ -235,11 +307,27 @@ export default function Nav({
               data-active="false"
               className={`mobile-rail__link pressable${link.section === 'contact' ? ' mobile-rail__cta' : ''}`}
             >
+              <span className="mobile-rail__icon"><MobileNavIcon section={link.section} /></span>
               <span className="mobile-rail__index" aria-hidden="true">
                 {link.section === 'contact' ? '↗' : `0${i + 1}`}
               </span>
               <span className="mobile-rail__label">{link.label}</span>
               {link.section !== 'contact' && <i aria-hidden="true" />}
+            </a>
+          ))}
+        </div>
+        <div className="mobile-rail__compact" aria-hidden="true">
+          {NAV_LINKS.map(link => (
+            <a
+              key={`compact-${link.href}`}
+              href={link.href}
+              data-section={link.section}
+              data-active="false"
+              className={`mobile-rail__compact-link pressable${link.section === 'contact' ? ' mobile-rail__compact-cta' : ''}`}
+              aria-label={link.label}
+              tabIndex={-1}
+            >
+              <MobileNavIcon section={link.section} />
             </a>
           ))}
         </div>
@@ -350,11 +438,24 @@ export default function Nav({
         .nav-contact-cta:focus-visible svg { transform: translate(2px,-2px); }
 
         .mobile-rail__grid {
-          height: 56px;
+          position: relative;
+          z-index: 2;
+          height: 60px;
           display: grid;
-          grid-template-columns: minmax(0,1fr) minmax(0,.76fr) minmax(126px,1.35fr);
+          grid-template-columns: minmax(0,1fr) minmax(0,1fr) 54px;
           align-items: stretch;
-          gap: 2px;
+          gap: 3px;
+          padding: 4px;
+          border: 1px solid rgba(228,245,212,.14);
+          border-radius: 22px;
+          background: rgba(7,17,14,.88);
+          box-shadow: 0 18px 45px rgba(2,9,6,.28),inset 0 1px 0 rgba(255,255,255,.055);
+          backdrop-filter: blur(22px) saturate(145%);
+          -webkit-backdrop-filter: blur(22px) saturate(145%);
+          transform: translate3d(0,0,0) scale(.999);
+          transform-origin: bottom center;
+          opacity: 1;
+          transition: opacity 160ms ease,transform 220ms var(--ease-out);
         }
         .mobile-rail__link {
           position: relative;
@@ -363,22 +464,21 @@ export default function Nav({
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 7px;
-          padding: 0 8px;
+          gap: 8px;
+          padding: 0 10px;
           overflow: hidden;
           color: rgba(240,237,234,.68);
           font-family: var(--font-mono);
           text-transform: uppercase;
-          transition: color .2s ease, background .2s ease;
+          border-radius: 17px;
+          transition: color .2s ease,background-color .2s ease,transform 140ms var(--ease-out);
           -webkit-tap-highlight-color: rgba(206,241,123,.12);
         }
+        .mobile-rail__icon { width:18px;height:18px;display:grid;place-items:center;flex:0 0 auto; }
+        .mobile-rail__icon svg,.mobile-rail__compact-link svg { width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.45;stroke-linecap:round;stroke-linejoin:round; }
+        .mobile-rail__icon svg circle { fill:currentColor;stroke:none; }
         .mobile-rail__index {
-          flex: 0 0 auto;
-          font-size: 7px;
-          font-weight: 700;
-          letter-spacing: .03em;
-          color: rgba(206,241,123,.52);
-          transition: color .2s ease;
+          display: none;
         }
         .mobile-rail__label {
           min-width: 0;
@@ -390,53 +490,98 @@ export default function Nav({
         }
         .mobile-rail__link > i {
           position: absolute;
-          top: 0;
-          left: 20%;
-          right: 20%;
-          height: 1px;
-          background: var(--lime-300);
-          transform: scaleX(0);
-          transition: transform .3s var(--ease-out);
+          width:5px;
+          height:5px;
+          right:8px;
+          top:8px;
+          border-radius:50%;
+          background:var(--lime-300);
+          opacity:0;
+          box-shadow:0 0 10px rgba(206,241,123,.62);
+          transform:scale(.7);
+          transition:opacity 180ms ease,transform 220ms var(--ease-out);
         }
         .mobile-rail__link[data-active='true'] {
           color: var(--paper-100);
-          background: rgba(206,241,123,.07);
+          background: rgba(206,241,123,.065);
         }
-        .mobile-rail__link[data-active='true'] .mobile-rail__index { color: var(--lime-300); }
-        .mobile-rail__link[data-active='true'] > i { transform: scaleX(1); }
+        .mobile-rail__link[data-active='true'] > i { opacity:1;transform:scale(1); }
         .mobile-rail__cta {
+          width:48px;
+          height:48px;
+          min-height:48px;
+          align-self:center;
+          justify-self:center;
+          padding:0;
+          border-radius:50%;
           color: var(--ink-950);
           background: var(--lime-300);
-          box-shadow: inset 0 0 0 1px rgba(255,255,255,.2);
+          box-shadow:0 7px 18px rgba(103,151,48,.18),inset 0 1px 0 rgba(255,255,255,.32);
         }
-        .mobile-rail__cta .mobile-rail__index {
-          order: 2;
-          color: var(--ink-950);
-          font-family: var(--font-body);
-          font-size: 13px;
-          transition: transform .2s var(--ease-out);
+        .mobile-rail__cta .mobile-rail__label,.mobile-rail__cta > i { display:none; }
+        .mobile-rail__link:active { transform:scale(.97); }
+
+        .mobile-rail__compact {
+          position:absolute;
+          z-index:1;
+          left:50%;
+          bottom:0;
+          width:196px;
+          height:50px;
+          display:grid;
+          grid-template-columns:repeat(3,1fr);
+          align-items:center;
+          gap:3px;
+          padding:3px;
+          border:1px solid rgba(228,245,212,.14);
+          border-radius:999px;
+          color:rgba(240,237,234,.65);
+          background:rgba(7,17,14,.9);
+          box-shadow:0 16px 38px rgba(2,9,6,.3),inset 0 1px 0 rgba(255,255,255,.055);
+          backdrop-filter:blur(22px) saturate(145%);
+          -webkit-backdrop-filter:blur(22px) saturate(145%);
+          opacity:0;
+          pointer-events:none;
+          transform:translate3d(-50%,8px,0) scale(.96);
+          transform-origin:bottom center;
+          transition:opacity 150ms ease,transform 200ms var(--ease-out);
         }
-        .mobile-rail__cta .mobile-rail__label { letter-spacing: .06em; }
-        .mobile-rail__link:active { opacity: .78; }
-        .mobile-rail__cta:active .mobile-rail__index { transform: translate(2px,-2px); }
+        .mobile-rail__compact-link { position:relative;width:44px;height:44px;display:grid;place-items:center;justify-self:center;border-radius:50%;transition:color 180ms ease,background-color 180ms ease,transform 140ms var(--ease-out); }
+        .mobile-rail__compact-link:active { transform:scale(.94); }
+        .mobile-rail__compact-link[data-active='true'] { color:var(--paper-100);background:rgba(206,241,123,.08); }
+        .mobile-rail__compact-link[data-active='true']::after { content:'';position:absolute;right:5px;top:5px;width:4px;height:4px;border-radius:50%;background:var(--lime-300);box-shadow:0 0 8px rgba(206,241,123,.6); }
+        .mobile-rail__compact-cta { color:var(--ink-950);background:var(--lime-300);box-shadow:inset 0 1px 0 rgba(255,255,255,.3); }
+        .mobile-rail__compact-cta[data-active='true'] { color:var(--ink-950);background:var(--lime-300); }
+        .mobile-rail[data-compact='true'] .mobile-rail__grid { opacity:0;pointer-events:none;transform:translate3d(0,8px,0) scale(.97); }
+        .mobile-rail[data-compact='true'] .mobile-rail__compact { z-index:3;opacity:1;pointer-events:auto;transform:translate3d(-50%,0,0) scale(1); }
 
         @media (max-width: 900px) {
           .desktop-nav { display: none !important; }
           .mobile-rail { display: block !important; }
           .mobile-logo-strip {
-            min-height: 54px;
-            padding: 4px 8px 4px 12px;
+            min-height: 50px;
+            padding: 3px 5px 3px 12px;
             border: 1px solid rgba(228,245,212,.13);
-            background: rgba(7,17,14,.82);
+            border-radius:18px;
+            background: rgba(7,17,14,.78);
             backdrop-filter: blur(20px) saturate(135%);
             -webkit-backdrop-filter: blur(20px) saturate(135%);
             box-shadow: 0 12px 36px rgba(3,12,9,.16), inset 0 1px 0 rgba(255,255,255,.04);
+            will-change: transform, opacity;
+            transform: translate3d(0,0,0);
+            transition:background-color 180ms ease,box-shadow 180ms ease,transform 240ms var(--ease-out),opacity 160ms ease;
+          }
+          .mobile-logo-strip[data-scrolled='true'] { background:rgba(7,17,14,.9);box-shadow:0 14px 34px rgba(3,12,9,.22),inset 0 1px 0 rgba(255,255,255,.055); }
+          .mobile-logo-strip[data-hidden='true'] {
+            opacity: 0;
+            pointer-events: none;
+            transform: translate3d(0,calc(-100% - 18px),0) scale(.985);
           }
         }
         @media (max-width: 480px) {
           .mobile-rail { left: 10px !important; right: 10px !important; bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important; }
-          .mobile-rail__grid { grid-template-columns: minmax(0,1fr) minmax(0,.68fr) minmax(122px,1.3fr); }
-          .mobile-rail__link { padding-inline: 6px; gap: 5px; }
+          .mobile-rail__grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) 54px; }
+          .mobile-rail__link { padding-inline: 7px; gap: 6px; }
           .mobile-rail__label { font-size: 7.5px; letter-spacing: .07em; }
         }
         @media (min-width: 901px) {
@@ -447,12 +592,14 @@ export default function Nav({
         @supports not (backdrop-filter: blur(1px)) {
           .desktop-nav[data-scrolled='true'],
           .mobile-logo-strip,
-          .mobile-rail { background: rgba(5,18,15,.97) !important; }
+          .mobile-rail__grid,
+          .mobile-rail__compact { background: rgba(5,18,15,.97) !important; }
         }
 
         /* Respect system "reduce transparency" setting */
         @media (prefers-reduced-transparency: reduce) {
-          .mobile-rail {
+          .mobile-rail__grid,
+          .mobile-rail__compact {
             background: rgba(5, 18, 15, 0.96) !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -466,7 +613,11 @@ export default function Nav({
           .nav-contact-cta,
           .nav-contact-cta svg,
           .mobile-rail__link,
-          .mobile-rail__link > i { transition: none !important; }
+          .mobile-rail__link > i,
+          .mobile-rail__grid,
+          .mobile-rail__compact,
+          .mobile-rail__compact-link,
+          .mobile-logo-strip { transition: none !important; }
         }
       `}</style>
     </>
