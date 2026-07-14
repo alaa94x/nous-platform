@@ -66,6 +66,10 @@ export default function Nav({
     let direction: 'up' | 'down' | '' = ''
     let travel = 0
     let frame = 0
+    let compact = rail.dataset['compact'] === 'true'
+    let lastStateChange = 0
+    let keyboardNavigation = false
+    let initial = true
 
     const setCompact = (compact: boolean) => {
       rail.dataset['compact'] = compact ? 'true' : 'false'
@@ -73,15 +77,29 @@ export default function Nav({
     const setLogoHidden = (hidden: boolean) => {
       logo.dataset['hidden'] = hidden ? 'true' : 'false'
     }
+    const setNavigationState = (nextCompact: boolean, force = false) => {
+      const now = performance.now()
+      if (!force && (nextCompact === compact || now - lastStateChange < 260)) return
+      compact = nextCompact
+      lastStateChange = now
+      setCompact(nextCompact)
+      setLogoHidden(nextCompact)
+    }
     const apply = () => {
       frame = 0
       const currentY = Math.max(0, window.scrollY)
       const delta = currentY - lastY
       logo.dataset['scrolled'] = currentY > 18 ? 'true' : 'false'
 
+      if (initial) {
+        initial = false
+        setNavigationState(currentY > 80, true)
+        lastY = currentY
+        return
+      }
+
       if (currentY < 48) {
-        setCompact(false)
-        setLogoHidden(false)
+        setNavigationState(false, true)
         direction = ''
         travel = 0
       } else if (Math.abs(delta) >= 2) {
@@ -91,30 +109,36 @@ export default function Nav({
           travel = 0
         }
         travel += Math.abs(delta)
-        if (direction === 'down' && travel >= 30) {
-          setCompact(true)
-          setLogoHidden(true)
-        }
-        if (direction === 'up' && travel >= 18) {
-          setCompact(false)
-          setLogoHidden(false)
-        }
+        if (direction === 'down' && travel >= 42) setNavigationState(true)
+        if (direction === 'up' && travel >= 32) setNavigationState(false)
       }
       lastY = currentY
     }
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(apply)
     }
-    const onFocus = () => setCompact(false)
-    const onLogoFocus = () => setLogoHidden(false)
+    const onKeyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Tab') keyboardNavigation = true
+    }
+    const onPointer = () => { keyboardNavigation = false }
+    const onFocus = () => {
+      if (keyboardNavigation) setNavigationState(false, true)
+    }
+    const onLogoFocus = () => {
+      if (keyboardNavigation) setNavigationState(false, true)
+    }
 
     apply()
     window.addEventListener('scroll', onScroll, { passive: true })
+    document.addEventListener('keydown', onKeyboard, true)
+    document.addEventListener('pointerdown', onPointer, true)
     rail.addEventListener('focusin', onFocus)
     logo.addEventListener('focusin', onLogoFocus)
     return () => {
       if (frame) window.cancelAnimationFrame(frame)
       window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('keydown', onKeyboard, true)
+      document.removeEventListener('pointerdown', onPointer, true)
       rail.removeEventListener('focusin', onFocus)
       logo.removeEventListener('focusin', onLogoFocus)
     }
@@ -452,10 +476,13 @@ export default function Nav({
           box-shadow: 0 18px 45px rgba(2,9,6,.28),inset 0 1px 0 rgba(255,255,255,.055);
           backdrop-filter: blur(22px) saturate(145%);
           -webkit-backdrop-filter: blur(22px) saturate(145%);
-          transform: translate3d(0,0,0) scale(.999);
+          transform: translate3d(0,0,0);
           transform-origin: bottom center;
           opacity: 1;
-          transition: opacity 160ms ease,transform 220ms var(--ease-out);
+          will-change: transform, opacity;
+          backface-visibility: hidden;
+          contain: paint;
+          transition: opacity 210ms ease,transform 280ms cubic-bezier(.32,.72,0,1);
         }
         .mobile-rail__link {
           position: relative;
@@ -542,9 +569,12 @@ export default function Nav({
           -webkit-backdrop-filter:blur(22px) saturate(145%);
           opacity:0;
           pointer-events:none;
-          transform:translate3d(-50%,8px,0) scale(.96);
+          transform:translate3d(-50%,10px,0);
           transform-origin:bottom center;
-          transition:opacity 150ms ease,transform 200ms var(--ease-out);
+          will-change:transform,opacity;
+          backface-visibility:hidden;
+          contain:paint;
+          transition:opacity 210ms ease,transform 280ms cubic-bezier(.32,.72,0,1);
         }
         .mobile-rail__compact-link { position:relative;width:44px;height:44px;display:grid;place-items:center;justify-self:center;border-radius:50%;transition:color 180ms ease,background-color 180ms ease,transform 140ms var(--ease-out); }
         .mobile-rail__compact-link:active { transform:scale(.94); }
@@ -552,8 +582,8 @@ export default function Nav({
         .mobile-rail__compact-link[data-active='true']::after { content:'';position:absolute;right:5px;top:5px;width:4px;height:4px;border-radius:50%;background:var(--lime-300);box-shadow:0 0 8px rgba(206,241,123,.6); }
         .mobile-rail__compact-cta { color:var(--ink-950);background:var(--lime-300);box-shadow:inset 0 1px 0 rgba(255,255,255,.3); }
         .mobile-rail__compact-cta[data-active='true'] { color:var(--ink-950);background:var(--lime-300); }
-        .mobile-rail[data-compact='true'] .mobile-rail__grid { opacity:0;pointer-events:none;transform:translate3d(0,8px,0) scale(.97); }
-        .mobile-rail[data-compact='true'] .mobile-rail__compact { z-index:3;opacity:1;pointer-events:auto;transform:translate3d(-50%,0,0) scale(1); }
+        .mobile-rail[data-compact='true'] .mobile-rail__grid { opacity:0;pointer-events:none;transform:translate3d(0,10px,0); }
+        .mobile-rail[data-compact='true'] .mobile-rail__compact { z-index:3;opacity:1;pointer-events:auto;transform:translate3d(-50%,0,0); }
 
         @media (max-width: 900px) {
           .desktop-nav { display: none !important; }
@@ -569,13 +599,15 @@ export default function Nav({
             box-shadow: 0 12px 36px rgba(3,12,9,.16), inset 0 1px 0 rgba(255,255,255,.04);
             will-change: transform, opacity;
             transform: translate3d(0,0,0);
-            transition:background-color 180ms ease,box-shadow 180ms ease,transform 240ms var(--ease-out),opacity 160ms ease;
+            backface-visibility:hidden;
+            contain:paint;
+            transition:background-color 200ms ease,box-shadow 200ms ease,transform 280ms cubic-bezier(.32,.72,0,1),opacity 210ms ease;
           }
           .mobile-logo-strip[data-scrolled='true'] { background:rgba(7,17,14,.9);box-shadow:0 14px 34px rgba(3,12,9,.22),inset 0 1px 0 rgba(255,255,255,.055); }
           .mobile-logo-strip[data-hidden='true'] {
             opacity: 0;
             pointer-events: none;
-            transform: translate3d(0,calc(-100% - 18px),0) scale(.985);
+            transform: translate3d(0,calc(-100% - 18px),0);
           }
         }
         @media (max-width: 480px) {
