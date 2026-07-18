@@ -1192,6 +1192,8 @@ export default function ContactPage({ services, contactEmail = 'nouslab@icould.c
           .cp-steps-scroll {
             padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
           }
+          .cp-step { opacity: 1 !important; }
+          .cp-nudge { animation: none; }
         }
 
         /* ── Tablet: collapse contact row for narrower screens ── */

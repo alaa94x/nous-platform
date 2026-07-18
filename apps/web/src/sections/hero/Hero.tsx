@@ -2,8 +2,9 @@
 
 import { type ReactNode, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { useReducedMotion } from 'motion/react'
 import { WhatsappLogo } from '@phosphor-icons/react'
+import { ArrowUpRightIcon } from '@/components/icons/DirectionalIcons'
 import NebulaFluid from './NebulaFluid'
 import SignalReveal from './SignalReveal'
 import type { FieldMotionMode } from './AssemblyField'
@@ -44,8 +45,8 @@ export default function Hero({
   headlineAr = 'نحوّل التعقيد إلى أنظمة واضحة.',
   subtextEn = 'Strategy, software and intelligent products built by a senior Doha team—from first decision to live system.',
   subtextAr = 'استراتيجية وبرمجيات ومنتجات ذكية يبنيها فريق خبير في الدوحة — من القرار الأول حتى النظام العامل.',
-  ctaPrimary = 'Bring Us the Hard Problem',
-  ctaSecondary = 'Talk to us on WhatsApp',
+  ctaPrimary = 'Bring Us Your Problem',
+  ctaSecondary = 'WhatsApp',
   whatsappHref = 'https://wa.me/97477484004',
   location: locationProp,
   revealPhrases,
@@ -65,13 +66,6 @@ export default function Hero({
     ? 'المس المجال لاكتشاف الإشارة'
     : 'Move through the field to reveal the signal')
   const contactHref = locale === 'ar' ? '/ar/contact' : '/contact'
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start start', 'end start'],
-  })
-  const fieldY = useTransform(scrollYProgress, [0, 1], ['0%', '8%'])
-  const fieldOpacity = useTransform(scrollYProgress, [0, .84], [1, .32])
-
   useEffect(() => {
     const section = sectionRef.current
     if (!section) return
@@ -115,13 +109,12 @@ export default function Hero({
       dir={dictionary.direction}
       data-motion={motionMode}
     >
-      <motion.div
+      <div
         className="nous-hero__field"
         aria-hidden="true"
-        style={{ y: reduced ? 0 : fieldY, opacity: reduced ? 1 : fieldOpacity }}
       >
         <NebulaFluid mode={motionMode} />
-      </motion.div>
+      </div>
       <div className="nous-hero__atmosphere" aria-hidden="true" />
       <div className="nous-hero__grid" aria-hidden="true" />
       <SignalReveal locale={locale} phrases={phrases} />
@@ -156,7 +149,7 @@ export default function Hero({
             <div className="nous-hero__actions">
               <Link href={contactHref} className="nous-hero__primary" data-magnetic-btn>
                 <span>{ctaPrimary}</span>
-                <span className="nous-hero__arrow" aria-hidden="true">↗</span>
+                <ArrowUpRightIcon className="nous-hero__arrow" />
               </Link>
               <a
                 href={whatsappHref}
@@ -402,7 +395,7 @@ export default function Hero({
         @media (max-width: 900px) {
           .nous-hero,
           .nous-hero__frame { min-height:100svh; }
-          .nous-hero__field { height: 100%; opacity: .9 !important; }
+          .nous-hero__field { height: 100%; opacity: 1 !important; transform:none !important; }
           .nous-hero__field::after { display: block; animation: nous-mobile-current 14s var(--ease-in-out) infinite alternate; }
           .nous-hero__atmosphere {
             background:
@@ -410,11 +403,9 @@ export default function Hero({
               radial-gradient(ellipse 125% 82% at 50% 24%, transparent 22%, rgba(5,15,11,.22) 80%);
           }
           .nous-hero__grid { background-size: 58px 58px; opacity: .045; mask-image: linear-gradient(180deg, transparent 7%, #000 20%, #000 48%, transparent 78%); }
-          .nous-hero__frame { padding: 80px 20px calc(82px + env(safe-area-inset-bottom, 0px)); }
-          .nous-hero__topline { grid-template-columns: auto auto; justify-content: space-between; gap: 18px; font-size: 9px; }
-          .nous-hero__topline-rule { display: none; }
-          .nous-hero__status { display: none; }
-          .nous-hero__composition { align-items: flex-end; padding: clamp(188px, 27svh, 250px) 0 38px; }
+          .nous-hero__frame { min-height:max(700px,100svh);padding: 74px 20px calc(82px + env(safe-area-inset-bottom, 0px)); }
+          .nous-hero__topline { display:none; }
+          .nous-hero__composition { align-items: flex-end; padding: clamp(320px, 51svh, 470px) 0 28px; }
           .nous-hero__copy { width: 100%; max-width: none; }
           .nous-hero__title {
             position: absolute;
@@ -442,15 +433,12 @@ export default function Hero({
             white-space: nowrap;
             border: 0;
           }
-          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin: 18px 0 0; }
+          .nous-hero__actions, [dir="rtl"] .nous-hero__actions { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin: 20px 0 0; }
           .nous-hero__actions a { min-width: 0; min-height: 50px; gap: 12px; padding: 0 16px; font-size: 9px; }
           .nous-hero__primary { width: 100%; border-radius: 999px; }
           .nous-hero__secondary { align-self: stretch; min-height: 48px !important; padding-inline: 18px !important; border: 1px solid rgba(228,245,212,.42) !important; border-radius: 999px; background: rgba(7,17,14,.44); backdrop-filter: blur(12px); }
           .nous-hero__secondary svg { flex: 0 0 auto; color: var(--lime-300); }
-          .nous-hero__handoff { min-height: 30px; justify-content: center; padding-top: 11px; font-size: 8px; letter-spacing: .1em; }
-          .nous-hero__handoff-long { display: none !important; }
-          .nous-hero__handoff-short { display: inline-flex !important; }
-          .nous-hero__handoff b { display: none; }
+          .nous-hero__handoff { display:none; }
         }
 
         @media (max-width: 430px) {
@@ -460,8 +448,8 @@ export default function Hero({
         }
 
         @media (max-width: 900px) {
-          .nous-hero[data-short-mobile='true'] .nous-hero__frame { padding-top: 74px; }
-          .nous-hero[data-short-mobile='true'] .nous-hero__composition { padding-top: 160px; padding-bottom: 26px; }
+          .nous-hero[data-short-mobile='true'] .nous-hero__frame { min-height:640px;padding-top: 68px; }
+          .nous-hero[data-short-mobile='true'] .nous-hero__composition { padding-top: 300px; padding-bottom: 22px; }
           .nous-hero[data-short-mobile='true'] .nous-hero__actions { margin-top: 18px; }
           .nous-hero[data-short-mobile='true'] .nous-hero__handoff { display: none; }
         }

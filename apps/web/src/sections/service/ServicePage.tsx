@@ -1,6 +1,7 @@
 // Server component — all service content is available without JavaScript.
 import Link from 'next/link'
 import type { Locale } from '@/i18n/config'
+import { ArrowUpRightIcon } from '@/components/icons/DirectionalIcons'
 
 export interface ServicePageData {
   name: string
@@ -70,7 +71,7 @@ export default function ServicePage({ service, locale = 'en' }: { service: Servi
 
         <section className="service-next">
           <p>{copy.ready}</p>
-          <Link href={isAr ? '/ar/contact' : '/contact'} className="pressable"><span>{copy.start}</span><b>↗</b></Link>
+          <Link href={isAr ? '/ar/contact' : '/contact'} className="pressable"><span>{copy.start}</span><ArrowUpRightIcon size={18} /></Link>
         </section>
       </div>
 

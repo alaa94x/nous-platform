@@ -1,6 +1,5 @@
 import Nav from '@/components/nav/Nav'
 import DocumentLocale from '@/components/language/DocumentLocale'
-import Cursor from '@/components/cursor/Cursor'
 import Noise from '@/components/noise/Noise'
 import { SectionBoundary } from '@/components/SectionBoundary'
 import Hero from '@/sections/hero/Hero'
@@ -53,9 +52,13 @@ export default function HomeExperience({ locale, data }: HomeExperienceProps) {
   const whatsappHref = contactItems.find(item => item.enabled && item.icon === 'whatsapp')?.href
     ?? 'https://wa.me/97477484004'
   const secondarySetting = localizedSetting('hero_cta_secondary', dictionary.hero.secondary)
-  const secondaryCta = ['See What Shipped', 'View Selected Works', 'شاهد ما أنجزناه'].includes(secondarySetting)
-    ? (locale === 'ar' ? 'تحدث معنا عبر واتساب' : 'Talk to us on WhatsApp')
+  const secondaryCta = ['See What Shipped', 'View Selected Works', 'Talk to us on WhatsApp', 'شاهد ما أنجزناه', 'تحدث معنا عبر واتساب'].includes(secondarySetting)
+    ? (locale === 'ar' ? 'واتساب' : 'WhatsApp')
     : secondarySetting
+  const primarySetting = localizedSetting('hero_cta_primary', dictionary.hero.primary)
+  const primaryCta = ['Bring Us the Hard Problem', 'Bring us the hard problem', 'اعرض علينا التحدّي', 'اعرض علينا التحدي'].includes(primarySetting)
+    ? dictionary.hero.primary
+    : primarySetting
 
   const faqJsonLd = {
     '@context': 'https://schema.org',
@@ -76,7 +79,6 @@ export default function HomeExperience({ locale, data }: HomeExperienceProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <Cursor />
       <Noise />
       <Nav siteName={s['site_name']} locale={locale} showLanguageSwitch />
       <main id="main-content">
@@ -87,7 +89,7 @@ export default function HomeExperience({ locale, data }: HomeExperienceProps) {
             headlineAr={localizedSetting('hero_headline', dictionary.hero.headline)}
             subtextEn={localizedSetting('hero_subtext', dictionary.hero.subtext)}
             subtextAr={localizedSetting('hero_subtext', dictionary.hero.subtext)}
-            ctaPrimary={localizedSetting('hero_cta_primary', dictionary.hero.primary)}
+            ctaPrimary={primaryCta}
             ctaSecondary={secondaryCta}
             whatsappHref={whatsappHref}
             location={localizedSetting('hero_location', dictionary.hero.location)}

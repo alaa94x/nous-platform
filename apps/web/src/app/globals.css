@@ -34,6 +34,10 @@
   --lime-300: #CEF17B;
   --tea-200: #CDEDB3;
   --tea-100: #E4F5D4;
+  /* Accessible secondary tones for Green Tea and Lime surfaces. These replace
+     low-opacity pine text that fell below WCAG AA on small metadata. */
+  --light-muted: #3F6854;
+  --light-micro: #365F4B;
   --paper-100: #F2F5EC;
   --paper-50: #F8FAF4;
 
@@ -184,6 +188,24 @@ body {
   #contact {
     padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
   }
+
+  /* Mobile clarity system: one heading scale, one body scale, and fewer
+     ornamental dividers. Individual sections can still use their own layout,
+     but no longer compete through unrelated type sizes. */
+  .home-light-canvas h2 {
+    max-width: 100% !important;
+    white-space: normal !important;
+    font-size: clamp(32px, 9vw, 40px) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -.045em !important;
+  }
+  .home-light-canvas p { text-wrap: pretty; }
+  .about-chapter,
+  .cap-chapter,
+  .process-chapter,
+  .works-chapter,
+  .pulse-chapter,
+  .faq-chapter { padding-inline: 20px !important; }
 }
 
 /* Clip horizontal overflow on a wrapper instead of body — avoids iOS Safari scroll block */
@@ -250,7 +272,7 @@ body {
 .footer-light {
   --bg: var(--tea-100);
   --text: var(--pine-800);
-  --muted: rgba(6, 59, 43, .62);
+  --muted: var(--light-muted);
   --border: rgba(8, 71, 52, .2);
   --accent: var(--pine-700);
   color: var(--text);
@@ -258,8 +280,10 @@ body {
 }
 
 @media (max-width: 780px) {
-  .home-tone-bridge { height: 180px; }
+  .home-tone-bridge { height: 88px; }
   .home-tone-bridge::after { background-size: 56px 56px; }
+  .home-tone-bridge > i,
+  .home-tone-bridge > span { display: none; }
 }
 
 a { text-decoration: none; color: inherit; }

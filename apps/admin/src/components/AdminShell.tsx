@@ -2,6 +2,10 @@
 
 import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import {
+  AddressBook, Briefcase, ChartLine, FileText, Gear, Images,
+  Quotes, SquaresFour, Wrench,
+} from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 
 /* Nous SVG logo — all paths use currentColor for theme-adaptive monochrome rendering */
@@ -33,13 +37,15 @@ function NousLogo({ size = 40, className, style }: { size?: number; className?: 
 }
 
 const NAV = [
-  { href: '/dashboard',           label: 'Overview',  short: 'Home',    icon: '◈' },
-  { href: '/dashboard/analytics', label: 'Analytics', short: 'Stats',   icon: '◉' },
-  { href: '/dashboard/contacts',  label: 'Contacts',  short: 'Leads',   icon: '✉' },
-  { href: '/dashboard/services',  label: 'Services',  short: 'Services',icon: '◎' },
-  { href: '/dashboard/projects',  label: 'Projects',  short: 'Works',   icon: '⬡' },
-  { href: '/dashboard/testimonials', label: 'Testimonials', short: 'Quotes', icon: '❝' },
-  { href: '/dashboard/settings',  label: 'Settings',  short: 'Config',  icon: '⚙' },
+  { href: '/dashboard',            label: 'Overview',     short: 'Home',       icon: SquaresFour, mobile: true },
+  { href: '/dashboard/operations', label: 'Operations',   short: 'Operations', icon: Briefcase,   mobile: true },
+  { href: '/dashboard/documents',  label: 'Documents',    short: 'Documents',  icon: FileText,    mobile: true },
+  { href: '/dashboard/analytics',  label: 'Analytics',    short: 'Stats',      icon: ChartLine,   mobile: false },
+  { href: '/dashboard/contacts',   label: 'Contacts',     short: 'Leads',      icon: AddressBook, mobile: false },
+  { href: '/dashboard/services',   label: 'Services',     short: 'Services',   icon: Wrench,      mobile: false },
+  { href: '/dashboard/projects',   label: 'Portfolio',    short: 'Works',      icon: Images,      mobile: false },
+  { href: '/dashboard/testimonials', label: 'Testimonials', short: 'Quotes',   icon: Quotes,      mobile: false },
+  { href: '/dashboard/settings',   label: 'Settings',     short: 'Settings',   icon: Gear,        mobile: true },
 ]
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
@@ -70,6 +76,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 12px' }}>
         {NAV.map(item => {
           const active = isActive(item.href)
+          const Icon = item.icon
           return (
             <a
               key={item.href}
@@ -93,7 +100,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
+              <Icon size={16} weight={active ? 'fill' : 'regular'} aria-hidden="true" />
               {item.label}
               {active && (
                 <span style={{ marginLeft: 'auto', width: 5, height: 5, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
@@ -223,11 +230,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
       {/* ── Mobile floating bottom nav ───────────────────────────────── */}
       <nav className="adm-bottom-nav" aria-label="Mobile navigation">
-        {NAV.map(item => {
+        {NAV.filter(item => item.mobile).map(item => {
           const active = isActive(item.href)
+          const Icon = item.icon
           return (
             <a key={item.href} href={item.href} className={`adm-tab${active ? ' adm-tab--active' : ''}`}>
-              <span className="adm-tab-icon">{item.icon}</span>
+              <span className="adm-tab-icon"><Icon size={18} weight={active ? 'fill' : 'regular'} aria-hidden="true" /></span>
               <span className="adm-tab-label">{item.short}</span>
             </a>
           )

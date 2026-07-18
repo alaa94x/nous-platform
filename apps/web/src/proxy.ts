@@ -47,11 +47,11 @@ const CSP = [
   `default-src 'self'`,
   // 'unsafe-eval' is dev-only — React Fast Refresh/HMR needs it locally,
   // React never calls eval() in a production build.
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== 'production' ? ` 'unsafe-eval'` : ''}`,
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com${process.env.NODE_ENV !== 'production' ? ` 'unsafe-eval'` : ''}`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: https://${supabaseHostname} https://picsum.photos https://stitchedqa.com`,
   `font-src 'self' data:`,
-  `connect-src 'self' https://${supabaseHostname} https://*.sentry.io`,
+  `connect-src 'self' https://${supabaseHostname} https://*.sentry.io https://cloudflareinsights.com`,
   `object-src 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,

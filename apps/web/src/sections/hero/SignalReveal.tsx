@@ -41,6 +41,10 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
 
     let bounds = surface.getBoundingClientRect()
     const initialMobile = bounds.width < 760
+    // The mobile hero has a dedicated, tappable phrase console. Avoid running
+    // the desktop pointer-lens RAF loop behind it; this keeps iOS scrolling and
+    // the WebGL fluid simulation on separate, predictable workloads.
+    if (initialMobile) return
     const rtl = locale === 'ar'
     let x = bounds.width * (initialMobile ? .52 : rtl ? .27 : .73)
     let y = bounds.height * (initialMobile ? .22 : .43)
@@ -199,7 +203,7 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
       <span className="nous-signal-reveal__index" dir="ltr" aria-hidden="true">0{activePhrase + 1} / 03</span>
       <div className="nous-signal-reveal__mobile-console">
         <div className="nous-signal-reveal__mobile-copy" role="status" aria-live="polite" aria-atomic="true">
-          <strong key={`${locale}-${activePhrase}`}>{phrases[activePhrase]}</strong>
+          <strong>{phrases[activePhrase]}</strong>
         </div>
         <div className="nous-signal-reveal__steps" role="group" aria-label={locale === 'ar' ? 'عبارات الإشارة' : 'Signal statements'}>
           {phrases.map((phrase, index) => (
@@ -332,7 +336,7 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
             position: absolute;
             left: 16px;
             right: 16px;
-            top: 21%;
+            top: clamp(170px, 26svh, 230px);
             z-index: 4;
             min-height: 110px;
             display: grid;
@@ -352,13 +356,16 @@ export default function SignalReveal({ locale, phrases }: SignalRevealProps) {
             min-width: 0;
             white-space: nowrap;
             font-family: var(--font-display);
-            font-size: clamp(29px, 8.4vw, 38px);
+            font-size: clamp(30px, 8.6vw, 39px);
             font-weight: 550;
             line-height: .95;
             letter-spacing: -.052em;
             color: rgba(235,248,211,.98);
             text-shadow: 0 0 34px rgba(206,241,123,.2), 0 1px 1px rgba(4,13,10,.72);
-            animation: nous-signal-copy-in 360ms var(--ease-out) both;
+            /* Keep the first meaningful mobile text paint stable. Re-keying and
+               re-animating this line on every phrase change delayed LCP and
+               made Lighthouse treat the hero as visually incomplete. */
+            animation: none;
           }
           .nous-signal-reveal[dir="rtl"] .nous-signal-reveal__mobile-copy > strong {
             font-family: var(--font-display-ar);

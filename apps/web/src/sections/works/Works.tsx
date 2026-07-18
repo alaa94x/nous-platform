@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getDictionary } from '@/i18n/dictionaries'
 import type { Locale } from '@/i18n/config'
+import { ArrowUpRightIcon } from '@/components/icons/DirectionalIcons'
 
 interface Project {
   id: string
@@ -50,14 +51,14 @@ function ProjectArchiveCard({ project, index, locale }: { project: Project; inde
         <h3>{name}</h3>
         {description && <p>{description}</p>}
       </div>
-      {href && <span className="archive-open" aria-hidden="true">↗</span>}
+      {href && <span className="archive-open" aria-hidden="true"><ArrowUpRightIcon size={16} /></span>}
       <div className="archive-trace" aria-hidden="true" />
     </article>
   )
 
   if (!href) return content
-  if (internal) return <Link href={internal} className="archive-link" aria-label={name}>{content}</Link>
-  return <a href={href} className="archive-link" target="_blank" rel="noopener noreferrer" aria-label={name}>{content}</a>
+  if (internal) return <Link href={internal} className="archive-link">{content}</Link>
+  return <a href={href} className="archive-link" target="_blank" rel="noopener noreferrer">{content}</a>
 }
 
 export default function Works({ projects, locale = 'en', label, title, intro }: WorksProps) {
@@ -87,14 +88,14 @@ export default function Works({ projects, locale = 'en', label, title, intro }: 
       <style>{`
         .works-chapter { position: relative; z-index: 10; padding: clamp(92px,11vw,158px) clamp(24px,5vw,72px); color: var(--pine-800); background: var(--tea-100); }
         .works-shell { width: min(100%,1480px); margin: 0 auto; }
-        .works-heading-meta { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: rgba(6,59,43,.48); }
+        .works-heading-meta { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--light-micro); }
         .works-heading-meta i { height: 1px; background: rgba(8,71,52,.2); }
         .works-heading-meta span:last-child { color: var(--pine-700); }
         .works-heading-copy { display: grid; grid-template-columns: minmax(0,1fr) minmax(300px,.65fr); align-items: end; gap: clamp(42px,7vw,112px); margin-top: clamp(30px,4vw,54px); }
         .works-heading-copy > div > span { display: block; margin-bottom: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pine-600); }
         .works-heading h2 { margin: 0; white-space: nowrap; font-family: var(--font-display); font-size: clamp(46px,4.8vw,72px); font-weight: 560; line-height: .94; letter-spacing: -.06em; }
         [dir="rtl"] .works-heading h2 { font-family: var(--font-display-ar); line-height: 1.08; letter-spacing: -.035em; }
-        .works-heading-copy > p { max-width: 48ch; margin: 0 0 8px; font-size: 17px; line-height: 1.65; color: rgba(6,59,43,.68); }
+        .works-heading-copy > p { max-width: 48ch; margin: 0 0 8px; font-size: 17px; line-height: 1.65; color: var(--light-muted); }
         [dir="rtl"] .works-heading-copy > p { font-family: var(--font-arabic); font-size: 18px; line-height: 1.85; }
         .archive-grid { display: grid; grid-template-columns: repeat(12,1fr); grid-auto-flow: dense; gap: 16px; margin-top: clamp(70px,9vw,126px); }
         .archive-link { display: block; min-width: 0; color: inherit; }
@@ -120,24 +121,24 @@ export default function Works({ projects, locale = 'en', label, title, intro }: 
         .archive-card--standard .archive-copy h3 { font-size: clamp(22px,1.9vw,31px); }
         .archive-copy p { max-width: 54ch; margin: 10px 0 0; font-size: 14px; line-height: 1.55; color: rgba(242,245,236,.62); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         [dir="rtl"] .archive-copy p { font-family: var(--font-arabic); font-size: 15px; line-height: 1.75; }
-        .archive-open { position: absolute; z-index: 3; right: 18px; bottom: 20px; width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid rgba(206,241,123,.35); color: var(--lime-300); }
+          .archive-open { position: absolute; z-index: 3; right: 18px; bottom: 20px; width: 34px; height: 34px; display: grid; place-items: center; color: var(--lime-300); }
         [dir="rtl"] .archive-open { right: auto; left: 18px; }
         .archive-trace { position: absolute; z-index: 3; left: 0; bottom: 0; width: 0; height: 3px; background: var(--lime-300); transition: width 700ms var(--ease-out); }
         [dir="rtl"] .archive-trace { left: auto; right: 0; }
         @media (hover:hover) and (pointer:fine) { .archive-link:hover .archive-media img { transform: scale(1.035); filter: saturate(1) brightness(.82); }.archive-link:hover .archive-trace { width: 100%; } }
         .archive-empty { margin-top: 72px; min-height: 300px; display: grid; place-items: center; border: 1px dashed rgba(8,71,52,.22); text-align: center; }
-        .archive-empty span { font-family: var(--font-mono); color: var(--pine-700); }.archive-empty p { font-size: 17px; color: rgba(6,59,43,.62); }
+        .archive-empty span { font-family: var(--font-mono); color: var(--pine-700); }.archive-empty p { font-size: 17px; color: var(--light-muted); }
         @media (max-width: 900px) {
           .works-chapter { padding: 88px 20px; }
           .works-heading-copy { grid-template-columns: 1fr; gap: 34px; }
           .works-heading h2 { font-size: clamp(29px,8vw,42px); }
           .archive-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 70px; }
           .archive-link { width: 100%; }
-          .archive-card, .archive-card--featured { min-height: 360px; }
-          .archive-link:not(:first-child) .archive-card { min-height: 300px; }
+          .archive-card, .archive-card--featured { min-height: 280px; }
+          .archive-link:not(:first-child) .archive-card { min-height: 240px; }
           .archive-copy { left: 18px; bottom: 18px; }
           .archive-copy h3, .archive-card--standard .archive-copy h3 { font-size: 28px; }
-          .archive-copy p { font-size: 14px; }
+          .archive-copy p { display:none; }
         }
       `}</style>
     </section>

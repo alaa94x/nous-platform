@@ -1,0 +1,19 @@
+{
+  "name": "@nous/documents",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./calculations": "./src/calculations.ts",
+    "./lifecycle": "./src/lifecycle.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@nous/config": "workspace:*",
+    "typescript": "^5.8.3"
+  }
+}

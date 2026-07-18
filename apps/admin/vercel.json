@@ -1,5 +1,11 @@
 {
   "buildCommand": "cd ../.. && pnpm turbo build --filter=@nous/admin",
   "outputDirectory": ".next",
-  "installCommand": "pnpm install --frozen-lockfile"
+  "installCommand": "pnpm install --frozen-lockfile",
+  "crons": [
+    {
+      "path": "/api/cron/reminders",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

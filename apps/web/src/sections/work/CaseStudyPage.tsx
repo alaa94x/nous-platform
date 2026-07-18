@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { serviceSlug } from '@/lib/service-slugs'
 import type { CaseStudyProject } from '@/lib/case-studies'
 import type { Locale } from '@/i18n/config'
+import { ArrowUpRightIcon } from '@/components/icons/DirectionalIcons'
 
 const COPY = {
   en: { back: 'Back to archive', visit: 'Visit live site', image: 'Project image — add through Projects', overview: 'Context', challenge: 'Constraint', solution: 'Intervention', services: 'Systems applied', tech: 'Working material', cta: 'Have a complex project in mind?', start: 'Start the Conversation', chapter: 'Nous Archive / Case Record' },
@@ -41,7 +42,7 @@ export default function CaseStudyPage({ project, locale = 'en' }: { project: Cas
           {!isAr && project.nameAr && <p className="case-ar-name" lang="ar" dir="rtl">{project.nameAr}</p>}
           <div className="case-intro">
             <p>{tagline}</p>
-            {project.externalUrl && <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" className="pressable"><span>{copy.visit}</span><b>↗</b></a>}
+            {project.externalUrl && <a href={project.externalUrl} target="_blank" rel="noopener noreferrer" className="pressable"><span>{copy.visit}</span><ArrowUpRightIcon size={18} /></a>}
           </div>
         </header>
 
@@ -61,14 +62,14 @@ export default function CaseStudyPage({ project, locale = 'en' }: { project: Cas
         <section className="case-system-map">
           <div><span>04</span><h2>{copy.services}</h2></div>
           <div className="case-system-links">
-            {linkedServices.map(service => <Link key={service.slug} href={`${isAr ? '/ar' : ''}/services/${service.slug}`} className="pressable"><span>{service.name}</span><b>↗</b></Link>)}
+            {linkedServices.map(service => <Link key={service.slug} href={`${isAr ? '/ar' : ''}/services/${service.slug}`} className="pressable"><span>{service.name}</span><ArrowUpRightIcon size={18} /></Link>)}
           </div>
           <div className="case-tech"><span>{copy.tech}</span><div>{project.tech.map(item => <i key={item}>{item}</i>)}</div></div>
         </section>
 
         <section className="case-next">
           <p>{copy.cta}</p>
-          <Link href={isAr ? '/ar/contact' : '/contact'} className="pressable"><span>{copy.start}</span><b>↗</b></Link>
+          <Link href={isAr ? '/ar/contact' : '/contact'} className="pressable"><span>{copy.start}</span><ArrowUpRightIcon size={18} /></Link>
         </section>
       </div>
 

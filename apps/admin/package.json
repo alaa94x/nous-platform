@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@nous/db": "workspace:*",
+    "@nous/documents": "workspace:*",
     "@phosphor-icons/react": "^2.1.7",
     "@sentry/nextjs": "^10.59.0",
     "@supabase/ssr": "^0.6.1",

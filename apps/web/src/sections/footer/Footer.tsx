@@ -358,7 +358,7 @@ export default function Footer({
         .footer-light {
           --bg: var(--tea-100);
           --text: var(--pine-800);
-          --muted: rgba(6,59,43,.62);
+          --muted: var(--light-muted);
           --border: rgba(8,71,52,.2);
           --accent: var(--pine-700);
           color: var(--text);

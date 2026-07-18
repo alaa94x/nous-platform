@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from 'motion/react'
 import { SERVICE_PAGE_SLUGS } from '@/lib/service-slugs'
 import { getDictionary } from '@/i18n/dictionaries'
+import { ArrowUpRightIcon } from '@/components/icons/DirectionalIcons'
 import type { Locale } from '@/i18n/config'
 
 type ViewMode = 'business' | 'engineering'
@@ -148,16 +149,6 @@ function LensInstrument({ service, view, locale, services }: { service: Service 
   )
 }
 
-function MobileOrb({ index }: { index: string }) {
-  return (
-    <div className="cap-mobile-orb" aria-hidden="true">
-      <i className="cap-mobile-orb__ring cap-mobile-orb__ring--one" />
-      <i className="cap-mobile-orb__ring cap-mobile-orb__ring--two" />
-      <span><b>{index}</b></span>
-    </div>
-  )
-}
-
 export default function Capabilities({ services, locale = 'en', label, title, subtitle }: CapabilitiesProps) {
   const reduced = !!useReducedMotion()
   const chapterRef = useRef<HTMLElement>(null)
@@ -173,9 +164,6 @@ export default function Capabilities({ services, locale = 'en', label, title, su
   const activeOutcomes = active ? serviceOutcomes(active, view) : []
   const activeTags = active ? serviceTags(active, view).slice(0, 3) : []
   const activeSlug = active ? serviceSlug(active) : undefined
-  const activeDescription = active
-    ? (isAr ? active.business_subtext_ar : active.business_subtext)
-    : null
 
   const selectService = (service: Service) => {
     setActiveId(service.id)
@@ -301,7 +289,7 @@ export default function Capabilities({ services, locale = 'en', label, title, su
                       ))}</div>
                       {slug && (
                         <Link className="cap-record-link" data-cursor="arrow" href={`${isAr ? '/ar' : ''}/services/${slug}`} aria-label={`${dictionary.capabilities.openService}: ${name}`}>
-                          <span>{dictionary.capabilities.openService}</span><b>↗</b>
+                          <span>{dictionary.capabilities.openService}</span><ArrowUpRightIcon size={16} />
                         </Link>
                       )}
                     </div>
@@ -326,24 +314,15 @@ export default function Capabilities({ services, locale = 'en', label, title, su
               onPointerUp={endSwipe}
               onPointerCancel={() => { swipeStartRef.current = null }}
             >
-              <div className="cap-mobile-card__visual">
-                <div>
-                  <span>{isAr ? 'النظام النشط' : 'Active system'}</span>
-                  <b>{active.idx ?? '00'} / {String(services.length).padStart(2, '0')}</b>
-                </div>
-                <MobileOrb index={active.idx ?? '00'} />
-              </div>
-
               <div className="cap-mobile-card__copy">
-                <div className="cap-mobile-card__tags">{activeTags.map(tag => <span key={tag}>{tag}</span>)}</div>
+                <div className="cap-mobile-card__tags">{activeTags.slice(0, 2).map(tag => <span key={tag}>{tag}</span>)}</div>
                 <h3>{activeName}</h3>
-                {activeDescription && <p>{activeDescription}</p>}
                 <div className="cap-mobile-card__outcomes">
-                  {activeOutcomes.slice(0, 4).map((outcome, index) => <span key={outcome}><i>0{index + 1}</i><b>{outcome}</b></span>)}
+                  {activeOutcomes.slice(0, 3).map(outcome => <span key={outcome}><b>{outcome}</b></span>)}
                 </div>
                 {activeSlug && (
                   <Link href={`${isAr ? '/ar' : ''}/services/${activeSlug}`}>
-                    <span>{dictionary.capabilities.openService}</span><b>↗</b>
+                    <span>{dictionary.capabilities.openService}</span><ArrowUpRightIcon size={16} />
                   </Link>
                 )}
               </div>
@@ -378,18 +357,18 @@ export default function Capabilities({ services, locale = 'en', label, title, su
         .cap-chapter::before { content:'';position:absolute;inset:0;pointer-events:none;opacity:.38;background-image:linear-gradient(rgba(8,71,52,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(8,71,52,.035) 1px,transparent 1px);background-size:54px 54px;mask-image:linear-gradient(180deg,transparent 2%,#000 28%,#000 86%,transparent); }
         .cap-chapter::after { content:'';position:absolute;width:42vw;aspect-ratio:1;right:-16vw;top:8%;pointer-events:none;border-radius:50%;border:1px solid rgba(8,71,52,.08);box-shadow:0 0 0 6vw rgba(8,71,52,.025),0 0 0 12vw rgba(8,71,52,.018); }
         .cap-shell { position:relative;z-index:1;width:min(100%,1480px);margin:0 auto; }
-        .cap-heading-code { display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:16px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(6,59,43,.48); }
+        .cap-heading-code { display:grid;grid-template-columns:auto minmax(80px,1fr) auto;align-items:center;gap:16px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--light-micro); }
         .cap-heading-code i { height:1px;background:linear-gradient(90deg,rgba(8,71,52,.26),rgba(8,71,52,.08)); }
         .cap-heading-code span:last-child { color:var(--pine-700); }
         .cap-heading-main { display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.65fr);align-items:end;gap:clamp(42px,7vw,112px);margin-top:clamp(28px,3.6vw,50px); }
         .cap-kicker { display:block;margin-bottom:10px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--pine-600); }
         .cap-heading h2 { max-width:none;margin:0;white-space:nowrap;font-family:var(--font-display);font-size:clamp(46px,4.7vw,70px);font-weight:570;line-height:.94;letter-spacing:-.06em; }
         [dir="rtl"] .cap-heading h2 { font-family:var(--font-display-ar);line-height:1.08;letter-spacing:-.035em; }
-        .cap-heading-main > p { max-width:48ch;margin:0 0 7px;font-size:17px;line-height:1.65;color:rgba(6,59,43,.68); }
+        .cap-heading-main > p { max-width:48ch;margin:0 0 7px;font-size:17px;line-height:1.65;color:var(--light-muted); }
         [dir="rtl"] .cap-heading-main > p { font-family:var(--font-arabic);font-size:18px;line-height:1.85; }
 
         .cap-toggle { width:max-content;display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:clamp(34px,4.2vw,56px) 0 24px;padding:4px;border:1px solid rgba(8,71,52,.16);border-radius:999px;background:rgba(244,252,237,.48);box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 10px 28px rgba(8,71,52,.05);backdrop-filter:blur(12px); }
-        .cap-toggle button { position:relative;min-height:42px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 18px;border-radius:999px;cursor:pointer;color:rgba(6,59,43,.52);transition:color 180ms ease,background-color 180ms ease,box-shadow 180ms ease,transform 140ms var(--ease-out); }
+        .cap-toggle button { position:relative;min-height:42px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 18px;border-radius:999px;cursor:pointer;color:var(--light-muted);transition:color 180ms ease,background-color 180ms ease,box-shadow 180ms ease,transform 140ms var(--ease-out); }
         .cap-toggle button:active { transform:scale(.975); }
         .cap-toggle button span { font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase; }
         [dir="rtl"] .cap-toggle button span { font-family:var(--font-arabic);font-size:12px;letter-spacing:0; }
@@ -402,7 +381,7 @@ export default function Capabilities({ services, locale = 'en', label, title, su
         .cap-layout { grid-template-columns:minmax(420px,.9fr) minmax(500px,1.1fr);gap:clamp(22px,3.5vw,54px);align-items:start; }
         .cap-rail { position:relative;padding:9px;border:1px solid rgba(8,71,52,.16);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.46),rgba(205,237,179,.22));box-shadow:0 28px 70px rgba(6,59,43,.09),inset 0 1px 0 rgba(255,255,255,.82);backdrop-filter:blur(18px); }
         .cap-rail::before { content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.38),transparent 28%,transparent 72%,rgba(8,71,52,.035)); }
-        .cap-rail-head { position:relative;min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-family:var(--font-mono);font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(6,59,43,.48); }
+        .cap-rail-head { position:relative;min-height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-family:var(--font-mono);font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--light-micro); }
         [dir="rtl"] .cap-rail-head { font-family:var(--font-arabic);font-size:11px;letter-spacing:0; }
         .cap-list { position:relative;display:flex;flex-direction:column;gap:7px; }
         .cap-record { position:relative;overflow:hidden;border:1px solid rgba(8,71,52,.12);border-radius:14px;background:rgba(236,249,225,.42);opacity:1;transform:translateZ(0);box-shadow:0 1px 0 rgba(255,255,255,.52);transition:transform 220ms var(--ease-out),border-color 180ms ease,background-color 180ms ease,box-shadow 220ms var(--ease-out); }
@@ -412,11 +391,11 @@ export default function Capabilities({ services, locale = 'en', label, title, su
         .cap-record.is-selected::before { opacity:1; }
         .cap-record-main > button { position:relative;z-index:1;min-height:78px;display:grid;grid-template-columns:32px minmax(0,1fr) 28px 32px;align-items:center;gap:12px;width:100%;padding:0 13px;cursor:pointer;text-align:start;color:rgba(6,59,43,.7);transition:color 180ms ease,transform 140ms var(--ease-out); }
         .cap-record-main > button:active { transform:scale(.985); }
-        .cap-record-index { font-family:var(--font-mono);font-size:8px;color:rgba(8,71,52,.46); }
+        .cap-record-index { font-family:var(--font-mono);font-size:8px;color:var(--light-micro); }
         .cap-record-copy { min-width:0;display:flex;flex-direction:column;gap:7px; }
         .cap-record-copy strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-display);font-size:clamp(20px,1.65vw,27px);font-weight:550;letter-spacing:-.04em;color:inherit; }
         [dir="rtl"] .cap-record-copy strong { font-family:var(--font-display-ar);letter-spacing:-.02em; }
-        .cap-record-copy small { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:7px;letter-spacing:.11em;text-transform:uppercase;color:rgba(6,59,43,.4); }
+        .cap-record-copy small { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:7px;letter-spacing:.11em;text-transform:uppercase;color:var(--light-micro); }
         [dir="rtl"] .cap-record-copy small { font-family:var(--font-arabic);font-size:10px;letter-spacing:0; }
         .cap-record-signal { width:26px;aspect-ratio:1;display:grid;place-items:center;border:1px solid rgba(8,71,52,.14);border-radius:50%;background:rgba(255,255,255,.34);box-shadow:inset 0 1px 3px rgba(255,255,255,.72); }
         .cap-record-signal i { width:8px;aspect-ratio:1;border-radius:50%;background:rgba(8,71,52,.22);box-shadow:inset -2px -2px 3px rgba(3,12,9,.16);transition:background-color 180ms ease,box-shadow 180ms ease,transform 220ms var(--ease-out); }
@@ -429,7 +408,7 @@ export default function Capabilities({ services, locale = 'en', label, title, su
         .cap-record.is-selected .cap-record-main > button { color:var(--pine-800); }
         .cap-record-panel { position:relative;z-index:1;display:grid;grid-template-rows:0fr;transition:grid-template-rows 260ms var(--ease-drawer); }
         .cap-record-panel > div { min-height:0;overflow:hidden;padding-inline:57px 18px; }
-        .cap-record-panel p { max-width:50ch;margin:2px 0 15px;font-size:13px;line-height:1.62;color:rgba(6,59,43,.62); }
+        .cap-record-panel p { max-width:50ch;margin:2px 0 15px;font-size:13px;line-height:1.62;color:var(--light-muted); }
         [dir="rtl"] .cap-record-panel p { font-family:var(--font-arabic);font-size:14px;line-height:1.82; }
         .cap-record-outcomes { display:flex;flex-wrap:wrap;gap:6px;padding-bottom:15px; }
         .cap-record-outcomes > span { min-height:27px;display:inline-flex;align-items:stretch;border:1px solid rgba(8,71,52,.16);border-radius:7px;background:rgba(255,255,255,.34);font-family:var(--font-mono);font-size:7px;letter-spacing:.07em;text-transform:uppercase;color:rgba(6,59,43,.72); }
@@ -507,13 +486,13 @@ export default function Capabilities({ services, locale = 'en', label, title, su
 
         /* Visibility and type hierarchy: supporting labels remain compact, but
            never depend on ultra-small, low-contrast type to create refinement. */
-        .cap-heading-code,.cap-kicker { font-size:10px;color:rgba(6,59,43,.68); }
+        .cap-heading-code,.cap-kicker { font-size:10px;color:var(--light-micro); }
         .cap-heading h2 { font-size:clamp(44px,4.2vw,64px); }
         .cap-heading-main > p { color:rgba(6,59,43,.76); }
         .cap-toggle button span { font-size:10px; }
-        .cap-rail-head { font-size:9px;color:rgba(6,59,43,.66); }
-        .cap-record-index { font-size:10px;color:rgba(8,71,52,.64); }
-        .cap-record-copy small { font-size:9px;color:rgba(6,59,43,.62); }
+        .cap-rail-head { font-size:9px;color:var(--light-micro); }
+        .cap-record-index { font-size:10px;color:var(--light-micro); }
+        .cap-record-copy small { font-size:9px;color:var(--light-micro); }
         .cap-record-panel p { font-size:15px;color:rgba(6,59,43,.74); }
         .cap-record-outcomes > span { font-size:9px;color:rgba(6,59,43,.82); }
         .cap-record-outcomes > span b { font-size:8px; }
@@ -583,29 +562,29 @@ export default function Capabilities({ services, locale = 'en', label, title, su
         }
 
         @media (max-width:940px) {
-          .cap-chapter { min-height:100svh;padding:34px 16px calc(96px + env(safe-area-inset-bottom,0px)); }
+          .cap-chapter { min-height:0;padding:72px 16px calc(96px + env(safe-area-inset-bottom,0px)); }
           .cap-chapter::after { width:78vw;right:-42vw;top:17%; }
           .cap-heading-main { grid-template-columns:1fr;gap:10px;margin-top:18px; }
           .cap-heading h2 { font-size:clamp(29px,8vw,42px);letter-spacing:-.04em;word-spacing:.12em; }
           [dir="rtl"] .cap-heading h2 { word-spacing:normal; }
-          .cap-heading-main > p { max-width:38ch;font-size:14px;line-height:1.5; }
+          .cap-heading-main > p { display:none; }
           [dir="rtl"] .cap-heading-main > p { font-size:15px;line-height:1.65; }
-          .cap-toggle { width:100%;margin:14px 0 10px; }
+          .cap-toggle { display:none; }
           .cap-toggle button { min-height:44px;padding-inline:8px; }
           .cap-desktop { display:none; }
           .cap-mobile { display:block; }
-          .cap-mobile-selector { display:flex;gap:8px;overflow-x:auto;margin:8px -16px 0;padding:0 16px 4px;scroll-padding-inline:16px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain; }
+          .cap-mobile-selector { display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scroll-padding-inline:16px;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-inline:contain; }
           .cap-mobile-selector::-webkit-scrollbar { display:none; }
-          .cap-mobile-selector button { position:relative;flex:0 0 min(44vw,172px);min-height:54px;display:grid;grid-template-columns:22px minmax(0,1fr) 6px;align-items:center;gap:7px;padding:0 11px;scroll-snap-align:center;border:1px solid rgba(8,71,52,.15);border-radius:12px;background:rgba(247,253,241,.54);box-shadow:inset 0 1px 0 rgba(255,255,255,.7);text-align:start;color:rgba(6,59,43,.62);transition:transform 160ms var(--ease-out),background-color 180ms ease,border-color 180ms ease; }
+          .cap-mobile-selector button { position:relative;flex:0 0 min(44vw,172px);min-height:54px;display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:7px;padding:0 11px;scroll-snap-align:center;border:1px solid rgba(8,71,52,.15);border-radius:12px;background:rgba(247,253,241,.54);box-shadow:inset 0 1px 0 rgba(255,255,255,.7);text-align:start;color:var(--light-muted);transition:transform 160ms var(--ease-out),background-color 180ms ease,border-color 180ms ease; }
           .cap-mobile-selector button:active { transform:scale(.98); }
-          .cap-mobile-selector button > span { font-family:var(--font-mono);font-size:8px;color:rgba(8,71,52,.68); }
+          .cap-mobile-selector button > span { font-family:var(--font-mono);font-size:8px;color:var(--light-micro); }
           .cap-mobile-selector button > strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-display);font-size:14px;font-weight:570;letter-spacing:-.025em; }
           [dir="rtl"] .cap-mobile-selector button > strong { font-family:var(--font-display-ar);letter-spacing:-.015em; }
-          .cap-mobile-selector button > i { width:6px;aspect-ratio:1;border-radius:50%;background:rgba(8,71,52,.2); }
+          .cap-mobile-selector button > i { display:none; }
           .cap-mobile-selector button[aria-selected="true"] { color:var(--pine-800);border-color:rgba(105,156,63,.38);background:rgba(255,255,255,.78);box-shadow:0 14px 30px rgba(6,59,43,.08),inset 3px 0 0 var(--lime-300); }
           [dir="rtl"] .cap-mobile-selector button[aria-selected="true"] { box-shadow:0 14px 30px rgba(6,59,43,.08),inset -3px 0 0 var(--lime-300); }
           .cap-mobile-selector button[aria-selected="true"] > i { background:var(--lime-300);box-shadow:0 0 11px rgba(125,174,58,.52); }
-          .cap-mobile-card { overflow:hidden;border:1px solid rgba(8,71,52,.34);border-radius:18px;color:var(--paper-100);background:#071711;box-shadow:0 22px 46px rgba(6,59,43,.15),inset 0 1px 0 rgba(255,255,255,.06);touch-action:pan-y; }
+          .cap-mobile-card { overflow:hidden;border:1px solid rgba(8,71,52,.28);border-radius:18px;color:var(--paper-100);background:#071711;box-shadow:0 18px 38px rgba(6,59,43,.12),inset 0 1px 0 rgba(255,255,255,.06);touch-action:pan-y; }
           .cap-mobile-card__visual { min-height:92px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 17px 9px;overflow:hidden;background-image:radial-gradient(circle at 78% 48%,rgba(55,151,105,.24),transparent 38%),linear-gradient(rgba(205,237,179,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(205,237,179,.05) 1px,transparent 1px);background-size:auto,28px 28px,28px 28px;border-bottom:1px solid rgba(205,237,179,.12); }
           .cap-mobile-card__visual > div:first-child { display:flex;flex-direction:column;gap:7px;font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:rgba(242,245,236,.68); }
           .cap-mobile-card__visual > div:first-child b { font-size:9px;color:var(--lime-300); }
@@ -616,17 +595,16 @@ export default function Capabilities({ services, locale = 'en', label, title, su
           .cap-mobile-orb__ring--two { width:54%;height:96%;border-color:rgba(205,237,179,.16);animation:lens-mobile-orbit-two 19s linear infinite reverse; }
           .cap-mobile-orb > span { position:relative;width:46px;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 31% 24%,#efffd2 0 4%,#b9e963 11%,#329661 34%,#0b6047 60%,#03110c 100%);box-shadow:inset -11px -12px 15px rgba(1,8,5,.72),inset 6px 5px 9px rgba(228,245,212,.16),0 11px 19px rgba(1,8,5,.46),0 0 24px rgba(206,241,123,.16); }
           .cap-mobile-orb > span b { font-family:var(--font-mono);font-size:8px;color:var(--paper-100);text-shadow:0 2px 8px #020b08; }
-          .cap-mobile-card__copy { padding:15px 16px 14px; }
+          .cap-mobile-card__copy { padding:22px 18px 16px; }
           .cap-mobile-card__tags { display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px; }
           .cap-mobile-card__tags span { font-family:var(--font-mono);font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--lime-300); }
           .cap-mobile-card__copy h3 { margin:0;font-family:var(--font-display);font-size:clamp(26px,7.6vw,34px);font-weight:560;line-height:.98;letter-spacing:-.045em; }
           [dir="rtl"] .cap-mobile-card__copy h3 { font-family:var(--font-display-ar);line-height:1.25;letter-spacing:-.02em; }
           .cap-mobile-card__copy > p { margin:9px 0 11px;font-size:13px;line-height:1.5;color:rgba(242,245,236,.74); }
           [dir="rtl"] .cap-mobile-card__copy > p { font-family:var(--font-arabic);font-size:15px;line-height:1.82; }
-          .cap-mobile-card__outcomes { display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:11px; }
-          .cap-mobile-card__outcomes > span { min-height:38px;display:grid;grid-template-columns:25px 1fr;align-items:center;border:1px solid rgba(205,237,179,.16);border-radius:8px;background:rgba(205,237,179,.045);font-family:var(--font-mono);font-size:8px;letter-spacing:.025em;text-transform:uppercase;color:rgba(242,245,236,.82); }
-          .cap-mobile-card__outcomes i { display:grid;align-self:stretch;place-items:center;border-inline-end:1px solid rgba(205,237,179,.12);font-style:normal;color:var(--lime-300); }
-          .cap-mobile-card__outcomes b { padding:8px;font-weight:400;line-height:1.35; }
+          .cap-mobile-card__outcomes { display:flex;flex-wrap:wrap;gap:7px;margin-top:18px; }
+          .cap-mobile-card__outcomes > span { min-height:34px;display:flex;align-items:center;padding:0 11px;border:1px solid rgba(205,237,179,.16);border-radius:999px;background:rgba(205,237,179,.045);font-family:var(--font-mono);font-size:8px;letter-spacing:.025em;text-transform:uppercase;color:rgba(242,245,236,.82); }
+          .cap-mobile-card__outcomes > span b { padding:0;font-size:8px;font-weight:700;line-height:1.3;letter-spacing:.04em; }
           .cap-mobile-card__copy > a { min-height:44px;display:flex;align-items:center;justify-content:space-between;margin-top:11px;padding:0 14px;border-radius:10px;color:var(--ink-950);background:var(--lime-300);font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:transform 140ms var(--ease-out); }
           [dir="rtl"] .cap-mobile-card__copy > a { font-family:var(--font-arabic);font-size:12px;letter-spacing:0; }
           .cap-mobile-card__copy > a:active { transform:scale(.98); }
@@ -660,7 +638,7 @@ export default function Capabilities({ services, locale = 'en', label, title, su
 
         @media (prefers-reduced-motion:reduce) {
           .lens-scene { transition:none;transform:none !important; }
-          .lens-head__label i,.lens-halo,.lens-orbit,.lens-orb__surface,.lens-micro-orbs i,.lens-aurora,.lens-foot i b,.cap-mobile-orb::before,.cap-mobile-orb__ring { animation:none !important; }
+          .lens-head__label i,.lens-halo,.lens-orbit,.lens-orb__surface,.lens-micro-orbs i,.lens-aurora,.lens-foot i b { animation:none !important; }
         }
       `}</style>
     </section>
