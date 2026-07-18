@@ -78,7 +78,7 @@ export default function WhoWeAre({ locale = 'en', title, body, note }: AboutProp
           font-weight: 700;
           letter-spacing: .16em;
           text-transform: uppercase;
-          color: rgba(6,59,43,.55);
+          color: var(--light-micro);
         }
         .about-trace i { height: 1px; background: linear-gradient(90deg, var(--pine-700), rgba(8,71,52,.12)); }
         [dir="rtl"] .about-trace i { background: linear-gradient(270deg, var(--pine-700), rgba(8,71,52,.12)); }
@@ -139,10 +139,10 @@ export default function WhoWeAre({ locale = 'en', title, body, note }: AboutProp
         [dir="rtl"] .about-evidence-item { padding: 22px 0 24px 22px; }
         .about-evidence-item:last-child { border-inline-end: 0; padding-inline-start: 22px; }
         .about-evidence-item:not(:first-child) { padding-inline-start: 22px; }
-        .about-evidence-item > span { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; color: rgba(8,71,52,.45); }
+        .about-evidence-item > span { font-family: var(--font-mono); font-size: 9px; letter-spacing: .12em; color: var(--light-micro); }
         .about-evidence-item strong { margin-top: auto; font-family: var(--font-display); font-size: clamp(23px, 2.2vw, 34px); font-weight: 570; letter-spacing: -.035em; }
         [dir="rtl"] .about-evidence-item strong { font-family: var(--font-display-ar); letter-spacing: -.02em; }
-        .about-evidence-item p { margin: 7px 0 0; font-size: 14px; color: rgba(6,59,43,.65); }
+        .about-evidence-item p { margin: 7px 0 0; font-size: 14px; color: var(--light-muted); }
         [dir="rtl"] .about-evidence-item p { font-family: var(--font-arabic); font-size: 15px; }
 
         @media (max-width: 780px) {
@@ -164,10 +164,16 @@ export default function WhoWeAre({ locale = 'en', title, body, note }: AboutProp
         }
 
         @media (max-width: 430px) {
-          .about-evidence { grid-template-columns: 1fr; }
-          .about-evidence-item { min-height: 118px; padding: 18px 0 !important; border-inline-end: 0; border-bottom: 1px solid rgba(8,71,52,.16); }
-          .about-evidence-item:last-child { border-bottom: 0; }
-          .about-evidence-item strong { margin-top: 26px; }
+          .about-chapter { padding-top: 72px; }
+          .about-trace { display: none; }
+          .about-layout { gap: 30px; }
+          .about-lead { font-size: 24px; line-height: 1.35; }
+          .about-note { font-size: 15px; line-height: 1.65; }
+          .about-evidence { display:flex;gap:10px;margin:44px -20px 0;padding:0 20px;overflow-x:auto;border:0;scroll-snap-type:x mandatory;scrollbar-width:none; }
+          .about-evidence::-webkit-scrollbar { display:none; }
+          .about-evidence-item { flex:0 0 76%;min-height:126px;padding:18px !important;border:1px solid rgba(8,71,52,.16);border-radius:14px;scroll-snap-align:start;background:rgba(255,255,255,.22); }
+          .about-evidence-item strong { margin-top:24px;font-size:20px; }
+          .about-evidence-item p { font-size:13px; }
         }
       `}</style>
     </section>
@@ -197,7 +203,7 @@ export function FAQ({ locale = 'en', title, label, intro, items }: FAQProps) {
 
         <div className="faq-list">
           {(items ?? dictionary.faq.items).map((faq, index) => (
-            <details className="faq-item" key={faq.q} open={index === 0}>
+            <details className="faq-item" key={faq.q}>
               <summary data-cursor="toggle">
                 <span>0{index + 1}</span>
                 <h3>{faq.q}</h3>
@@ -217,13 +223,13 @@ export function FAQ({ locale = 'en', title, label, intro, items }: FAQProps) {
         .faq-heading > span { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--pine-600); }
         .faq-heading h2 { max-width: none; margin: 14px 0 0; white-space: nowrap; font-family: var(--font-display); font-size: clamp(42px, 4.2vw, 64px); font-weight: 560; line-height: .95; letter-spacing: -.055em; }
         [dir="rtl"] .faq-heading h2 { font-family: var(--font-display-ar); line-height: 1.12; letter-spacing: -.03em; }
-        .faq-heading p { margin: 24px 0 0; font-size: 16px; color: rgba(6,59,43,.64); }
+        .faq-heading p { margin: 24px 0 0; font-size: 16px; color: var(--light-muted); }
         [dir="rtl"] .faq-heading p { font-family: var(--font-arabic); font-size: 17px; }
         .faq-list { border-top: 1px solid rgba(8,71,52,.22); }
         .faq-item { border-bottom: 1px solid rgba(8,71,52,.18); }
         .faq-item summary { min-height: 86px; display: grid; grid-template-columns: 34px 1fr 18px; align-items: center; gap: 16px; cursor: pointer; list-style: none; }
         .faq-item summary::-webkit-details-marker { display: none; }
-        .faq-item summary > span { font-family: var(--font-mono); font-size: 9px; color: rgba(8,71,52,.52); }
+        .faq-item summary > span { font-family: var(--font-mono); font-size: 9px; color: var(--light-micro); }
         .faq-item h3 { margin: 0; font-family: var(--font-body); font-size: clamp(18px, 1.55vw, 23px); font-weight: 520; letter-spacing: -.02em; color: var(--pine-800); }
         [dir="rtl"] .faq-item h3 { font-family: var(--font-display-ar); font-size: clamp(18px, 1.7vw, 25px); line-height: 1.5; }
         .faq-item summary i { position: relative; width: 14px; height: 14px; }
@@ -232,7 +238,7 @@ export function FAQ({ locale = 'en', title, label, intro, items }: FAQProps) {
         .faq-item[open] summary i::after { transform: rotate(0); }
         .faq-answer { padding: 0 34px 28px 50px; }
         [dir="rtl"] .faq-answer { padding: 0 50px 28px 34px; }
-        .faq-answer p { max-width: 65ch; margin: 0; font-size: 16px; line-height: 1.7; color: rgba(6,59,43,.66); }
+        .faq-answer p { max-width: 65ch; margin: 0; font-size: 16px; line-height: 1.7; color: var(--light-muted); }
         [dir="rtl"] .faq-answer p { font-family: var(--font-arabic); font-size: 16px; line-height: 1.9; }
         @media (max-width: 780px) {
           .faq-chapter { padding: 84px 20px; }

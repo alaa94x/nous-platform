@@ -40,7 +40,12 @@ export default function LanguageSwitch({ locale, label, compact = false }: Langu
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
         color: compact ? '#e4f5d4' : 'rgba(255,255,255,.82)',
-        fontFamily: nextLocale === 'ar' ? 'var(--font-arabic)' : 'var(--font-mono)',
+        // The compact switch sits above every mobile hero and was selected as
+        // the LCP element in the audit. Use an immediate system face here so a
+        // late web-font swap cannot reset its paint timestamp.
+        fontFamily: compact
+          ? 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif'
+          : nextLocale === 'ar' ? 'var(--font-arabic)' : 'var(--font-mono)',
         fontSize: compact ? (nextLocale === 'ar' ? 21 : 11) : (nextLocale === 'ar' ? 14 : 9),
         fontWeight: compact ? 650 : 600,
         letterSpacing: nextLocale === 'ar' ? 0 : '.14em',

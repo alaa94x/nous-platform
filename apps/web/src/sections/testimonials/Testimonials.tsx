@@ -51,18 +51,33 @@ export default function Testimonials({ testimonials, locale = 'en', title, label
             </blockquote>
           ))}
         </div>
+
+        <div className="pulse-mobile">
+          {items.map((item, index) => index === 0 ? (
+            <blockquote key={`${item.author}-mobile-${index}`}>
+              <p>{item.quote}</p>
+              <footer><span>{item.initials || item.author.slice(0, 1)}</span><div><cite>{item.author}</cite>{item.role && <small>{item.role}</small>}</div></footer>
+            </blockquote>
+          ) : (
+            <details key={`${item.author}-mobile-${index}`}>
+              <summary><span>{item.initials || item.author.slice(0, 1)}</span><strong>{item.author}</strong><i aria-hidden="true" /></summary>
+              <div><p>{item.quote}</p>{item.role && <small>{item.role}</small>}</div>
+            </details>
+          ))}
+        </div>
       </div>
 
       <style>{`
         .pulse-chapter { position: relative; z-index: 10; padding: clamp(92px,11vw,158px) clamp(24px,5vw,72px); color: var(--pine-800); background: var(--tea-100); }
         .pulse-shell { width: min(100%,1480px); margin: 0 auto; }
-        .pulse-meta { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: rgba(6,59,43,.45); }
+        .pulse-meta { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: center; gap: 16px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--light-micro); }
         .pulse-meta i { height: 1px; background: rgba(8,71,52,.2); }.pulse-meta span:last-child { color: var(--pine-700); }
         .pulse-title { margin-top: clamp(30px,4vw,54px); }
         .pulse-title > span { display:block; margin-bottom:16px; font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--pine-600); }
         .pulse-heading h2 { max-width:none; margin:0; white-space:nowrap; font-family:var(--font-display); font-size:clamp(46px,4.8vw,72px); font-weight:560; line-height:.94; letter-spacing:-.06em; }
         [dir="rtl"] .pulse-heading h2 { font-family:var(--font-display-ar); line-height:1.08; letter-spacing:-.035em; }
         .pulse-grid { display:grid; grid-template-columns:1.35fr .65fr; margin-top:clamp(70px,9vw,126px); border-top:1px solid rgba(8,71,52,.23); border-bottom:1px solid rgba(8,71,52,.23); }
+        .pulse-mobile { display:none; }
         .pulse-quote { position:relative; min-height:260px; margin:0; padding:28px 28px 30px; border-inline-start:1px solid rgba(8,71,52,.18); display:flex; flex-direction:column; overflow:hidden; }
         .pulse-quote--lead { grid-row:span 2; min-height:520px; border-inline-start:0; padding-inline-start:0; padding-inline-end:clamp(28px,5vw,72px); }
         [dir="rtl"] .pulse-quote--lead { padding-inline-start:clamp(28px,5vw,72px); padding-inline-end:0; }
@@ -70,18 +85,18 @@ export default function Testimonials({ testimonials, locale = 'en', title, label
         .pulse-wave { height:34px; display:flex; align-items:center; gap:5px; margin-bottom:clamp(30px,5vw,64px); }
         .pulse-wave::before,.pulse-wave::after { content:''; flex:1; height:1px; background:rgba(8,71,52,.18); }
         .pulse-wave i { width:3px; height:8px; background:var(--pine-600); animation:pulse-wave 2.8s ease-in-out infinite; }.pulse-wave i:nth-child(2){animation-delay:.14s}.pulse-wave i:nth-child(3){height:20px;animation-delay:.28s}.pulse-wave i:nth-child(4){animation-delay:.42s}.pulse-wave i:nth-child(5){animation-delay:.56s}
-        .pulse-index { font-family:var(--font-mono); font-size:9px; color:rgba(8,71,52,.45); }
+        .pulse-index { font-family:var(--font-mono); font-size:9px; color:var(--light-micro); }
         .pulse-quote > p { max-width:34ch; margin:24px 0 34px; font-family:var(--font-display); font-size:clamp(23px,2.4vw,38px); font-weight:520; line-height:1.22; letter-spacing:-.035em; color:var(--pine-800); text-wrap:pretty; }
         .pulse-quote--lead > p { max-width:28ch; font-size:clamp(32px,3.7vw,58px); line-height:1.08; }
         [dir="rtl"] .pulse-quote > p { font-family:var(--font-display-ar); line-height:1.55; letter-spacing:-.02em; }
         .pulse-quote footer { display:flex; align-items:center; gap:12px; margin-top:auto; }
         .pulse-quote footer>span { width:38px; height:38px; display:grid; place-items:center; border:1px solid rgba(8,71,52,.3); font-family:var(--font-display); font-weight:600; color:var(--pine-700); }
         .pulse-quote cite { display:block; font-family:var(--font-mono); font-size:9px; font-weight:700; letter-spacing:.08em; font-style:normal; text-transform:uppercase; }
-        .pulse-quote small { display:block; margin-top:4px; font-size:12px; color:rgba(6,59,43,.58); }
+        .pulse-quote small { display:block; margin-top:4px; font-size:12px; color:var(--light-muted); }
         [dir="rtl"] .pulse-quote cite,[dir="rtl"] .pulse-quote small { font-family:var(--font-arabic); text-transform:none; }
         @keyframes pulse-wave { 0%,100%{transform:scaleY(.5);opacity:.45}50%{transform:scaleY(1.6);opacity:1} }
         @media (max-width:780px){
-          .pulse-chapter{padding:88px 20px}.pulse-heading h2{font-size:clamp(29px,8vw,42px)}.pulse-grid{display:flex;flex-direction:column}.pulse-quote,.pulse-quote--lead{min-height:0;padding:28px 0 36px;border-inline-start:0;border-top:1px solid rgba(8,71,52,.18)}.pulse-quote--lead{border-top:0}.pulse-wave{margin-bottom:30px}.pulse-quote>p,.pulse-quote--lead>p{font-size:clamp(25px,7vw,34px);line-height:1.18}.pulse-quote footer{margin-top:34px}
+          .pulse-chapter{padding:76px 20px}.pulse-meta{display:none}.pulse-title{margin-top:0}.pulse-heading h2{font-size:clamp(32px,9vw,40px)}.pulse-grid{display:none}.pulse-mobile{display:block;margin-top:42px;border-top:1px solid rgba(8,71,52,.2)}.pulse-mobile blockquote{margin:0;padding:28px 0 30px;border-bottom:1px solid rgba(8,71,52,.18)}.pulse-mobile blockquote>p{margin:0;font-family:var(--font-display);font-size:21px;font-weight:500;line-height:1.4;letter-spacing:-.025em}.pulse-mobile footer{display:flex;align-items:center;gap:12px;margin-top:24px}.pulse-mobile footer>span,.pulse-mobile summary>span{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(8,71,52,.25);font-weight:600}.pulse-mobile cite,.pulse-mobile small{display:block;font-family:var(--font-mono);font-size:8px;font-style:normal;letter-spacing:.06em;text-transform:uppercase}.pulse-mobile small{margin-top:4px;color:var(--light-muted)}.pulse-mobile details{border-bottom:1px solid rgba(8,71,52,.18)}.pulse-mobile summary{min-height:68px;display:grid;grid-template-columns:36px 1fr 18px;align-items:center;gap:12px;list-style:none;cursor:pointer}.pulse-mobile summary::-webkit-details-marker{display:none}.pulse-mobile summary>strong{font-size:16px;font-weight:600}.pulse-mobile summary>i{position:relative;width:18px;height:18px}.pulse-mobile summary>i::before,.pulse-mobile summary>i::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:1px;background:var(--pine-700);transform:translate(-50%,-50%)}.pulse-mobile summary>i::after{transform:translate(-50%,-50%) rotate(90deg)}.pulse-mobile details[open] summary>i::after{transform:translate(-50%,-50%)}.pulse-mobile details>div{padding:0 0 26px 48px}.pulse-mobile details>div p{margin:0;font-size:17px;line-height:1.55}.pulse-mobile details>div small{margin-top:12px}.pulse-mobile[dir="rtl"], [dir="rtl"] .pulse-mobile blockquote>p,[dir="rtl"] .pulse-mobile cite,[dir="rtl"] .pulse-mobile small{font-family:var(--font-arabic)}
         }
         @media (prefers-reduced-motion:reduce){.pulse-wave i{animation:none}}
       `}</style>

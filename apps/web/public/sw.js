@@ -1,5 +1,5 @@
 // Nous PWA Service Worker
-const CACHE   = 'nous-v3'
+const CACHE   = 'nous-v4'
 const OFFLINE  = '/offline'
 const PRECACHE = [
   OFFLINE,

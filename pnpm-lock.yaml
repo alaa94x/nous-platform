@@ -17,6 +17,9 @@ importers:
       '@nous/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@nous/documents':
+        specifier: workspace:*
+        version: link:../../packages/documents
       '@phosphor-icons/react':
         specifier: ^2.1.7
         version: 2.1.10(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -173,6 +176,15 @@ importers:
       '@types/node':
         specifier: ^20
         version: 20.19.43
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  packages/documents:
+    devDependencies:
+      '@nous/config':
+        specifier: workspace:*
+        version: link:../config
       typescript:
         specifier: ^5.8.3
         version: 5.9.3

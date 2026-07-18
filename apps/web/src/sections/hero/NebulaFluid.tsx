@@ -469,14 +469,14 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     const coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches
     const mobileField = window.innerWidth < 768
     const lowPower = coarse || (navigator.hardwareConcurrency ?? 8) <= 4
-    const pressureIterations = lowPower ? 10 : mode === 'calm' ? 14 : PRESSURE_ITERATIONS
-    const minFrameDuration = lowPower ? 1000 / 30 : mode === 'calm' ? 1000 / 45 : 0
+    const pressureIterations = mobileField ? 7 : lowPower ? 10 : mode === 'calm' ? 14 : PRESSURE_ITERATIONS
+    const minFrameDuration = mobileField ? 1000 / 24 : lowPower ? 1000 / 30 : mode === 'calm' ? 1000 / 45 : 0
 
     // Buffers
     let dye: DoubleFBO, velocity: DoubleFBO, divergence: FBO, curlFBO: FBO, pressure: DoubleFBO
     const initBuffers = () => {
-      const simRes = getRes(gl, mobileField ? 96 : SIM_RES)
-      const dyeRes = getRes(gl, mobileField ? 512 : DYE_RES)
+      const simRes = getRes(gl, mobileField ? 72 : SIM_RES)
+      const dyeRes = getRes(gl, mobileField ? 320 : DYE_RES)
       dye        = createDoubleFBO(gl, dyeRes.w, dyeRes.h, gl.RGBA16F, gl.RGBA, gl.HALF_FLOAT, gl.LINEAR)
       velocity   = createDoubleFBO(gl, simRes.w, simRes.h, gl.RG16F, gl.RG, gl.HALF_FLOAT, gl.LINEAR)
       divergence = createFBO(gl, simRes.w, simRes.h, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST)
@@ -484,11 +484,12 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       pressure   = createDoubleFBO(gl, simRes.w, simRes.h, gl.R16F, gl.RED, gl.HALF_FLOAT, gl.NEAREST)
     }
 
+    let canvasRect = canvas.getBoundingClientRect()
     const resize = () => {
-      const rect = canvas.getBoundingClientRect()
-      const dpr = Math.min(window.devicePixelRatio || 1, mobileField ? 1.5 : 2)
-      const w = Math.round(rect.width * dpr)
-      const h = Math.round(rect.height * dpr)
+      canvasRect = canvas.getBoundingClientRect()
+      const dpr = Math.min(window.devicePixelRatio || 1, mobileField ? 1 : 2)
+      const w = Math.max(1, Math.round(canvasRect.width * dpr))
+      const h = Math.max(1, Math.round(canvasRect.height * dpr))
       // React Strict Mode reconnects passive effects in development. On the
       // second connection the canvas can already have the correct dimensions,
       // while these effect-local framebuffers are still uninitialised. Always
@@ -502,6 +503,8 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       }
     }
     resize()
+    const resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(canvas)
 
     // ── Splat ──
     const splat = (x: number, y: number, dx: number, dy: number, color: [number, number, number], radiusScale = 1) => {
@@ -523,7 +526,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     let lastColorAt = 0
     let px = -1, py = -1
     const onPointerMove = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect()
+      const rect = canvasRect
       if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return
       const x = (e.clientX - rect.left) / rect.width
       const y = 1 - (e.clientY - rect.top) / rect.height
@@ -542,7 +545,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     }
     const onPointerLeave = () => { px = -1; py = -1 }
     const onPointerDown = (e: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect()
+      const rect = canvasRect
       if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return
       const x = (e.clientX - rect.left) / rect.width
       const y = 1 - (e.clientY - rect.top) / rect.height
@@ -664,7 +667,6 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       lastRenderedAt = t
       const dt = Math.min((t - lastT) / 1000, 1 / 60)
       lastT = t
-      resize()
       const baseIdleInterval = mobileField ? IDLE_SPLAT_EVERY_MS * 0.9 : IDLE_SPLAT_EVERY_MS
       const idleInterval = mode === 'calm' ? baseIdleInterval * 1.55 : baseIdleInterval
       if (t - lastIdleSplat > idleInterval) {
@@ -694,7 +696,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
     canvas.addEventListener('webglcontextrestored', onContextRestored)
 
     // Seed the nebula so it isn't empty on first paint
-    for (let i = 0; i < (mobileField ? 7 : 8); i++) idleSplat()
+    for (let i = 0; i < (mobileField ? 5 : 8); i++) idleSplat()
 
     let inViewport = true
     const io = new IntersectionObserver(([entry]) => {
@@ -717,6 +719,7 @@ export default function NebulaFluid({ mode = 'standard' }: NebulaFluidProps) {
       running = false
       stop()
       io.disconnect()
+      resizeObserver.disconnect()
       document.removeEventListener('visibilitychange', onVis)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerdown', onPointerDown)

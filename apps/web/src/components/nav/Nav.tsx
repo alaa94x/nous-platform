@@ -34,7 +34,6 @@ export default function Nav({
 }: NavProps = {}) {
   const navRef    = useRef<HTMLElement>(null)
   const railRef   = useRef<HTMLElement>(null)
-  const mobileLogoRef = useRef<HTMLDivElement>(null)
   const dictionary = getDictionary(locale)
   const home = locale === 'ar' ? '/ar' : '/'
   const NAV_LINKS = [
@@ -54,101 +53,6 @@ export default function Nav({
     apply()
     window.addEventListener('scroll', apply, { passive: true })
     return () => window.removeEventListener('scroll', apply)
-  }, [])
-
-  // ── Mobile navigation material — expand on intent, compact on progress ──
-  useEffect(() => {
-    const rail = railRef.current
-    const logo = mobileLogoRef.current
-    if (!rail || !logo) return
-
-    let lastY = window.scrollY
-    let direction: 'up' | 'down' | '' = ''
-    let travel = 0
-    let frame = 0
-    let compact = rail.dataset['compact'] === 'true'
-    let lastStateChange = 0
-    let keyboardNavigation = false
-    let initial = true
-
-    const setCompact = (compact: boolean) => {
-      rail.dataset['compact'] = compact ? 'true' : 'false'
-    }
-    const setLogoHidden = (hidden: boolean) => {
-      logo.dataset['hidden'] = hidden ? 'true' : 'false'
-    }
-    const setNavigationState = (nextCompact: boolean, force = false) => {
-      const now = performance.now()
-      if (nextCompact === compact) {
-        if (force) {
-          setCompact(nextCompact)
-          setLogoHidden(nextCompact)
-        }
-        return
-      }
-      if (!force && now - lastStateChange < 260) return
-      compact = nextCompact
-      lastStateChange = now
-      setCompact(nextCompact)
-      setLogoHidden(nextCompact)
-    }
-    const apply = () => {
-      frame = 0
-      const currentY = Math.max(0, window.scrollY)
-      const delta = currentY - lastY
-      logo.dataset['scrolled'] = currentY > 18 ? 'true' : 'false'
-
-      if (initial) {
-        initial = false
-        setNavigationState(currentY > 80, true)
-        lastY = currentY
-        return
-      }
-
-      if (currentY < 48) {
-        setNavigationState(false, true)
-        direction = ''
-        travel = 0
-      } else if (Math.abs(delta) >= 2) {
-        const nextDirection = delta > 0 ? 'down' : 'up'
-        if (nextDirection !== direction) {
-          direction = nextDirection
-          travel = 0
-        }
-        travel += Math.abs(delta)
-        if (direction === 'down' && travel >= 42) setNavigationState(true)
-        if (direction === 'up' && travel >= 32) setNavigationState(false)
-      }
-      lastY = currentY
-    }
-    const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(apply)
-    }
-    const onKeyboard = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') keyboardNavigation = true
-    }
-    const onPointer = () => { keyboardNavigation = false }
-    const onFocus = () => {
-      if (keyboardNavigation) setNavigationState(false, true)
-    }
-    const onLogoFocus = () => {
-      if (keyboardNavigation) setNavigationState(false, true)
-    }
-
-    apply()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    document.addEventListener('keydown', onKeyboard, true)
-    document.addEventListener('pointerdown', onPointer, true)
-    rail.addEventListener('focusin', onFocus)
-    logo.addEventListener('focusin', onLogoFocus)
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame)
-      window.removeEventListener('scroll', onScroll)
-      document.removeEventListener('keydown', onKeyboard, true)
-      document.removeEventListener('pointerdown', onPointer, true)
-      rail.removeEventListener('focusin', onFocus)
-      logo.removeEventListener('focusin', onLogoFocus)
-    }
   }, [])
 
   // ── Active section — DOM-direct rail indicator updates ──────────────────
@@ -211,7 +115,7 @@ export default function Nav({
         <div className="desktop-nav__brand" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <Link
             href={home}
-            aria-label="Nous, return to homepage"
+            aria-label={locale === 'ar' ? `${siteName}، العودة إلى الرئيسية` : `${siteName}, return to homepage`}
             style={{ display: 'flex', alignItems: 'center', gap: 10 }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -275,7 +179,6 @@ export default function Nav({
 
       {/* ── MOBILE FLOATING LOGO ─────────────────────────────── */}
       <div
-        ref={mobileLogoRef}
         className="mobile-logo-strip"
         style={{
           display: 'flex',
@@ -291,13 +194,14 @@ export default function Nav({
       >
         <Link
           href={home}
-          aria-label="Nous, return to homepage"
+          aria-label={locale === 'ar' ? `${siteName}، العودة إلى الرئيسية` : `${siteName}, return to homepage`}
           style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/nous-logo.svg"
-            alt="Nous"
+            alt=""
+            aria-hidden="true"
             width={46}
             height={24}
             style={{ width: 46, height: 24, objectFit: 'contain' }}
@@ -316,7 +220,6 @@ export default function Nav({
         ref={railRef}
         aria-label="Mobile navigation"
         className="mobile-rail"
-        data-compact="false"
         style={{
           position: 'fixed',
           bottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
@@ -336,29 +239,15 @@ export default function Nav({
               href={link.href}
               data-section={link.section}
               data-active="false"
+              aria-label={link.label}
               className={`mobile-rail__link pressable${link.section === 'contact' ? ' mobile-rail__cta' : ''}`}
             >
               <span className="mobile-rail__icon"><MobileNavIcon section={link.section} /></span>
               <span className="mobile-rail__index" aria-hidden="true">
-                {link.section === 'contact' ? '↗' : `0${i + 1}`}
+                {`0${i + 1}`}
               </span>
               <span className="mobile-rail__label">{link.label}</span>
               {link.section !== 'contact' && <i aria-hidden="true" />}
-            </a>
-          ))}
-        </div>
-        <div className="mobile-rail__compact" aria-hidden="true">
-          {NAV_LINKS.map(link => (
-            <a
-              key={`compact-${link.href}`}
-              href={link.href}
-              data-section={link.section}
-              data-active="false"
-              className={`mobile-rail__compact-link pressable${link.section === 'contact' ? ' mobile-rail__compact-cta' : ''}`}
-              aria-label={link.label}
-              tabIndex={-1}
-            >
-              <MobileNavIcon section={link.section} />
             </a>
           ))}
         </div>
@@ -484,12 +373,7 @@ export default function Nav({
           backdrop-filter: blur(22px) saturate(145%);
           -webkit-backdrop-filter: blur(22px) saturate(145%);
           transform: translate3d(0,0,0);
-          transform-origin: bottom center;
-          opacity: 1;
-          will-change: transform, opacity;
-          backface-visibility: hidden;
           contain: paint;
-          transition: opacity 210ms ease,transform 280ms cubic-bezier(.32,.72,0,1);
         }
         .mobile-rail__link {
           position: relative;
@@ -555,43 +439,6 @@ export default function Nav({
         .mobile-rail__cta .mobile-rail__label,.mobile-rail__cta > i { display:none; }
         .mobile-rail__link:active { transform:scale(.97); }
 
-        .mobile-rail__compact {
-          position:absolute;
-          z-index:1;
-          left:50%;
-          bottom:0;
-          width:196px;
-          height:50px;
-          display:grid;
-          grid-template-columns:repeat(3,1fr);
-          align-items:center;
-          gap:3px;
-          padding:3px;
-          border:1px solid rgba(228,245,212,.14);
-          border-radius:999px;
-          color:rgba(240,237,234,.65);
-          background:rgba(7,17,14,.9);
-          box-shadow:0 16px 38px rgba(2,9,6,.3),inset 0 1px 0 rgba(255,255,255,.055);
-          backdrop-filter:blur(22px) saturate(145%);
-          -webkit-backdrop-filter:blur(22px) saturate(145%);
-          opacity:0;
-          pointer-events:none;
-          transform:translate3d(-50%,10px,0);
-          transform-origin:bottom center;
-          will-change:transform,opacity;
-          backface-visibility:hidden;
-          contain:paint;
-          transition:opacity 210ms ease,transform 280ms cubic-bezier(.32,.72,0,1);
-        }
-        .mobile-rail__compact-link { position:relative;width:44px;height:44px;display:grid;place-items:center;justify-self:center;border-radius:50%;transition:color 180ms ease,background-color 180ms ease,transform 140ms var(--ease-out); }
-        .mobile-rail__compact-link:active { transform:scale(.94); }
-        .mobile-rail__compact-link[data-active='true'] { color:var(--paper-100);background:rgba(206,241,123,.08); }
-        .mobile-rail__compact-link[data-active='true']::after { content:'';position:absolute;right:5px;top:5px;width:4px;height:4px;border-radius:50%;background:var(--lime-300);box-shadow:0 0 8px rgba(206,241,123,.6); }
-        .mobile-rail__compact-cta { color:var(--ink-950);background:var(--lime-300);box-shadow:inset 0 1px 0 rgba(255,255,255,.3); }
-        .mobile-rail__compact-cta[data-active='true'] { color:var(--ink-950);background:var(--lime-300); }
-        .mobile-rail[data-compact='true'] .mobile-rail__grid { opacity:0;pointer-events:none;transform:translate3d(0,10px,0); }
-        .mobile-rail[data-compact='true'] .mobile-rail__compact { z-index:3;opacity:1;pointer-events:auto;transform:translate3d(-50%,0,0); }
-
         @media (max-width: 900px) {
           .desktop-nav { display: none !important; }
           .mobile-rail { display: block !important; }
@@ -604,17 +451,10 @@ export default function Nav({
             backdrop-filter: blur(20px) saturate(135%);
             -webkit-backdrop-filter: blur(20px) saturate(135%);
             box-shadow: 0 12px 36px rgba(3,12,9,.16), inset 0 1px 0 rgba(255,255,255,.04);
-            will-change: transform, opacity;
             transform: translate3d(0,0,0);
             backface-visibility:hidden;
             contain:paint;
-            transition:background-color 200ms ease,box-shadow 200ms ease,transform 280ms cubic-bezier(.32,.72,0,1),opacity 210ms ease;
-          }
-          .mobile-logo-strip[data-scrolled='true'] { background:rgba(7,17,14,.9);box-shadow:0 14px 34px rgba(3,12,9,.22),inset 0 1px 0 rgba(255,255,255,.055); }
-          .mobile-logo-strip[data-hidden='true'] {
-            opacity: 0;
-            pointer-events: none;
-            transform: translate3d(0,calc(-100% - 18px),0);
+            transition:background-color 200ms ease,box-shadow 200ms ease;
           }
         }
         @media (max-width: 480px) {
@@ -631,14 +471,12 @@ export default function Nav({
         @supports not (backdrop-filter: blur(1px)) {
           .desktop-nav[data-scrolled='true'],
           .mobile-logo-strip,
-          .mobile-rail__grid,
-          .mobile-rail__compact { background: rgba(5,18,15,.97) !important; }
+          .mobile-rail__grid { background: rgba(5,18,15,.97) !important; }
         }
 
         /* Respect system "reduce transparency" setting */
         @media (prefers-reduced-transparency: reduce) {
-          .mobile-rail__grid,
-          .mobile-rail__compact {
+          .mobile-rail__grid {
             background: rgba(5, 18, 15, 0.96) !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -654,8 +492,6 @@ export default function Nav({
           .mobile-rail__link,
           .mobile-rail__link > i,
           .mobile-rail__grid,
-          .mobile-rail__compact,
-          .mobile-rail__compact-link,
           .mobile-logo-strip { transition: none !important; }
         }
       `}</style>
